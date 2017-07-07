@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"io/ioutil"
+
 	"github.com/apex/httplog"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
@@ -113,6 +115,13 @@ func collectStars(repo repository) (series chart.TimeSeries, err error) {
 			return series, err
 		}
 		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			bts, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return series, err
+			}
+			return series, fmt.Errorf("failed to get stargazers from github api: %v", string(bts))
+		}
 		var stargazers []stargazer
 		if err := json.NewDecoder(resp.Body).Decode(&stargazers); err != nil {
 			return series, err
