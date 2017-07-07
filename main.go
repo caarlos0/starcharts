@@ -16,7 +16,10 @@ import (
 
 const pageSize = 100
 
-var token string
+var (
+	token string
+	port  string
+)
 
 type stargazer struct {
 	StarredAt time.Time `json:"starred_at"`
@@ -32,6 +35,10 @@ type repository struct {
 func init() {
 	log.SetHandler(text.New(os.Stderr))
 	token = os.Getenv("GITHUB_TOKEN")
+	port = os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
 }
 
 func main() {
@@ -40,8 +47,11 @@ func main() {
 		// ignored
 	})
 	mux.HandleFunc("/", starchart)
-	log.Info("starting up")
-	log.Fatalf("failed to start: %v", http.ListenAndServe(":3000", httplog.New(mux)))
+	var ctx = log.WithField("port", port)
+	ctx.Info("starting up")
+	if err := http.ListenAndServe(":"+port, httplog.New(mux)); err != nil {
+		ctx.Fatal("failed to start up")
+	}
 }
 
 func starchart(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +62,7 @@ func starchart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var ctx = log.WithField("repo", repo.FullName)
-	if !repo.Permissions.Push {
+	if !repo.Permissions.Push && token != "" {
 		log.Warn("ignored repo without perms")
 		http.Error(w, "I do not have push permissions in this repo, won't spend my rate limit with it", http.StatusNotAcceptable)
 		return
