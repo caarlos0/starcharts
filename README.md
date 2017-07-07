@@ -13,4 +13,4 @@ Then browse http://localhost:3000/me/myrepo .
 
 Example chart:
 
-[![starchart stars](https://caarlos0-st.herokuapp.com/caarlos0/starchart)](https://caarlos0-st.herokuapp.com/caarlos0/starchart)
+[![starchart stars](https://starcharts.herokuapp.com/caarlos0/starchart)](https://starcharts.herokuapp.com/caarlos0/starchart)

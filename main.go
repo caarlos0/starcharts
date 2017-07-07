@@ -84,6 +84,13 @@ func starchart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	if len(series.XValues) < 2 {
+		ctx.Info("not enough results, adding some fake ones")
+		series.XValues = append(series.XValues, time.Now())
+		series.YValues = append(series.YValues, 1)
+	}
+
 	seriesCache.Set(repo, series, cache.DefaultExpiration)
 	var graph = chart.Chart{
 		XAxis: chart.XAxis{
