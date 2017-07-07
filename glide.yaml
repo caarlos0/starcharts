@@ -1,0 +1,8 @@
+package: github.com/caarlos0/starchart
+import:
+- package: github.com/apex/httplog
+- package: github.com/apex/log
+  subpackages:
+  - handlers/text
+- package: github.com/wcharczuk/go-chart
+  version: ^2.0.0

@@ -1,0 +1,30 @@
+hash: 7c1a88fc1db46db0a2d97233c3f2b8365e12dfa2b6deedc64ddfbe4a80f93d06
+updated: 2017-07-06T23:28:23.443522188-03:00
+imports:
+- name: github.com/apex/httplog
+  version: d677fdf2ae1fa75d8111faf17f2d6fcf46dd9af7
+- name: github.com/apex/log
+  version: a97903d8456938a31ce3cb7d58ad3f378f951f24
+  subpackages:
+  - handlers/text
+- name: github.com/blendlabs/go-exception
+  version: d3934f941cb001f2b61a69b25dbc76eab3e6ff29
+- name: github.com/golang/freetype
+  version: e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4
+  subpackages:
+  - raster
+  - truetype
+- name: github.com/pkg/errors
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+- name: github.com/wcharczuk/go-chart
+  version: fc2973067ce43455507ea5f9aa9814aabbf8f2ca
+  subpackages:
+  - drawing
+- name: golang.org/x/image
+  version: 426cfd8eeb6e08ab1932954e09e3c2cb2bc6e36d
+  subpackages:
+  - draw
+  - font
+  - math/f64
+  - math/fixed
+testImports: []
