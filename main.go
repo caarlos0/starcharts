@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"html/template"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -13,16 +10,15 @@ import (
 	"github.com/apex/httplog"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
-	cache "github.com/patrickmn/go-cache"
+	"github.com/caarlos0/starchart/internal/github"
 	chart "github.com/wcharczuk/go-chart"
 )
 
 const pageSize = 100
 
 var (
-	token       string
-	port        string
-	seriesCache *cache.Cache
+	token string
+	port  string
 )
 
 type stargazer struct {
@@ -31,7 +27,6 @@ type stargazer struct {
 
 func init() {
 	log.SetHandler(text.New(os.Stderr))
-	seriesCache = cache.New(1*time.Hour, 2*time.Hour)
 	token = os.Getenv("GITHUB_TOKEN")
 	port = os.Getenv("PORT")
 	if port == "" {
@@ -91,7 +86,6 @@ func starchart(w http.ResponseWriter, r *http.Request) {
 		series.YValues = append(series.YValues, 1)
 	}
 
-	seriesCache.Set(repo, series, cache.DefaultExpiration)
 	var graph = chart.Chart{
 		XAxis: chart.XAxis{
 			Name:      "Time",
@@ -113,52 +107,17 @@ func starchart(w http.ResponseWriter, r *http.Request) {
 func collectStars(name string) (series chart.TimeSeries, err error) {
 	var ctx = log.WithField("repo", name)
 	defer ctx.Trace("collect_stars").Stop(&err)
-	cached, found := seriesCache.Get(name)
-	if found {
-		ctx.Info("got from cache")
-		series = cached.(chart.TimeSeries)
+	repo, err := github.RepoDetails(token, name)
+	if err != nil {
 		return
 	}
-
-	var page = 1
-	for {
-		ctx.Infof("getting page %d", page)
-		url := fmt.Sprintf(
-			"https://api.github.com/repos/%s/stargazers?page=%d&per_page=%d",
-			name, page, pageSize,
-		)
-		req, err := http.NewRequest(http.MethodGet, url, nil)
-		if err != nil {
-			return series, err
-		}
-		req.Header.Add("Accept", "application/vnd.github.v3.star+json")
-		if token != "" {
-			req.Header.Add("Authorization", "token "+token)
-		}
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return series, err
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			bts, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return series, err
-			}
-			return series, fmt.Errorf("failed to get stargazers from github api: %v", string(bts))
-		}
-		var stargazers []stargazer
-		if err := json.NewDecoder(resp.Body).Decode(&stargazers); err != nil {
-			return series, err
-		}
-		if len(stargazers) == 0 {
-			break
-		}
-		for i, star := range stargazers {
-			series.XValues = append(series.XValues, star.StarredAt)
-			series.YValues = append(series.YValues, float64(i+((page-1)*pageSize)))
-		}
-		page++
+	stargazers, err := github.Stargazers(token, repo)
+	if err != nil {
+		return
+	}
+	for i, star := range stargazers {
+		series.XValues = append(series.XValues, star.StarredAt)
+		series.YValues = append(series.YValues, float64(i))
 	}
 	return
 }
