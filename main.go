@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"time"
-
-	"io/ioutil"
 
 	"github.com/apex/httplog"
 	"github.com/apex/log"
@@ -52,11 +52,31 @@ func main() {
 	}
 }
 
+var index = `<html>
+<head>
+	<title>StarChart</title>
+</head>
+<body>
+	<p>
+		Not a valid repository full name.
+	</p>
+	<p>
+		Try <a href="goreleaser/goreleaser">/goreleaser/goreleaser</a>,
+		for example
+	</p>
+</body>
+</html>`
+
+var tmpl = template.Must(template.New("index").Parse(index))
+
 func starchart(w http.ResponseWriter, r *http.Request) {
 	var repo = r.URL.Path[1:]
 	var ctx = log.WithField("repo", repo)
 	if !strings.Contains(repo, "/") {
-		http.Error(w, fmt.Sprintf("invalid repo: %s", repo), http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotFound)
+		if err := tmpl.Execute(w, nil); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 	series, err := collectStars(repo)
