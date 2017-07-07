@@ -29,13 +29,6 @@ type stargazer struct {
 	StarredAt time.Time `json:"starred_at"`
 }
 
-type repository struct {
-	FullName    string `json:"full_name"`
-	Permissions struct {
-		Push bool
-	}
-}
-
 func init() {
 	log.SetHandler(text.New(os.Stderr))
 	seriesCache = cache.New(1*time.Hour, 2*time.Hour)
@@ -60,24 +53,18 @@ func main() {
 }
 
 func starchart(w http.ResponseWriter, r *http.Request) {
-	repo, err := getRepo(r.URL.Path[1:])
-	if err != nil {
-		log.WithError(err).Error("failed to get repo")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	var repo = r.URL.Path[1:]
+	var ctx = log.WithField("repo", repo)
+	if !strings.Contains(repo, "/") {
+		http.Error(w, fmt.Sprintf("invalid repo: %s", repo), http.StatusBadRequest)
 		return
 	}
-	var ctx = log.WithField("repo", repo.FullName)
-	// if !repo.Permissions.Push && token != "" {
-	// 	log.Warn("ignored repo without perms")
-	// 	http.Error(w, "I do not have push permissions in this repo, won't spend my rate limit with it", http.StatusNotAcceptable)
-	// 	return
-	// }
 	series, err := collectStars(repo)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	seriesCache.Set(repo.FullName, series, cache.DefaultExpiration)
+	seriesCache.Set(repo, series, cache.DefaultExpiration)
 	var graph = chart.Chart{
 		XAxis: chart.XAxis{
 			Name:      "Time",
@@ -96,10 +83,10 @@ func starchart(w http.ResponseWriter, r *http.Request) {
 	graph.Render(chart.SVG, w)
 }
 
-func collectStars(repo repository) (series chart.TimeSeries, err error) {
-	var ctx = log.WithField("repo", repo.FullName)
+func collectStars(name string) (series chart.TimeSeries, err error) {
+	var ctx = log.WithField("repo", name)
 	defer ctx.Trace("collect_stars").Stop(&err)
-	cached, found := seriesCache.Get(repo.FullName)
+	cached, found := seriesCache.Get(name)
 	if found {
 		ctx.Info("got from cache")
 		series = cached.(chart.TimeSeries)
@@ -111,7 +98,7 @@ func collectStars(repo repository) (series chart.TimeSeries, err error) {
 		ctx.Infof("getting page %d", page)
 		url := fmt.Sprintf(
 			"https://api.github.com/repos/%s/stargazers?page=%d&per_page=%d",
-			repo.FullName, page, pageSize,
+			name, page, pageSize,
 		)
 		req, err := http.NewRequest(http.MethodGet, url, nil)
 		if err != nil {
@@ -146,26 +133,5 @@ func collectStars(repo repository) (series chart.TimeSeries, err error) {
 		}
 		page++
 	}
-	return
-}
-
-func getRepo(name string) (repo repository, err error) {
-	if !strings.Contains(name, "/") {
-		return repo, fmt.Errorf("invalid repo: %v", name)
-	}
-	url := fmt.Sprintf("https://api.github.com/repos/%s", name)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return
-	}
-	if token != "" {
-		req.Header.Add("Authorization", "token "+token)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	err = json.NewDecoder(resp.Body).Decode(&repo)
 	return
 }
