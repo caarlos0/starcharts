@@ -1,5 +1,5 @@
 hash: c061aef4f48909caee15388535c8b2beba68434ab41158aa534446dd7b146fd2
-updated: 2017-07-06T23:58:46.721395216-03:00
+updated: 2017-07-07T20:21:07.771610924-03:00
 imports:
 - name: github.com/apex/httplog
   version: d677fdf2ae1fa75d8111faf17f2d6fcf46dd9af7
@@ -29,4 +29,12 @@ imports:
   - font
   - math/f64
   - math/fixed
+- name: golang.org/x/net
+  version: ffcf1bedda3b04ebb15a168a59800a73d6dc0f4d
+  subpackages:
+  - context
+- name: golang.org/x/sync
+  version: 5a06fca2c336a4b2b2fcb45702e8c47621b2aa2c
+  subpackages:
+  - errgroup
 testImports: []
