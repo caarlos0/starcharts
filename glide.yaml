@@ -6,3 +6,5 @@ import:
   - handlers/text
 - package: github.com/wcharczuk/go-chart
   version: ^2.0.0
+- package: github.com/patrickmn/go-cache
+  version: ^2.0.0

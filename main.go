@@ -13,14 +13,16 @@ import (
 	"github.com/apex/httplog"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
+	cache "github.com/patrickmn/go-cache"
 	chart "github.com/wcharczuk/go-chart"
 )
 
 const pageSize = 100
 
 var (
-	token string
-	port  string
+	token       string
+	port        string
+	seriesCache *cache.Cache
 )
 
 type stargazer struct {
@@ -36,6 +38,7 @@ type repository struct {
 
 func init() {
 	log.SetHandler(text.New(os.Stderr))
+	seriesCache = cache.New(1*time.Hour, 2*time.Hour)
 	token = os.Getenv("GITHUB_TOKEN")
 	port = os.Getenv("PORT")
 	if port == "" {
@@ -64,16 +67,17 @@ func starchart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var ctx = log.WithField("repo", repo.FullName)
-	if !repo.Permissions.Push && token != "" {
-		log.Warn("ignored repo without perms")
-		http.Error(w, "I do not have push permissions in this repo, won't spend my rate limit with it", http.StatusNotAcceptable)
-		return
-	}
+	// if !repo.Permissions.Push && token != "" {
+	// 	log.Warn("ignored repo without perms")
+	// 	http.Error(w, "I do not have push permissions in this repo, won't spend my rate limit with it", http.StatusNotAcceptable)
+	// 	return
+	// }
 	series, err := collectStars(repo)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	seriesCache.Set(repo.FullName, series, cache.DefaultExpiration)
 	var graph = chart.Chart{
 		XAxis: chart.XAxis{
 			Name:      "Time",
@@ -95,6 +99,13 @@ func starchart(w http.ResponseWriter, r *http.Request) {
 func collectStars(repo repository) (series chart.TimeSeries, err error) {
 	var ctx = log.WithField("repo", repo.FullName)
 	defer ctx.Trace("collect_stars").Stop(&err)
+	cached, found := seriesCache.Get(repo.FullName)
+	if found {
+		ctx.Info("got from cache")
+		series = cached.(chart.TimeSeries)
+		return
+	}
+
 	var page = 1
 	for {
 		ctx.Infof("getting page %d", page)

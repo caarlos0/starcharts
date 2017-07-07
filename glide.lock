@@ -1,5 +1,5 @@
-hash: 7c1a88fc1db46db0a2d97233c3f2b8365e12dfa2b6deedc64ddfbe4a80f93d06
-updated: 2017-07-06T23:28:23.443522188-03:00
+hash: c061aef4f48909caee15388535c8b2beba68434ab41158aa534446dd7b146fd2
+updated: 2017-07-06T23:58:46.721395216-03:00
 imports:
 - name: github.com/apex/httplog
   version: d677fdf2ae1fa75d8111faf17f2d6fcf46dd9af7
@@ -14,6 +14,8 @@ imports:
   subpackages:
   - raster
   - truetype
+- name: github.com/patrickmn/go-cache
+  version: 1881a9bccb818787f68c52bfba648c6cf34c34fa
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/wcharczuk/go-chart
