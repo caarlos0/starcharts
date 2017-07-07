@@ -11,25 +11,35 @@ import (
 
 const pageSize = 100
 
+var (
+	repo  string
+	token string
+)
+
 type stargazer struct {
 	StarredAt string `json:"starred_at"`
 }
 
-var repo string
-
 func main() {
+	token = os.Getenv("GITHUB_TOKEN")
 	repo = os.Args[1]
 	if !strings.Contains(repo, "/") {
 		log.Fatalln("you need to pass a repo in the owner/name format")
 	}
 	var page = 1
 	for {
-		req, err := http.NewRequest(http.MethodGet, urlFor(page), nil)
+		url := fmt.Sprintf(
+			"https://api.github.com/repos/%s/stargazers?page=%d&per_page=%d",
+			repo, page, pageSize,
+		)
+		req, err := http.NewRequest(http.MethodGet, url, nil)
 		if err != nil {
 			log.Fatalln(err)
 		}
 		req.Header.Add("Accept", "application/vnd.github.v3.star+json")
-		req.Header.Add("Authorization", "token "+os.Getenv("GITHUB_TOKEN"))
+		if token != "" {
+			req.Header.Add("Authorization", "token "+token)
+		}
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Fatalln(err)
@@ -47,13 +57,4 @@ func main() {
 		}
 		page++
 	}
-}
-
-func urlFor(page int) string {
-	return fmt.Sprintf(
-		`https://api.github.com/repos/%v/stargazers?page=%v&per_page=%v`,
-		repo,
-		page,
-		pageSize,
-	)
 }
