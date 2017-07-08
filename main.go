@@ -26,9 +26,15 @@ func main() {
 	defer cache.Close()
 
 	var r = mux.NewRouter()
+	r.Path("/").
+		Methods(http.MethodGet).
+		HandlerFunc(controller.Index())
 	r.Path("/{owner}/{repo}.svg").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.GetRepoChart(config, cache))
+	r.Path("/{owner}/{repo}").
+		Methods(http.MethodGet).
+		HandlerFunc(controller.GetRepo())
 
 	var srv = &http.Server{
 		Handler:      httplog.New(handlers.CompressHandler(r)),

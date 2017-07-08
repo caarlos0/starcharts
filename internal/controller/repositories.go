@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"time"
 
@@ -12,6 +13,20 @@ import (
 	"github.com/gorilla/mux"
 	chart "github.com/wcharczuk/go-chart"
 )
+
+// GetRepo shows the given repo chart
+func GetRepo() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var owner = mux.Vars(r)["owner"]
+		var repo = mux.Vars(r)["repo"]
+		template.Must(template.ParseFiles("templates/index.html")).
+			Execute(w, struct {
+				Path string
+			}{
+				Path: fmt.Sprintf("%s/%s", owner, repo),
+			})
+	}
+}
 
 // GetRepoChart returns the SVG chart for the given repository
 func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
@@ -63,26 +78,3 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 		graph.Render(chart.SVG, w)
 	}
 }
-
-// func Index() http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-
-// 	}
-// }
-
-// var index = `<html>
-// <head>
-// 	<title>StarChart</title>
-// </head>
-// <body>
-// 	<p>
-// 		Not a valid repository full name.
-// 	</p>
-// 	<p>
-// 		Try <a href="goreleaser/goreleaser">/goreleaser/goreleaser</a>,
-// 		for example
-// 	</p>
-// </body>
-// </html>`
-
-// var tmpl = template.Must(template.New("index").Parse(index))

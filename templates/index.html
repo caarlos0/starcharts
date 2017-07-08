@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Star Charts</title>
+  <meta name="description" content="StarCharts">
+  <meta name="author" content="https://github/caarlos0">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/darcula.min.css">
+
+  <style>
+    * {
+      font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
+    }
+    body {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 40px 25px;
+    }
+    a, a:visited {
+      color:#555;
+    }
+    a:hover {
+      color: #333;
+    }
+    div.title {
+      padding-bottom: 40px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+      max-width: 500px;
+      margin: 5px 0;
+      line-height: 2.2em;
+    }
+    div.title > span {
+      display: block;
+    }
+    div.title > span.title {
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    div.title > span.subtitle {
+      color: #555;
+    }
+    div.main {
+      font-size: 0.8em;
+      padding-top: 30px;
+      border-top: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <div class="title">
+    <span class="title">starcharts</span>
+    <span class="subtitle">Plot your repository stars over time.</span>
+  </div>
+  <div class="main">
+  {{ if .Path }}
+    <p><img src="/{{ .Path }}.svg"></p>
+    <p>
+      You can include it on your <code>README.md</code> as follows:
+      <pre><code class="markdown">
+## stargazers over time
+
+[![{{ .Path }} stargazers over time](https://starcharts.herokuapp.com/{{ .Path }}.svg)](https://starcharts.herokuapp.com/{{ .Path }})
+      </code></pre>
+    </p>
+  {{ else }}
+    Check some repository chart by acessing
+    <a href="/goreleaser/goreleaser">
+      /repo/owner
+    </a>
+  {{ end }}
+  </div>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>
