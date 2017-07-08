@@ -1,5 +1,5 @@
-hash: c061aef4f48909caee15388535c8b2beba68434ab41158aa534446dd7b146fd2
-updated: 2017-07-07T20:21:07.771610924-03:00
+hash: 025a604c35c0187e66f7ce2107694ee62e3254d50f236dbb70ba03891cebc8be
+updated: 2017-07-07T22:11:50.495660291-03:00
 imports:
 - name: github.com/apex/httplog
   version: d677fdf2ae1fa75d8111faf17f2d6fcf46dd9af7
@@ -9,15 +9,44 @@ imports:
   - handlers/text
 - name: github.com/blendlabs/go-exception
   version: d3934f941cb001f2b61a69b25dbc76eab3e6ff29
+- name: github.com/caarlos0/env
+  version: 0cf029d5748c52beb2c9d20c81880cb4bdf8f788
+- name: github.com/go-redis/cache
+  version: f61934e1350c89509411decb4c1da69d3e345867
+  subpackages:
+  - internal/lrucache
+  - internal/singleflight
+- name: github.com/go-redis/redis
+  version: 564772f045d89bd55843d7dc8042e0a599401e09
+  subpackages:
+  - internal
+  - internal/consistenthash
+  - internal/hashtag
+  - internal/pool
+  - internal/proto
 - name: github.com/golang/freetype
   version: e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4
   subpackages:
   - raster
   - truetype
+- name: github.com/golang/protobuf
+  version: 2bba0603135d7d7f5cb73b2125beeda19c09f4ef
+  subpackages:
+  - proto
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/handlers
+  version: a4043c62cc2329bacda331d33fc908ab11ef0ec3
+- name: github.com/gorilla/mux
+  version: 392c28fe23e1c45ddba891b0320b3b5df220beea
 - name: github.com/patrickmn/go-cache
   version: 1881a9bccb818787f68c52bfba648c6cf34c34fa
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
+- name: github.com/vmihailenco/msgpack
+  version: d91c9f43689d8565046de42f51a19bb80ebb8360
+  subpackages:
+  - codes
 - name: github.com/wcharczuk/go-chart
   version: fc2973067ce43455507ea5f9aa9814aabbf8f2ca
   subpackages:
@@ -37,4 +66,17 @@ imports:
   version: 5a06fca2c336a4b2b2fcb45702e8c47621b2aa2c
   subpackages:
   - errgroup
+- name: google.golang.org/appengine
+  version: 56d253d1dd14aa01937e12c73a0971bcfd797ff2
+  subpackages:
+  - datastore
+  - internal
+  - internal/app_identity
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/modules
+  - internal/remote_api
+- name: gopkg.in/vmihailenco/msgpack.v2
+  version: d91c9f43689d8565046de42f51a19bb80ebb8360
 testImports: []

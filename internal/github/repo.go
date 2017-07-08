@@ -4,35 +4,31 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
-	cache "github.com/patrickmn/go-cache"
+	"github.com/apex/log"
 )
 
-var repoCache *cache.Cache
-
-func init() {
-	repoCache = cache.New(1*time.Hour, 2*time.Hour)
-}
-
+// Repository details
 type Repository struct {
 	FullName        string `json:"full_name"`
 	StargazersCount int    `json:"stargazers_count"`
 }
 
-func RepoDetails(token, name string) (repo Repository, err error) {
-	cached, found := repoCache.Get(name)
-	if found {
-		return cached.(Repository), nil
+// RepoDetails gets the given repository details
+func (gh *GitHub) RepoDetails(name string) (repo Repository, err error) {
+	var ctx = log.WithField("repo", name)
+	err = gh.cache.Get(name, repo)
+	if err == nil {
+		ctx.Warn("got from cache")
+		return
 	}
-
 	var url = fmt.Sprintf("https://api.github.com/repos/%s", name)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return
 	}
-	if token != "" {
-		req.Header.Add("Authorization", "token "+token)
+	if gh.token != "" {
+		req.Header.Add("Authorization", fmt.Sprintf("token %s", gh.token))
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -40,6 +36,8 @@ func RepoDetails(token, name string) (repo Repository, err error) {
 	}
 	defer resp.Body.Close()
 	err = json.NewDecoder(resp.Body).Decode(&repo)
-	repoCache.Set(name, repo, cache.DefaultExpiration)
+	if err := gh.cache.Put(name, repo); err != nil {
+		ctx.Warn("failed to cache")
+	}
 	return
 }

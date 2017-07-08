@@ -8,3 +8,11 @@ import:
   version: ^2.0.0
 - package: github.com/patrickmn/go-cache
   version: ^2.0.0
+- package: github.com/go-redis/cache
+  version: ^6.2.0
+- package: github.com/caarlos0/env
+  version: ^3.0.0
+- package: gopkg.in/vmihailenco/msgpack.v2
+  version: ^3.1.0
+- package: github.com/gorilla/handlers
+  version: ~1.2.1

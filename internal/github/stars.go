@@ -11,35 +11,27 @@ import (
 	"time"
 
 	"github.com/apex/log"
-	cache "github.com/patrickmn/go-cache"
 	"golang.org/x/sync/errgroup"
 )
 
-var (
-	errNoMorePages = errors.New("no more pages to get")
-	pageCache      *cache.Cache
-)
+var errNoMorePages = errors.New("no more pages to get")
 
-const pageSize = 100
-
-func init() {
-	pageCache = cache.New(1*time.Hour, 2*time.Hour)
-}
-
+// Stargazer is a star at a given time
 type Stargazer struct {
 	StarredAt time.Time `json:"starred_at"`
 }
 
-func Stargazers(token string, repo Repository) (stars []Stargazer, err error) {
+// Stargazers returns all the stargazers of a given repo
+func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
 	sem := make(chan bool, 10)
 	var g errgroup.Group
 	var lock sync.Mutex
-	for page := 0; page <= repo.StargazersCount/pageSize; page++ {
+	for page := 0; page <= repo.StargazersCount/gh.pageSize; page++ {
 		sem <- true
 		page := page
 		g.Go(func() error {
 			defer func() { <-sem }()
-			result, err := getStargazersPage(token, repo.FullName, page)
+			result, err := gh.getStargazersPage(repo.FullName, page)
 			if err == errNoMorePages {
 				return nil
 			}
@@ -59,25 +51,25 @@ func Stargazers(token string, repo Repository) (stars []Stargazer, err error) {
 	return
 }
 
-func getStargazersPage(token, name string, page int) (stars []Stargazer, err error) {
+func (gh *GitHub) getStargazersPage(name string, page int) (stars []Stargazer, err error) {
 	var ctx = log.WithField("repo", name).WithField("page", page)
-	cached, found := pageCache.Get(fmt.Sprintf("%s_%d", name, page))
-	if found {
+	err = gh.cache.Get(fmt.Sprintf("%s_%d", name, page), &stars)
+	if err == nil {
 		ctx.Info("got from cache")
-		return cached.([]Stargazer), nil
+		return
 	}
 	ctx.Infof("getting page from api")
 	var url = fmt.Sprintf(
 		"https://api.github.com/repos/%s/stargazers?page=%d&per_page=%d",
-		name, page, pageSize,
+		name, page, gh.pageSize,
 	)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return stars, err
 	}
 	req.Header.Add("Accept", "application/vnd.github.v3.star+json")
-	if token != "" {
-		req.Header.Add("Authorization", "token "+token)
+	if gh.token != "" {
+		req.Header.Add("Authorization", fmt.Sprintf("token %s", gh.token))
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -89,7 +81,7 @@ func getStargazersPage(token, name string, page int) (stars []Stargazer, err err
 	if resp.StatusCode == http.StatusForbidden {
 		ctx.Warn("rate limit hit, waiting 5s before trying again")
 		time.Sleep(5 * time.Second)
-		return getStargazersPage(token, name, page)
+		return gh.getStargazersPage(name, page)
 	}
 	if resp.StatusCode != http.StatusOK {
 		bts, err := ioutil.ReadAll(resp.Body)
@@ -102,6 +94,8 @@ func getStargazersPage(token, name string, page int) (stars []Stargazer, err err
 	if len(stars) == 0 {
 		return stars, errNoMorePages
 	}
-	pageCache.Set(fmt.Sprintf("%s_%d", name, page), stars, cache.DefaultExpiration)
+	if err := gh.cache.Put(fmt.Sprintf("%s_%d", name, page), stars); err != nil {
+		ctx.WithError(err).Warn("failed to cache")
+	}
 	return
 }
