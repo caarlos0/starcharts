@@ -26,7 +26,7 @@ func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
 	sem := make(chan bool, 10)
 	var g errgroup.Group
 	var lock sync.Mutex
-	for page := 0; page <= repo.StargazersCount/gh.pageSize; page++ {
+	for page := 1; page <= (repo.StargazersCount/gh.pageSize)+1; page++ {
 		sem <- true
 		page := page
 		g.Go(func() error {
