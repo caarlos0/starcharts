@@ -3,7 +3,6 @@ package cache
 import (
 	"time"
 
-	"github.com/apex/log"
 	rediscache "github.com/go-redis/cache"
 	"github.com/go-redis/redis"
 	msgpack "gopkg.in/vmihailenco/msgpack.v2"
@@ -45,13 +44,11 @@ func (c *Redis) Close() error {
 
 // Get from cache by key
 func (c *Redis) Get(key string, result interface{}) (err error) {
-	log.WithField("key", key).Info("cache get")
 	return c.codec.Get(key, result)
 }
 
 // Put on cache
 func (c *Redis) Put(key string, obj interface{}) (err error) {
-	log.WithField("key", key).Info("cache put")
 	return c.codec.Set(&rediscache.Item{
 		Key:        key,
 		Object:     obj,
