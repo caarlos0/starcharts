@@ -11,20 +11,19 @@ import (
 
 // Redis cache
 type Redis struct {
-	ring  *redis.Ring
+	redis *redis.Client
 	codec *rediscache.Codec
 }
 
 // New redis cache
 func New(url string) *Redis {
-	ring := redis.NewRing(&redis.RingOptions{
-		Addrs: map[string]string{
-			"server": url,
-		},
-	})
-	log.WithField("r", url).Info("ffffff")
+	options, err := redis.ParseURL(url)
+	if err != nil {
+		log.WithError(err).Fatal("invalid redis_url")
+	}
+	var redis = redis.NewClient(options)
 	codec := &rediscache.Codec{
-		Redis: ring,
+		Redis: redis,
 		Marshal: func(v interface{}) ([]byte, error) {
 			return msgpack.Marshal(v)
 		},
@@ -34,14 +33,14 @@ func New(url string) *Redis {
 	}
 
 	return &Redis{
-		ring:  ring,
+		redis: redis,
 		codec: codec,
 	}
 }
 
 // Close connections
 func (c *Redis) Close() error {
-	return c.ring.Close()
+	return c.redis.Close()
 }
 
 // Get from cache by key
