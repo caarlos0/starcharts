@@ -30,7 +30,15 @@
       color:#555;
     }
     a:hover {
-      color: #333;
+      color: #222;
+    }
+    hr {
+      margin: 50px 0;
+      display: block;
+      height: 1px;
+      border: 0;
+      border-top: 1px solid #eee;
+      padding: 0;
     }
     div.title {
       padding-bottom: 40px;
@@ -50,10 +58,17 @@
       font-weight: 700;
       font-size: 16px;
     }
+    div.title > span.title > a{
+      text-decoration: none;
+      color: #333;
+    }
     div.title > span.subtitle {
       color: #555;
     }
     div.main {
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
       font-size: 0.8em;
       padding-top: 30px;
       border-top: 1px solid #eee;
@@ -62,7 +77,7 @@
 </head>
 <body>
   <div class="title">
-    <span class="title">starcharts</span>
+    <span class="title"><a href="/">starcharts</a></span>
     <span class="subtitle">Plot your repository stars over time.</span>
   </div>
   <div class="main">
@@ -77,6 +92,7 @@
       <img src="/{{ .FullName }}.svg"
         alt="Please try again in a few minutes. This might not work for very famous repository.">
     </p>
+    <hr>
     <p>
       You can include it on your <code>README.md</code> as follows:
       <pre><code class="markdown">
