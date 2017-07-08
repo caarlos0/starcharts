@@ -67,7 +67,9 @@
   </div>
   <div class="main">
   {{ if .Path }}
-    <p><img src="/{{ .Path }}.svg"></p>
+    <p>
+      <img src="/{{ .Path }}.svg" alt="Please refresh the page.">
+    </p>
     <p>
       You can include it on your <code>README.md</code> as follows:
       <pre><code class="markdown">
