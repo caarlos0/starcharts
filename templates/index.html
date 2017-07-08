@@ -77,7 +77,7 @@
     div.title > span.subtitle {
       color: #555;
     }
-    div.main {
+    div.main, div.code {
       padding-top: 30px;
       border-top: 1px solid #eee;
     }
@@ -94,7 +94,7 @@
       <b>Awesome!</b>
       <a href="https://github.com/{{ .FullName }}">{{ .FullName }}</a>
       was created <time datetime="{{ .CreatedAt }}"></time>
-      and now has <b>{{ .StargazersCount }}</b> stars!
+      and now has <b>{{ .StargazersCount }}</b> stars.
     </p>
   </div>
   <div class="chart">
@@ -103,10 +103,10 @@
         alt="Please try again in a few minutes. This might not work for very famous repository.">
     </p>
   </div>
-  <hr>
   <div class="code">
     <p>
-      You can include it on your <code>README.md</code> as follows:
+      You can include the chart on your repository's <code>README.md</code>
+      as follows:
       <pre><code class="markdown">
 ## Stargazers over time
 
