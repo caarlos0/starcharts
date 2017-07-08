@@ -66,16 +66,21 @@
     <span class="subtitle">Plot your repository stars over time.</span>
   </div>
   <div class="main">
-  {{ if .Path }}
+  {{ if .FullName }}
     <p>
-      <img src="/{{ .Path }}.svg" alt="Please refresh the page.">
+      <b>Awesome!</b> <code>{{ .FullName }}</code>
+      was created <time datetime="{{ .CreatedAt }}"></time>
+      and now has <b>{{ .StargazersCount }}</b> stars!
+    </p>
+    <p>
+      <img src="/{{ .FullName }}.svg" alt="Please refresh the page.">
     </p>
     <p>
       You can include it on your <code>README.md</code> as follows:
       <pre><code class="markdown">
 ## Stargazers over time
 
-[![{{ .Path }} stargazers over time](https://starcharts.herokuapp.com/{{ .Path }}.svg)](https://starcharts.herokuapp.com/{{ .Path }})
+[![{{ .FullName }} stargazers over time](https://starcharts.herokuapp.com/{{ .FullName }}.svg)](https://starcharts.herokuapp.com/{{ .FullName }})
       </code></pre>
     </p>
   {{ else }}
@@ -85,7 +90,11 @@
     </a>
   {{ end }}
   </div>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/timeago.js/3.0.2/timeago.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
+  <script>
+    hljs.initHighlightingOnLoad();
+    timeago().render(document.querySelectorAll('time'));
+  </script>
 </body>
 </html>

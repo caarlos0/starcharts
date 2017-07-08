@@ -16,16 +16,21 @@ import (
 )
 
 // GetRepo shows the given repo chart
-func GetRepo() http.HandlerFunc {
+func GetRepo(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var owner = mux.Vars(r)["owner"]
-		var repo = mux.Vars(r)["repo"]
+		var name = fmt.Sprintf(
+			"%s/%s",
+			mux.Vars(r)["owner"],
+			mux.Vars(r)["repo"],
+		)
+		var github = github.New(cfg, cache)
+		details, err := github.RepoDetails(name)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 		template.Must(template.ParseFiles("templates/index.html")).
-			Execute(w, struct {
-				Path string
-			}{
-				Path: fmt.Sprintf("%s/%s", owner, repo),
-			})
+			Execute(w, details)
 	}
 }
 

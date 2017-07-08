@@ -12,6 +12,7 @@ import (
 type Repository struct {
 	FullName        string `json:"full_name"`
 	StargazersCount int    `json:"stargazers_count"`
+	CreatedAt       string `json:"created_at"`
 }
 
 // RepoDetails gets the given repository details

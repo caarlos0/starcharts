@@ -36,7 +36,7 @@ func main() {
 		HandlerFunc(controller.GetRepoChart(config, cache))
 	r.Path("/{owner}/{repo}").
 		Methods(http.MethodGet).
-		HandlerFunc(controller.GetRepo())
+		HandlerFunc(controller.GetRepo(config, cache))
 
 	var srv = &http.Server{
 		Handler:      httplog.New(handlers.CompressHandler(r)),
