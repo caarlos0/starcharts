@@ -3,6 +3,7 @@ package cache
 import (
 	"time"
 
+	"github.com/apex/log"
 	rediscache "github.com/go-redis/cache"
 	"github.com/go-redis/redis"
 	msgpack "gopkg.in/vmihailenco/msgpack.v2"
@@ -21,6 +22,7 @@ func New(url string) *Redis {
 			"server": url,
 		},
 	})
+	log.WithField("r", ring).Info("ffffff")
 	codec := &rediscache.Codec{
 		Redis: ring,
 		Marshal: func(v interface{}) ([]byte, error) {

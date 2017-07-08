@@ -19,7 +19,7 @@ func (gh *GitHub) RepoDetails(name string) (repo Repository, err error) {
 	var ctx = log.WithField("repo", name)
 	err = gh.cache.Get(name, &repo)
 	if err == nil {
-		ctx.Warn("got from cache")
+		ctx.Info("got from cache")
 		return
 	}
 	var url = fmt.Sprintf("https://api.github.com/repos/%s", name)
