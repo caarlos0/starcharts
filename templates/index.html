@@ -68,7 +68,8 @@
   <div class="main">
   {{ if .FullName }}
     <p>
-      <b>Awesome!</b> <code>{{ .FullName }}</code>
+      <b>Awesome!</b>
+      <a href="https://github.com/{{ .FullName }}">{{ .FullName }}</a>
       was created <time datetime="{{ .CreatedAt }}"></time>
       and now has <b>{{ .StargazersCount }}</b> stars!
     </p>
