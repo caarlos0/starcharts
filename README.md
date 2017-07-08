@@ -13,4 +13,4 @@ Then browse http://localhost:3000/me/myrepo .
 
 Example chart:
 
-[![starchart stars](https://starcharts.herokuapp.com/caarlos0/starchart)](https://starcharts.herokuapp.com/caarlos0/starchart)
+[![caarlos0/starcharts stargazers over time](https://starcharts.herokuapp.com/caarlos0/starcharts.svg)](https://starcharts.herokuapp.com/caarlos0/starcharts)
