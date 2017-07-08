@@ -1,8 +1,8 @@
 package github
 
 import (
+	"github.com/caarlos0/starchart/config"
 	"github.com/caarlos0/starchart/internal/cache"
-	"github.com/caarlos0/starchart/internal/config"
 )
 
 // GitHub client struct
