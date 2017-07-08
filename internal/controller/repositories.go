@@ -12,6 +12,7 @@ import (
 	"github.com/caarlos0/starchart/internal/github"
 	"github.com/gorilla/mux"
 	chart "github.com/wcharczuk/go-chart"
+	"github.com/wcharczuk/go-chart/drawing"
 )
 
 // GetRepo shows the given repo chart
@@ -49,7 +50,17 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		var series chart.TimeSeries
+		var series = chart.TimeSeries{
+			Style: chart.Style{
+				Show: true,
+				StrokeColor: drawing.Color{
+					R: 129,
+					G: 199,
+					B: 239,
+					A: 150,
+				},
+			},
+		}
 		for i, star := range stargazers {
 			series.XValues = append(series.XValues, star.StarredAt)
 			series.YValues = append(series.YValues, float64(i))
@@ -64,12 +75,30 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 			XAxis: chart.XAxis{
 				Name:      "Time",
 				NameStyle: chart.StyleShow(),
-				Style:     chart.StyleShow(),
+				Style: chart.Style{
+					Show:        true,
+					StrokeWidth: 1,
+					StrokeColor: drawing.Color{
+						R: 85,
+						G: 85,
+						B: 85,
+						A: 180,
+					},
+				},
 			},
 			YAxis: chart.YAxis{
-				Name:      "Sargazers",
+				Name:      "Stargazers",
 				NameStyle: chart.StyleShow(),
-				Style:     chart.StyleShow(),
+				Style: chart.Style{
+					Show:        true,
+					StrokeWidth: 1,
+					StrokeColor: drawing.Color{
+						R: 85,
+						G: 85,
+						B: 85,
+						A: 180,
+					},
+				},
 			},
 			Series: []chart.Series{series},
 		}

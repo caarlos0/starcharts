@@ -29,6 +29,8 @@ func main() {
 	r.Path("/").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.Index())
+	r.PathPrefix("/static/").
+		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	r.Path("/{owner}/{repo}.svg").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.GetRepoChart(config, cache))
