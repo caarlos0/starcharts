@@ -53,12 +53,12 @@ func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
 
 func (gh *GitHub) getStargazersPage(name string, page int) (stars []Stargazer, err error) {
 	var ctx = log.WithField("repo", name).WithField("page", page)
-	defer ctx.Trace("get_page").Stop(&err)
 	err = gh.cache.Get(fmt.Sprintf("%s_%d", name, page), &stars)
 	if err == nil {
 		ctx.Info("got from cache")
 		return
 	}
+	defer ctx.Trace("got page from api").Stop(&err)
 	ctx.Infof("getting page from api")
 	var url = fmt.Sprintf(
 		"https://api.github.com/repos/%s/stargazers?page=%d&per_page=%d",
