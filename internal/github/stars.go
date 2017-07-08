@@ -80,8 +80,8 @@ func (gh *GitHub) getStargazersPage(name string, page int) (stars []Stargazer, e
 
 	// rate limit
 	if resp.StatusCode == http.StatusForbidden {
-		ctx.Warn("rate limit hit, waiting 5s before trying again")
-		time.Sleep(5 * time.Second)
+		ctx.Warn("rate limit hit, waiting 10s before trying again")
+		time.Sleep(10 * time.Second)
 		return gh.getStargazersPage(name, page)
 	}
 	if resp.StatusCode != http.StatusOK {
