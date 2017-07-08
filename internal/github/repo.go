@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"time"
+
 	"github.com/apex/log"
 )
 
@@ -37,7 +39,7 @@ func (gh *GitHub) RepoDetails(name string) (repo Repository, err error) {
 	}
 	defer resp.Body.Close()
 	err = json.NewDecoder(resp.Body).Decode(&repo)
-	if err := gh.cache.Put(name, repo); err != nil {
+	if err := gh.cache.Put(name, repo, time.Hour*2); err != nil {
 		ctx.Warn("failed to cache")
 	}
 	return

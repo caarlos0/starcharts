@@ -49,10 +49,10 @@ func (c *Redis) Get(key string, result interface{}) (err error) {
 }
 
 // Put on cache
-func (c *Redis) Put(key string, obj interface{}) (err error) {
+func (c *Redis) Put(key string, obj interface{}, expire time.Duration) (err error) {
 	return c.codec.Set(&rediscache.Item{
 		Key:        key,
 		Object:     obj,
-		Expiration: time.Hour * 2,
+		Expiration: expire,
 	})
 }

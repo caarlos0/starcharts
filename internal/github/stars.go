@@ -26,12 +26,12 @@ func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
 	sem := make(chan bool, 10)
 	var g errgroup.Group
 	var lock sync.Mutex
-	for page := 1; page <= (repo.StargazersCount/gh.pageSize)+1; page++ {
+	for page := 1; page <= gh.lastPage(repo); page++ {
 		sem <- true
 		page := page
 		g.Go(func() error {
 			defer func() { <-sem }()
-			result, err := gh.getStargazersPage(repo.FullName, page)
+			result, err := gh.getStargazersPage(repo, page)
 			if err == errNoMorePages {
 				return nil
 			}
@@ -51,9 +51,9 @@ func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
 	return
 }
 
-func (gh *GitHub) getStargazersPage(name string, page int) (stars []Stargazer, err error) {
-	var ctx = log.WithField("repo", name).WithField("page", page)
-	err = gh.cache.Get(fmt.Sprintf("%s_%d", name, page), &stars)
+func (gh *GitHub) getStargazersPage(repo Repository, page int) (stars []Stargazer, err error) {
+	var ctx = log.WithField("repo", repo.FullName).WithField("page", page)
+	err = gh.cache.Get(fmt.Sprintf("%s_%d", repo.FullName, page), &stars)
 	if err == nil {
 		ctx.Info("got from cache")
 		return
@@ -62,7 +62,9 @@ func (gh *GitHub) getStargazersPage(name string, page int) (stars []Stargazer, e
 	ctx.Infof("getting page from api")
 	var url = fmt.Sprintf(
 		"https://api.github.com/repos/%s/stargazers?page=%d&per_page=%d",
-		name, page, gh.pageSize,
+		repo.FullName,
+		page,
+		gh.pageSize,
 	)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -82,7 +84,7 @@ func (gh *GitHub) getStargazersPage(name string, page int) (stars []Stargazer, e
 	if resp.StatusCode == http.StatusForbidden {
 		ctx.Warn("rate limit hit, waiting 10s before trying again")
 		time.Sleep(10 * time.Second)
-		return gh.getStargazersPage(name, page)
+		return gh.getStargazersPage(repo, page)
 	}
 	if resp.StatusCode != http.StatusOK {
 		bts, err := ioutil.ReadAll(resp.Body)
@@ -95,8 +97,21 @@ func (gh *GitHub) getStargazersPage(name string, page int) (stars []Stargazer, e
 	if len(stars) == 0 {
 		return stars, errNoMorePages
 	}
-	if err := gh.cache.Put(fmt.Sprintf("%s_%d", name, page), stars); err != nil {
+	var expire = time.Hour * 24 * 7
+	if page == gh.lastPage(repo) {
+		expire = time.Hour * 2
+	}
+	ctx.WithField("expire", expire).Info("caching...")
+	if err := gh.cache.Put(
+		fmt.Sprintf("%s_%d", repo.FullName, page),
+		stars,
+		expire,
+	); err != nil {
 		ctx.WithError(err).Warn("failed to cache")
 	}
 	return
+}
+
+func (gh *GitHub) lastPage(repo Repository) int {
+	return (repo.StargazersCount / gh.pageSize) + 1
 }
