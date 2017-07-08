@@ -22,7 +22,7 @@ func New(url string) *Redis {
 			"server": url,
 		},
 	})
-	log.WithField("r", ring).Info("ffffff")
+	log.WithField("r", url).Info("ffffff")
 	codec := &rediscache.Codec{
 		Redis: ring,
 		Marshal: func(v interface{}) ([]byte, error) {
