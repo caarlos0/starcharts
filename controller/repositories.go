@@ -109,6 +109,7 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 		}
 		defer ctx.Trace("chart").Stop(&err)
 		w.Header().Add("Content-Type", "image/svg+xml")
+		w.Header().Add("Cache-Control", "private")
 		graph.Render(chart.SVG, w)
 	}
 }
