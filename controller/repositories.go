@@ -108,8 +108,10 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 			Series: []chart.Series{series},
 		}
 		defer ctx.Trace("chart").Stop(&err)
-		w.Header().Add("Content-Type", "image/svg+xml")
-		w.Header().Add("Cache-Control", "private")
+		w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
+		w.Header().Add("cache-control", "no-cache, no-store, must-revalidate")
+		w.Header().Add("date", time.Now().Format(time.RFC1123))
+		w.Header().Add("expires", time.Now().Format(time.RFC1123))
 		graph.Render(chart.SVG, w)
 	}
 }
