@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/apex/log"
-	"github.com/caarlos0/starchart/config"
-	"github.com/caarlos0/starchart/internal/cache"
-	"github.com/caarlos0/starchart/internal/github"
+	"github.com/caarlos0/starcharts/config"
+	"github.com/caarlos0/starcharts/internal/cache"
+	"github.com/caarlos0/starcharts/internal/github"
 	"github.com/gorilla/mux"
 	chart "github.com/wcharczuk/go-chart"
 	"github.com/wcharczuk/go-chart/drawing"

@@ -1,0 +1,36 @@
+[metadata.heroku]
+  root-package = "github.com/caarlos0/starcharts"
+  install = [ "main.go" ]
+  go-version = "1.10"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/apex/httplog"
+
+[[constraint]]
+  name = "github.com/caarlos0/env"
+  version = "3.0.0"
+
+[[constraint]]
+  name = "github.com/go-redis/cache"
+  version = "6.2.0"
+
+[[constraint]]
+  name = "github.com/go-redis/redis"
+  version = "6.5.2"
+
+[[constraint]]
+  name = "github.com/gorilla/handlers"
+  version = "~1.2.1"
+
+[[constraint]]
+  name = "github.com/gorilla/mux"
+  version = "1.3.0"
+
+[[constraint]]
+  name = "github.com/wcharczuk/go-chart"
+  version = "2.0.0"
+
+[prune]
+  go-tests = true
+  unused-packages = true

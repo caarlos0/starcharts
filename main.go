@@ -8,9 +8,9 @@ import (
 	"github.com/apex/httplog"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
-	"github.com/caarlos0/starchart/config"
-	"github.com/caarlos0/starchart/controller"
-	"github.com/caarlos0/starchart/internal/cache"
+	"github.com/caarlos0/starcharts/config"
+	"github.com/caarlos0/starcharts/controller"
+	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
