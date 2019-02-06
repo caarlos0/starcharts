@@ -1,4 +1,4 @@
-# starchart
+# starcharts
 
 Plot your repo stars over time!
 
@@ -9,7 +9,6 @@ go run main.go
 ```
 
 Then browse http://localhost:3000/me/myrepo .
-
 
 Example chart:
 
