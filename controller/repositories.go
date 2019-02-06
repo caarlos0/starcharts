@@ -34,6 +34,11 @@ func GetRepo(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 	}
 }
 
+// IntValueFormatter is a ValueFormatter for int.
+func IntValueFormatter(v interface{}) string {
+  return fmt.Sprintf("%.0f", v)
+}
+
 // GetRepoChart returns the SVG chart for the given repository
 func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -104,6 +109,7 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 						A: 180,
 					},
 				},
+				ValueFormatter: IntValueFormatter,
 			},
 			Series: []chart.Series{series},
 		}
