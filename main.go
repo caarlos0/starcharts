@@ -13,6 +13,7 @@ import (
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func init() {
@@ -37,6 +38,7 @@ func main() {
 	r.Path("/{owner}/{repo}").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.GetRepo(config, cache))
+	r.Handle("/metrics", promhttp.Handler())
 
 	var srv = &http.Server{
 		Handler:      httplog.New(handlers.CompressHandler(r)),
