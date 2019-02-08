@@ -8,7 +8,6 @@ require (
 	github.com/go-redis/cache v6.3.5+incompatible
 	github.com/go-redis/redis v6.15.1+incompatible
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.0
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/onsi/ginkgo v1.7.0 // indirect

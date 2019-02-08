@@ -11,7 +11,6 @@ import (
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/controller"
 	"github.com/caarlos0/starcharts/internal/cache"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -30,6 +29,9 @@ func main() {
 	r.Path("/").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.Index())
+	r.Path("/metrics").
+		Methods(http.MethodGet).
+		Handler(promhttp.Handler())
 	r.PathPrefix("/static/").
 		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	r.Path("/{owner}/{repo}.svg").
@@ -38,10 +40,9 @@ func main() {
 	r.Path("/{owner}/{repo}").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.GetRepo(config, cache))
-	r.Handle("/metrics", promhttp.Handler())
 
 	var srv = &http.Server{
-		Handler:      httplog.New(handlers.CompressHandler(r)),
+		Handler:      httplog.New(r),
 		Addr:         "0.0.0.0:" + config.Port,
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,
