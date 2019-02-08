@@ -33,6 +33,7 @@ func main() {
 		Methods(http.MethodGet).
 		Handler(promhttp.Handler())
 	r.PathPrefix("/static/").
+		Methods(http.MethodGet).
 		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	r.Path("/{owner}/{repo}.svg").
 		Methods(http.MethodGet).
