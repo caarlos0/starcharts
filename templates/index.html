@@ -23,7 +23,11 @@
   {{ if .FullName }}
   <div class="main">
     <p>
+      {{ if .StargazersCount > 0 }}
       <b>Awesome!</b>
+      {{ else }}
+      <b>Hang in there!</b>
+      {{ end }}
       <a href="https://github.com/{{ .FullName }}">{{ .FullName }}</a>
       was created <time datetime="{{ .CreatedAt }}"></time>
       and now has <b>{{ .StargazersCount }}</b> stars.
