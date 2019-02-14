@@ -67,6 +67,9 @@ func (gh *GitHub) getStargazersPage(repo Repository, page int) (stars []Stargaze
 		gh.pageSize,
 	)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err == errNoMorePages {
+		return stars, nil
+	}
 	if err != nil {
 		return stars, err
 	}
