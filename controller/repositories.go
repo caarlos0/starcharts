@@ -67,8 +67,9 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 					R: 129,
 					G: 199,
 					B: 239,
-					A: 150,
+					A: 255,
 				},
+        StrokeWidth: 2,
 			},
 		}
 		for i, star := range stargazers {
@@ -87,12 +88,12 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 				NameStyle: chart.StyleShow(),
 				Style: chart.Style{
 					Show:        true,
-					StrokeWidth: 1,
+					StrokeWidth: 2,
 					StrokeColor: drawing.Color{
 						R: 85,
 						G: 85,
 						B: 85,
-						A: 180,
+						A: 255,
 					},
 				},
 			},
@@ -101,12 +102,12 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 				NameStyle: chart.StyleShow(),
 				Style: chart.Style{
 					Show:        true,
-					StrokeWidth: 1,
+					StrokeWidth: 2,
 					StrokeColor: drawing.Color{
 						R: 85,
 						G: 85,
 						B: 85,
-						A: 180,
+						A: 255,
 					},
 				},
 				ValueFormatter: IntValueFormatter,
