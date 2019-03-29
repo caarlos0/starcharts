@@ -12,6 +12,8 @@ import (
 	"github.com/caarlos0/starcharts/controller"
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -29,9 +31,6 @@ func main() {
 	r.Path("/").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.Index())
-	r.Path("/metrics").
-		Methods(http.MethodGet).
-		Handler(promhttp.Handler())
 	r.PathPrefix("/static/").
 		Methods(http.MethodGet).
 		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -42,8 +41,32 @@ func main() {
 		Methods(http.MethodGet).
 		HandlerFunc(controller.GetRepo(config, cache))
 
+	// generic metrics
+	var requestCounter = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "starcharts",
+		Subsystem: "http",
+		Name:      "requests_total",
+		Help:      "total requests",
+	}, []string{"code", "method"})
+	var responseObserver = promauto.NewSummaryVec(prometheus.SummaryOpts{
+		Namespace: "starcharts",
+		Subsystem: "http",
+		Name:      "responses",
+		Help:      "response times and counts",
+	}, []string{"code", "method"})
+
+	r.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
+
 	var srv = &http.Server{
-		Handler:      httplog.New(r),
+		Handler: httplog.New(
+			promhttp.InstrumentHandlerDuration(
+				responseObserver,
+				promhttp.InstrumentHandlerCounter(
+					requestCounter,
+					r,
+				),
+			),
+		),
 		Addr:         "0.0.0.0:" + config.Port,
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,
