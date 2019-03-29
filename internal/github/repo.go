@@ -3,6 +3,7 @@ package github
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"time"
@@ -38,6 +39,18 @@ func (gh *GitHub) RepoDetails(name string) (repo Repository, err error) {
 		return
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusForbidden {
+		ctx.Warn("rate limit hit, waiting 10s before trying again")
+		time.Sleep(10 * time.Second)
+		return gh.RepoDetails(name)
+	}
+	if resp.StatusCode != http.StatusOK {
+		bts, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return repo, err
+		}
+		return repo, fmt.Errorf("failed to get stargazers from github api: %v", string(bts))
+	}
 	err = json.NewDecoder(resp.Body).Decode(&repo)
 	if err := gh.cache.Put(name, repo, time.Hour*2); err != nil {
 		ctx.Warn("failed to cache")
