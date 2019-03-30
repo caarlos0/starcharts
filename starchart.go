@@ -1,9 +1,8 @@
-package main
+package starcharts
 
 import (
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/apex/httplog"
 	"github.com/apex/log"
@@ -21,23 +20,28 @@ func init() {
 	log.SetHandler(text.New(os.Stderr))
 }
 
-func main() {
+var singleton *http.Handler
+
+func Server() http.Handler {
+	if singleton != nil {
+		return *singleton
+	}
+	log.Info("starting new server singleton")
 	var config = config.Get()
-	var ctx = log.WithField("port", config.Port)
 	var cache = cache.New(config.RedisURL)
 	defer cache.Close()
 
-	var r = mux.NewRouter()
-	r.Path("/").
+	var routes = mux.NewRouter()
+	routes.Path("/").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.Index())
-	r.PathPrefix("/static/").
+	routes.PathPrefix("/static/").
 		Methods(http.MethodGet).
 		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	r.Path("/{owner}/{repo}.svg").
+	routes.Path("/{owner}/{repo}.svg").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.GetRepoChart(config, cache))
-	r.Path("/{owner}/{repo}").
+	routes.Path("/{owner}/{repo}").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.GetRepo(config, cache))
 
@@ -55,22 +59,19 @@ func main() {
 		Help:      "response times and counts",
 	}, []string{"code", "method"})
 
-	r.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
+	routes.Path("/metrics").
+		Methods(http.MethodGet).
+		Handler(promhttp.Handler())
 
-	var srv = &http.Server{
-		Handler: httplog.New(
-			promhttp.InstrumentHandlerDuration(
-				responseObserver,
-				promhttp.InstrumentHandlerCounter(
-					requestCounter,
-					r,
-				),
+	var handler http.Handler = httplog.New(
+		promhttp.InstrumentHandlerDuration(
+			responseObserver,
+			promhttp.InstrumentHandlerCounter(
+				requestCounter,
+				routes,
 			),
 		),
-		Addr:         "0.0.0.0:" + config.Port,
-		WriteTimeout: 30 * time.Second,
-		ReadTimeout:  30 * time.Second,
-	}
-	ctx.Info("starting up...")
-	ctx.WithError(srv.ListenAndServe()).Error("failed to start up server")
+	)
+	singleton = &handler
+	return handler
 }
