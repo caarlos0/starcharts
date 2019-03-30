@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/apex/log"
-	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/caarlos0/starcharts/internal/github"
 	"github.com/gorilla/mux"
@@ -16,14 +15,13 @@ import (
 )
 
 // GetRepo shows the given repo chart
-func GetRepo(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
+func GetRepo(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var name = fmt.Sprintf(
 			"%s/%s",
 			mux.Vars(r)["owner"],
 			mux.Vars(r)["repo"],
 		)
-		var github = github.New(cfg, cache)
 		details, err := github.RepoDetails(name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -40,7 +38,7 @@ func IntValueFormatter(v interface{}) string {
 }
 
 // GetRepoChart returns the SVG chart for the given repository
-func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
+func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var name = fmt.Sprintf(
 			"%s/%s",
@@ -49,7 +47,6 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 		)
 		var ctx = log.WithField("repo", name)
 		defer ctx.Trace("collect_stars").Stop(nil)
-		var github = github.New(cfg, cache)
 		repo, err := github.RepoDetails(name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)

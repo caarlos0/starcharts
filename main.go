@@ -5,6 +5,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/caarlos0/starcharts/internal/github"
+
 	"github.com/apex/httplog"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
@@ -26,6 +28,7 @@ func main() {
 	var ctx = log.WithField("port", config.Port)
 	var cache = cache.New(config.RedisURL)
 	defer cache.Close()
+	var github = github.New(config, cache)
 
 	var r = mux.NewRouter()
 	r.Path("/").
@@ -36,10 +39,10 @@ func main() {
 		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	r.Path("/{owner}/{repo}.svg").
 		Methods(http.MethodGet).
-		HandlerFunc(controller.GetRepoChart(config, cache))
+		HandlerFunc(controller.GetRepoChart(github, cache))
 	r.Path("/{owner}/{repo}").
 		Methods(http.MethodGet).
-		HandlerFunc(controller.GetRepo(config, cache))
+		HandlerFunc(controller.GetRepo(github, cache))
 
 	// generic metrics
 	var requestCounter = promauto.NewCounterVec(prometheus.CounterOpts{
@@ -54,6 +57,7 @@ func main() {
 		Name:      "responses",
 		Help:      "response times and counts",
 	}, []string{"code", "method"})
+	prometheus.MustRegister(github.RateLimits)
 
 	r.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
 
