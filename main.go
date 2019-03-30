@@ -63,7 +63,7 @@ func main() {
 				responseObserver,
 				promhttp.InstrumentHandlerCounter(
 					requestCounter,
-					r,
+					redirect(r),
 				),
 			),
 		),
@@ -73,4 +73,18 @@ func main() {
 	}
 	ctx.Info("starting up...")
 	ctx.WithError(srv.ListenAndServe()).Error("failed to start up server")
+}
+
+func redirect(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Info("redirect host=" + r.URL.Host)
+		if r.URL.Host == "starcharts.herokuapp.com" {
+			var url = r.URL
+			url.Host = "starchart.cc"
+			log.Info("redirecting heroku domain to starchart.cc")
+			http.Redirect(w, r, url.String(), http.StatusMovedPermanently)
+			return
+		}
+		h.ServeHTTP(w, r)
+	})
 }
