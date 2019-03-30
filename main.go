@@ -77,7 +77,7 @@ func main() {
 
 func redirect(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Info("redirect host=" + r.URL.Host)
+		log.Infof("redirect url=%s - %v", r.URL.String(), r.Header)
 		if r.URL.Host == "starcharts.herokuapp.com" {
 			var url = r.URL
 			url.Host = "starchart.cc"
