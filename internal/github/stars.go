@@ -23,7 +23,7 @@ type Stargazer struct {
 
 // Stargazers returns all the stargazers of a given repo
 func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
-	sem := make(chan bool, 10)
+	sem := make(chan bool, 4)
 	var g errgroup.Group
 	var lock sync.Mutex
 	for page := 1; page <= gh.lastPage(repo); page++ {
