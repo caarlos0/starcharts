@@ -7,7 +7,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
-	"github.com/caarlos0/starcharts"
+	"github.com/caarlos0/starcharts/api"
 	"github.com/caarlos0/starcharts/config"
 )
 
@@ -19,7 +19,7 @@ func main() {
 	var config = config.Get()
 	var ctx = log.WithField("port", config.Port)
 	var srv = &http.Server{
-		Handler:      starcharts.Server(),
+		Handler:      api.Server(),
 		Addr:         "0.0.0.0:" + config.Port,
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,

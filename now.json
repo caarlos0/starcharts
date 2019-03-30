@@ -8,11 +8,25 @@
   },
   "builds": [
     {
-      "src": "*.go",
+      "src": "templates/*",
+      "use": "@now/static"
+    },
+    {
+      "src": "static/*",
+      "use": "@now/static"
+    },
+    {
+      "src": "index.go",
       "use": "@now/go",
       "config": {
         "maxLambdaSize": "20mb"
       }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/*",
+      "dest": "/"
     }
   ]
 }

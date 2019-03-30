@@ -5,6 +5,6 @@ import "html/template"
 
 func Index() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		template.Must(template.ParseFiles("templates/index.html")).Execute(w, nil)
+		template.Must(template.New("index").Parse(index)).Execute(w, nil)
 	}
 }

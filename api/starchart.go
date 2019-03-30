@@ -1,4 +1,4 @@
-package starcharts
+package api
 
 import (
 	"net/http"

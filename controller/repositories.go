@@ -29,14 +29,13 @@ func GetRepo(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		template.Must(template.ParseFiles("templates/index.html")).
-			Execute(w, details)
+		template.Must(template.New("index").Parse(index)).Execute(w, details)
 	}
 }
 
 // IntValueFormatter is a ValueFormatter for int.
 func IntValueFormatter(v interface{}) string {
-  return fmt.Sprintf("%.0f", v)
+	return fmt.Sprintf("%.0f", v)
 }
 
 // GetRepoChart returns the SVG chart for the given repository
@@ -69,7 +68,7 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 					B: 239,
 					A: 255,
 				},
-        StrokeWidth: 2,
+				StrokeWidth: 2,
 			},
 		}
 		for i, star := range stargazers {
