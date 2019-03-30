@@ -40,8 +40,8 @@ func (gh *GitHub) RepoDetails(name string) (repo Repository, err error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusForbidden {
-		ctx.Warn("rate limit hit, waiting 10s before trying again")
-		time.Sleep(10 * time.Second)
+		ctx.Warn("rate limit hit, waiting 20s before trying again")
+		time.Sleep(20 * time.Second)
 		return gh.RepoDetails(name)
 	}
 	if resp.StatusCode != http.StatusOK {

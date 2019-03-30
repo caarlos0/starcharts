@@ -36,7 +36,7 @@ func GetRepo(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 
 // IntValueFormatter is a ValueFormatter for int.
 func IntValueFormatter(v interface{}) string {
-  return fmt.Sprintf("%.0f", v)
+	return fmt.Sprintf("%.0f", v)
 }
 
 // GetRepoChart returns the SVG chart for the given repository
@@ -69,7 +69,7 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 					B: 239,
 					A: 255,
 				},
-        StrokeWidth: 2,
+				StrokeWidth: 2,
 			},
 		}
 		for i, star := range stargazers {
@@ -116,7 +116,7 @@ func GetRepoChart(cfg config.Config, cache *cache.Redis) http.HandlerFunc {
 		}
 		defer ctx.Trace("chart").Stop(&err)
 		w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
-		w.Header().Add("cache-control", "no-cache, no-store, must-revalidate")
+		w.Header().Add("cache-control", "public, max-age=86400")
 		w.Header().Add("date", time.Now().Format(time.RFC1123))
 		w.Header().Add("expires", time.Now().Format(time.RFC1123))
 		graph.Render(chart.SVG, w)
