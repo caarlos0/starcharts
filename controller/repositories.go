@@ -27,7 +27,8 @@ func GetRepo(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		template.Must(template.New("index").Parse(index)).Execute(w, details)
+		template.Must(template.ParseFiles("templates/index.html")).
+			Execute(w, details)
 	}
 }
 
