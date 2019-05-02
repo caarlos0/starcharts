@@ -17,9 +17,12 @@
     },
     {
       "src": "index.go",
-      "use": "@now/go",
+      "use": "@now/go@canary",
       "config": {
-        "maxLambdaSize": "20mb"
+        "maxLambdaSize": "20mb",
+        "includeFiles": [
+          "templates/**"
+        ]
       }
     }
   ],
