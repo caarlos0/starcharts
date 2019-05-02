@@ -54,7 +54,7 @@ func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 		}
 		stargazers, err := github.Stargazers(repo)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
 		}
 		var series = chart.TimeSeries{

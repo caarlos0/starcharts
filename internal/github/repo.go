@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
 	"time"
 
 	"github.com/apex/log"
+	"github.com/pkg/errors"
 )
 
 // Repository details
@@ -41,9 +41,8 @@ func (gh *GitHub) RepoDetails(name string) (repo Repository, err error) {
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusForbidden {
 		gh.RateLimits.Inc()
-		ctx.Warn("rate limit hit, waiting 20s before trying again")
-		time.Sleep(20 * time.Second)
-		return gh.RepoDetails(name)
+		ctx.Warn("rate limit hit")
+		return repo, errors.Wrap(err, "rate limited, please try again later")
 	}
 	if resp.StatusCode != http.StatusOK {
 		bts, err := ioutil.ReadAll(resp.Body)

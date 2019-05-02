@@ -2,7 +2,6 @@ package github
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/apex/log"
+	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -23,7 +23,7 @@ type Stargazer struct {
 
 // Stargazers returns all the stargazers of a given repo
 func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
-	sem := make(chan bool, 10)
+	sem := make(chan bool, 4)
 	var g errgroup.Group
 	var lock sync.Mutex
 	for page := 1; page <= gh.lastPage(repo); page++ {
@@ -86,9 +86,8 @@ func (gh *GitHub) getStargazersPage(repo Repository, page int) (stars []Stargaze
 	// rate limit
 	if resp.StatusCode == http.StatusForbidden {
 		gh.RateLimits.Inc()
-		ctx.Warn("rate limit hit, waiting 20s before trying again")
-		time.Sleep(20 * time.Second)
-		return gh.getStargazersPage(repo, page)
+		ctx.Warn("rate limit hit")
+		return stars, errors.Wrap(err, "rate limited, please try again later")
 	}
 	if resp.StatusCode != http.StatusOK {
 		bts, err := ioutil.ReadAll(resp.Body)
