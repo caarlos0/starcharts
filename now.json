@@ -8,10 +8,6 @@
   },
   "builds": [
     {
-      "src": "templates/*",
-      "use": "@now/static"
-    },
-    {
       "src": "static/*",
       "use": "@now/static"
     },
