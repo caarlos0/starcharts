@@ -1,4 +1,5 @@
-# starcharts
+# starcharts ![GoReport Widget]
+[GoReport Widget]: https://goreportcard.com/badge/github.com/caarlos0/starcharts
 
 Plot your repo stars over time!
 
