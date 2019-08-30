@@ -42,7 +42,7 @@ func (gh *GitHub) RepoDetails(name string) (repo Repository, err error) {
 	if resp.StatusCode == http.StatusForbidden {
 		gh.RateLimits.Inc()
 		ctx.Warn("rate limit hit")
-		return repo, errors.Wrap(err, "rate limited, please try again later")
+		return repo, errors.New("rate limited, please try again later")
 	}
 	if resp.StatusCode != http.StatusOK {
 		bts, err := ioutil.ReadAll(resp.Body)

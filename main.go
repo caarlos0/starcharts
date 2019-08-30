@@ -13,6 +13,7 @@ import (
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/controller"
 	"github.com/caarlos0/starcharts/internal/cache"
+	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -26,7 +27,12 @@ func init() {
 func main() {
 	var config = config.Get()
 	var ctx = log.WithField("port", config.Port)
-	var cache = cache.New(config.RedisURL)
+	options, err := redis.ParseURL(config.RedisURL)
+	if err != nil {
+		log.WithError(err).Fatal("invalid redis_url")
+	}
+	var redis = redis.NewClient(options)
+	var cache = cache.New(redis)
 	defer cache.Close()
 	var github = github.New(config, cache)
 
