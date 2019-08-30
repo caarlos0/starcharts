@@ -3,7 +3,6 @@ package cache
 import (
 	"time"
 
-	"github.com/apex/log"
 	rediscache "github.com/go-redis/cache"
 	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus"
@@ -35,12 +34,7 @@ type Redis struct {
 }
 
 // New redis cache
-func New(url string) *Redis {
-	options, err := redis.ParseURL(url)
-	if err != nil {
-		log.WithError(err).Fatal("invalid redis_url")
-	}
-	var redis = redis.NewClient(options)
+func New(redis *redis.Client) *Redis {
 	codec := &rediscache.Codec{
 		Redis: redis,
 		Marshal: func(v interface{}) ([]byte, error) {
