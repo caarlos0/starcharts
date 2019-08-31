@@ -27,8 +27,11 @@ func GetRepo(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		template.Must(template.ParseFiles("templates/index.html")).
+		err = template.Must(template.ParseFiles("templates/index.html")).
 			Execute(w, details)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
 
@@ -116,6 +119,8 @@ func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 		w.Header().Add("cache-control", "public, max-age=86400")
 		w.Header().Add("date", time.Now().Format(time.RFC1123))
 		w.Header().Add("expires", time.Now().Format(time.RFC1123))
-		graph.Render(chart.SVG, w)
+		if err := graph.Render(chart.SVG, w); err != nil {
+			log.WithError(err).Error("failed to render graph")
+		}
 	}
 }

@@ -20,11 +20,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func init() {
-	log.SetHandler(text.New(os.Stderr))
-}
-
 func main() {
+	log.SetHandler(text.New(os.Stderr))
 	var config = config.Get()
 	var ctx = log.WithField("port", config.Port)
 	options, err := redis.ParseURL(config.RedisURL)

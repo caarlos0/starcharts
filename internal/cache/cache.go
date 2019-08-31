@@ -9,6 +9,7 @@ import (
 	msgpack "gopkg.in/vmihailenco/msgpack.v2"
 )
 
+// nolint: gochecknoglobals
 var cacheGets = prometheus.NewCounter(
 	prometheus.CounterOpts{
 		Name: "cache_get_total",
@@ -16,6 +17,7 @@ var cacheGets = prometheus.NewCounter(
 	},
 )
 
+// nolint: gochecknoglobals
 var cachePuts = prometheus.NewCounter(
 	prometheus.CounterOpts{
 		Name: "cache_put_total",
@@ -23,6 +25,7 @@ var cachePuts = prometheus.NewCounter(
 	},
 )
 
+// nolint: gochecknoinits
 func init() {
 	prometheus.MustRegister(cacheGets, cachePuts)
 }
