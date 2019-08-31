@@ -19,24 +19,25 @@ type Repository struct {
 }
 
 // RepoDetails gets the given repository details
-func (gh *GitHub) RepoDetails(name string) (repo Repository, err error) {
+func (gh *GitHub) RepoDetails(name string) (Repository, error) {
+	var repo Repository
 	var ctx = log.WithField("repo", name)
-	err = gh.cache.Get(name, &repo)
+	err := gh.cache.Get(name, &repo)
 	if err == nil {
 		ctx.Info("got from cache")
-		return
+		return repo, err
 	}
 	var url = fmt.Sprintf("https://api.github.com/repos/%s", name)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return
+		return repo, err
 	}
 	if gh.token != "" {
 		req.Header.Add("Authorization", fmt.Sprintf("token %s", gh.token))
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return
+		return repo, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusForbidden {
@@ -55,5 +56,5 @@ func (gh *GitHub) RepoDetails(name string) (repo Repository, err error) {
 	if err := gh.cache.Put(name, repo, time.Hour*2); err != nil {
 		ctx.Warn("failed to cache")
 	}
-	return
+	return repo, err
 }
