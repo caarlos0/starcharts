@@ -2,7 +2,7 @@ module github.com/caarlos0/starcharts
 
 require (
 	github.com/alicebob/gopher-json v0.0.0-20180125190556-5a6b3ba71ee6 // indirect
-	github.com/alicebob/miniredis v2.5.0+incompatible
+	github.com/alicebob/miniredis v2.10.0+incompatible
 	github.com/apex/httplog v0.0.0-20170124183939-d677fdf2ae1f
 	github.com/apex/log v1.1.0
 	github.com/blend/go-sdk v1.1.1 // indirect
