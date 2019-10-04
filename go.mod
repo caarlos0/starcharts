@@ -11,7 +11,7 @@ require (
 	github.com/go-redis/redis v6.15.1+incompatible
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
-	github.com/gorilla/mux v1.7.0
+	github.com/gorilla/mux v1.7.3
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/onsi/ginkgo v1.7.0 // indirect
 	github.com/onsi/gomega v1.4.3 // indirect
@@ -28,3 +28,5 @@ require (
 	gopkg.in/h2non/gock.v1 v1.0.15
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.1
 )
+
+go 1.13
