@@ -16,8 +16,7 @@ require (
 	github.com/onsi/ginkgo v1.7.0 // indirect
 	github.com/onsi/gomega v1.4.3 // indirect
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v0.9.2
-	github.com/stretchr/testify v1.3.0 // indirect
+	github.com/prometheus/client_golang v0.9.4
 	github.com/vmihailenco/msgpack v4.0.2+incompatible // indirect
 	github.com/wcharczuk/go-chart v2.0.1+incompatible
 	github.com/yuin/gopher-lua v0.0.0-20190514113301-1cd887cd7036 // indirect
@@ -28,3 +27,5 @@ require (
 	gopkg.in/h2non/gock.v1 v1.0.15
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.1
 )
+
+go 1.13
