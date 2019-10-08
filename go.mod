@@ -19,7 +19,7 @@ require (
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
 	github.com/prometheus/common v0.7.0 // indirect
 	github.com/prometheus/procfs v0.0.5 // indirect
-	github.com/vmihailenco/msgpack v4.0.2+incompatible // indirect
+	github.com/vmihailenco/msgpack v4.2.0 // indirect
 	github.com/wcharczuk/go-chart v2.0.1+incompatible
 	github.com/yuin/gopher-lua v0.0.0-20190514113301-1cd887cd7036 // indirect
 	golang.org/x/image v0.0.0-20190910094157-69e4b8554b2a // indirect
