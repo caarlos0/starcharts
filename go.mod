@@ -6,7 +6,7 @@ require (
 	github.com/apex/httplog v0.0.0-20170124183939-d677fdf2ae1f
 	github.com/apex/log v1.1.1
 	github.com/blend/go-sdk v1.1.1 // indirect
-	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/caarlos0/env v6.1.0+incompatible
 	github.com/go-redis/cache v6.4.0+incompatible
 	github.com/go-redis/redis v6.15.6+incompatible
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
