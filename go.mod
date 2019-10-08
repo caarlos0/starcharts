@@ -7,7 +7,7 @@ require (
 	github.com/apex/log v1.1.1
 	github.com/blend/go-sdk v1.1.1 // indirect
 	github.com/caarlos0/env v3.5.0+incompatible
-	github.com/go-redis/cache v6.4.0+incompatible
+	github.com/go-redis/cache v7.0.2+incompatible
 	github.com/go-redis/redis v6.15.6+incompatible
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
