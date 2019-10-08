@@ -5,7 +5,7 @@ require (
 	github.com/alicebob/miniredis v2.5.0+incompatible
 	github.com/apex/httplog v0.0.0-20170124183939-d677fdf2ae1f
 	github.com/apex/log v1.1.1
-	github.com/blend/go-sdk v1.1.1 // indirect
+	github.com/blend/go-sdk/v2 v2.0.0 // indirect
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/go-redis/cache v6.4.0+incompatible
 	github.com/go-redis/redis v6.15.6+incompatible
