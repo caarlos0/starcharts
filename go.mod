@@ -8,7 +8,7 @@ require (
 	github.com/blend/go-sdk v1.1.1 // indirect
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/go-redis/cache v6.3.5+incompatible
-	github.com/go-redis/redis v6.15.1+incompatible
+	github.com/go-redis/redis v6.15.6+incompatible
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/gorilla/mux v1.7.0
@@ -28,3 +28,5 @@ require (
 	gopkg.in/h2non/gock.v1 v1.0.15
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.1
 )
+
+go 1.13
