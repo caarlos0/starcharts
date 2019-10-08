@@ -41,6 +41,8 @@ func IntValueFormatter(v interface{}) string {
 }
 
 // GetRepoChart returns the SVG chart for the given repository
+// nolint: funlen
+// TODO: refactor
 func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var name = fmt.Sprintf(

@@ -101,7 +101,6 @@ func TestStargazers_EmptyResponseOnPagination(t *testing.T) {
 			t.Errorf("RepoDetails returned error %v", err)
 		}
 	})
-
 }
 
 func TestStargazers_APIFailure(t *testing.T) {
@@ -153,5 +152,4 @@ func TestStargazers_APIFailure(t *testing.T) {
 			t.Errorf("Expected error but got %v", details)
 		}
 	})
-
 }

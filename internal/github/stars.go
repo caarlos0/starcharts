@@ -51,6 +51,8 @@ func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
 	return
 }
 
+// nolint: funlen
+// TODO: refactor
 func (gh *GitHub) getStargazersPage(repo Repository, page int) ([]Stargazer, error) {
 	var stars []Stargazer
 	var ctx = log.WithField("repo", repo.FullName).WithField("page", page)
