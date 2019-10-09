@@ -23,7 +23,7 @@ require (
 	github.com/wcharczuk/go-chart v2.0.1+incompatible
 	github.com/yuin/gopher-lua v0.0.0-20190514113301-1cd887cd7036 // indirect
 	golang.org/x/image v0.0.0-20190910094157-69e4b8554b2a // indirect
-	golang.org/x/net v0.0.0-20191007182048-72f939374954 // indirect
+	golang.org/x/net v0.0.0-20191009170851-d66e71096ffb // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20191008105621-543471e840be // indirect
 	google.golang.org/appengine v1.6.5 // indirect
