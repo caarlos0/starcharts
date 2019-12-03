@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/apex/log"
-	"github.com/caarlos0/env"
+	"github.com/caarlos0/env/v6"
 )
 
 // Config configuration
