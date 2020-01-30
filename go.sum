@@ -13,6 +13,9 @@ github.com/apex/httplog v0.0.0-20170124183939-d677fdf2ae1f h1:FmzTEg6R4xZlBPy+Zp
 github.com/apex/httplog v0.0.0-20170124183939-d677fdf2ae1f/go.mod h1:6XwPOAECoJrkW1w7n3CkBZQdH2nVZ3zSusB37O8PZlE=
 github.com/apex/log v1.1.1 h1:BwhRZ0qbjYtTob0I+2M+smavV0kOC8XgcnGZcyL9liA=
 github.com/apex/log v1.1.1/go.mod h1:Ls949n1HFtXfbDcjiTTFQqkVUrte0puoIBfO3SVgwOA=
+github.com/apex/log v1.1.2 h1:bnDuVoi+o98wOdVqfEzNDlY0tcmBia7r4YkjS9EqGYk=
+github.com/apex/log v1.1.2/go.mod h1:SyfRweFO+TlkIJ3DVizTSeI1xk7jOIIqOnUPZQTTsww=
+github.com/apex/logs v0.0.3/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDwo=
 github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a/go.mod h1:3NqKYiepwy8kCu4PNA+aP7WUV72eXWJeP9/r3/K9aLE=
 github.com/aphistic/sweet v0.2.0/go.mod h1:fWDlIh/isSE9n6EPsRmC0det+whmX6dJid3stzu0Xys=
 github.com/aws/aws-sdk-go v1.20.6/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
