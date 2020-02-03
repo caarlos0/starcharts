@@ -9,7 +9,7 @@ require (
 	github.com/caarlos0/env/v6 v6.1.0
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/go-redis/cache v6.4.0+incompatible
-	github.com/go-redis/redis v6.15.6+incompatible
+	github.com/go-redis/redis v6.15.7+incompatible
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/gorilla/mux v1.7.3
