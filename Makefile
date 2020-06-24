@@ -31,19 +31,12 @@ fmt:
 # Run all the linters
 lint:
 	# TODO: fix tests and lll issues
-	golangci-lint run --enable-all --disable godox ./...
+	golangci-lint run --enable-all --disable godox --disable testpackage --disable wsl --disable gomnd --fix ./...
 	misspell -error **/*
 .PHONY: lint
 
-# Clean go.mod
-go-mod-tidy:
-	@go mod tidy -v
-	@git diff HEAD
-	@git diff-index --quiet HEAD
-.PHONY: go-mod-tidy
-
 # Run all the tests and code checks
-ci: build test lint go-mod-tidy
+ci: build test lint
 .PHONY: ci
 
 # Build a beta version of goreleaser
