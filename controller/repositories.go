@@ -14,7 +14,7 @@ import (
 	"github.com/wcharczuk/go-chart/drawing"
 )
 
-// GetRepo shows the given repo chart
+// GetRepo shows the given repo chart.
 func GetRepo(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var name = fmt.Sprintf(
@@ -40,9 +40,10 @@ func IntValueFormatter(v interface{}) string {
 	return fmt.Sprintf("%.0f", v)
 }
 
-// GetRepoChart returns the SVG chart for the given repository
+// GetRepoChart returns the SVG chart for the given repository.
+//
 // nolint: funlen
-// TODO: refactor
+// TODO: refactor.
 func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var name = fmt.Sprintf(

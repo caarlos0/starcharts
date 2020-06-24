@@ -1,12 +1,20 @@
 package github
 
 import (
+	"errors"
+
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// GitHub client struct
+// ErrRateLimit happens when we rate limit github API.
+var ErrRateLimit = errors.New("rate limited, please try again later")
+
+// ErrGitHubAPI happens when github responds with something other than a 2xx.
+var ErrGitHubAPI = errors.New("failed to talk with github api")
+
+// GitHub client struct.
 type GitHub struct {
 	token      string
 	pageSize   int
@@ -14,7 +22,7 @@ type GitHub struct {
 	RateLimits prometheus.Counter
 }
 
-// New github client
+// New github client.
 func New(config config.Config, cache *cache.Redis) *GitHub {
 	return &GitHub{
 		token:    config.GitHubToken,

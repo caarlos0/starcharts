@@ -30,13 +30,13 @@ func init() {
 	prometheus.MustRegister(cacheGets, cachePuts)
 }
 
-// Redis cache
+// Redis cache.
 type Redis struct {
 	redis *redis.Client
 	codec *rediscache.Codec
 }
 
-// New redis cache
+// New redis cache.
 func New(redis *redis.Client) *Redis {
 	codec := &rediscache.Codec{
 		Redis: redis,
@@ -54,18 +54,18 @@ func New(redis *redis.Client) *Redis {
 	}
 }
 
-// Close connections
+// Close connections.
 func (c *Redis) Close() error {
 	return c.redis.Close()
 }
 
-// Get from cache by key
+// Get from cache by key.
 func (c *Redis) Get(key string, result interface{}) (err error) {
 	cacheGets.Inc()
 	return c.codec.Get(key, result)
 }
 
-// Put on cache
+// Put on cache.
 func (c *Redis) Put(key string, obj interface{}, expire time.Duration) (err error) {
 	cachePuts.Inc()
 	return c.codec.Set(&rediscache.Item{

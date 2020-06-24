@@ -2,6 +2,7 @@ package github
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -10,18 +11,17 @@ import (
 	"time"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
 
 var errNoMorePages = errors.New("no more pages to get")
 
-// Stargazer is a star at a given time
+// Stargazer is a star at a given time.
 type Stargazer struct {
 	StarredAt time.Time `json:"starred_at"`
 }
 
-// Stargazers returns all the stargazers of a given repo
+// Stargazers returns all the stargazers of a given repo.
 func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
 	sem := make(chan bool, 4)
 	var g errgroup.Group
@@ -32,7 +32,7 @@ func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
 		g.Go(func() error {
 			defer func() { <-sem }()
 			result, err := gh.getStargazersPage(repo, page)
-			if err == errNoMorePages {
+			if errors.Is(err, errNoMorePages) {
 				return nil
 			}
 			if err != nil {
@@ -52,7 +52,7 @@ func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
 }
 
 // nolint: funlen
-// TODO: refactor
+// TODO: refactor.
 func (gh *GitHub) getStargazersPage(repo Repository, page int) ([]Stargazer, error) {
 	var stars []Stargazer
 	var ctx = log.WithField("repo", repo.FullName).WithField("page", page)
@@ -70,7 +70,7 @@ func (gh *GitHub) getStargazersPage(repo Repository, page int) ([]Stargazer, err
 		gh.pageSize,
 	)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err == errNoMorePages {
+	if errors.Is(err, errNoMorePages) {
 		return stars, nil
 	}
 	if err != nil {
@@ -90,14 +90,14 @@ func (gh *GitHub) getStargazersPage(repo Repository, page int) ([]Stargazer, err
 	if resp.StatusCode == http.StatusForbidden {
 		gh.RateLimits.Inc()
 		ctx.Warn("rate limit hit")
-		return stars, errors.New("rate limited, please try again later")
+		return stars, ErrRateLimit
 	}
 	if resp.StatusCode != http.StatusOK {
 		bts, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return stars, err
 		}
-		return stars, fmt.Errorf("failed to get stargazers from github api: %v", string(bts))
+		return stars, fmt.Errorf("%w: %v", ErrGitHubAPI, string(bts))
 	}
 	err = json.NewDecoder(resp.Body).Decode(&stars)
 	if len(stars) == 0 {

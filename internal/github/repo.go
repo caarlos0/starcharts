@@ -8,17 +8,16 @@ import (
 	"time"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
 )
 
-// Repository details
+// Repository details.
 type Repository struct {
 	FullName        string `json:"full_name"`
 	StargazersCount int    `json:"stargazers_count"`
 	CreatedAt       string `json:"created_at"`
 }
 
-// RepoDetails gets the given repository details
+// RepoDetails gets the given repository details.
 func (gh *GitHub) RepoDetails(name string) (Repository, error) {
 	var repo Repository
 	var ctx = log.WithField("repo", name)
@@ -43,14 +42,14 @@ func (gh *GitHub) RepoDetails(name string) (Repository, error) {
 	if resp.StatusCode == http.StatusForbidden {
 		gh.RateLimits.Inc()
 		ctx.Warn("rate limit hit")
-		return repo, errors.New("rate limited, please try again later")
+		return repo, ErrRateLimit
 	}
 	if resp.StatusCode != http.StatusOK {
 		bts, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return repo, err
 		}
-		return repo, fmt.Errorf("failed to get stargazers from github api: %v", string(bts))
+		return repo, fmt.Errorf("%w: %v", ErrGitHubAPI, string(bts))
 	}
 	err = json.NewDecoder(resp.Body).Decode(&repo)
 	if err := gh.cache.Put(name, repo, time.Hour*2); err != nil {

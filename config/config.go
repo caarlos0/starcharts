@@ -5,7 +5,7 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
-// Config configuration
+// Config configuration.
 type Config struct {
 	RedisURL       string `env:"REDIS_URL" envDefault:"redis://localhost:6379"`
 	GitHubToken    string `env:"GITHUB_TOKEN"`
@@ -13,7 +13,7 @@ type Config struct {
 	Port           string `env:"PORT" envDefault:"3000"`
 }
 
-// Get the current Config
+// Get the current Config.
 func Get() (cfg Config) {
 	if err := env.Parse(&cfg); err != nil {
 		log.WithError(err).Fatal("failed to load config")
