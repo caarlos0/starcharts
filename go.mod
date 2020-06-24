@@ -1,5 +1,7 @@
 module github.com/caarlos0/starcharts
 
+go 1.14
+
 require (
 	github.com/alicebob/gopher-json v0.0.0-20180125190556-5a6b3ba71ee6 // indirect
 	github.com/alicebob/miniredis v2.5.0+incompatible
@@ -27,5 +29,3 @@ require (
 	gopkg.in/h2non/gock.v1 v1.0.15
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.1
 )
-
-go 1.13
