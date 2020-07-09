@@ -31,7 +31,7 @@ fmt:
 # Run all the linters
 lint:
 	# TODO: fix tests and lll issues
-	golangci-lint run --enable-all --disable godox --disable testpackage --disable wsl --disable gomnd --fix ./...
+	golangci-lint run --enable-all --disable godox --disable testpackage --disable wsl --disable gomnd --disable gofumpt --fix ./...
 	misspell -error **/*
 .PHONY: lint
 

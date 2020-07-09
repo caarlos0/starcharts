@@ -1,6 +1,7 @@
 package github
 
 import (
+	"context"
 	"testing"
 
 	"github.com/alicebob/miniredis"
@@ -35,14 +36,14 @@ func TestRepoDetails(t *testing.T) {
 	var gt = New(config, cache)
 
 	t.Run("get repo details from api", func(t *testing.T) {
-		_, err := gt.RepoDetails("test/test")
+		_, err := gt.RepoDetails(context.TODO(), "test/test")
 		if err != nil {
 			t.Errorf("RepoDetails returned error %v", err)
 		}
 	})
 
 	t.Run("get repo details from cache", func(t *testing.T) {
-		_, err := gt.RepoDetails("test/test")
+		_, err := gt.RepoDetails(context.TODO(), "test/test")
 		if err != nil {
 			t.Errorf("RepoDetails returned error %v", err)
 		}
@@ -71,13 +72,13 @@ func TestRepoDetails_APIfailure(t *testing.T) {
 	var gt = New(config, cache)
 
 	t.Run("set error if api return 404", func(t *testing.T) {
-		details, err := gt.RepoDetails("test/test")
+		details, err := gt.RepoDetails(context.TODO(), "test/test")
 		if err == nil {
 			t.Errorf("Expected error but got %v", details)
 		}
 	})
 	t.Run("set error if api return 403", func(t *testing.T) {
-		details, err := gt.RepoDetails("private/private")
+		details, err := gt.RepoDetails(context.TODO(), "private/private")
 		if err == nil {
 			t.Errorf("Expected error but got %v", details)
 		}
@@ -110,7 +111,7 @@ func TestRepoDetails_WithAuthToken(t *testing.T) {
 	gt.token = "12345"
 
 	t.Run("get repo with auth token", func(t *testing.T) {
-		_, err := gt.RepoDetails("test/private")
+		_, err := gt.RepoDetails(context.TODO(), "test/private")
 		if err != nil {
 			t.Errorf("RepoDetails returned error %v", err)
 		}

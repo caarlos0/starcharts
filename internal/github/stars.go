@@ -1,6 +1,7 @@
 package github
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -22,7 +23,7 @@ type Stargazer struct {
 }
 
 // Stargazers returns all the stargazers of a given repo.
-func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
+func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Stargazer, err error) {
 	sem := make(chan bool, 4)
 	var g errgroup.Group
 	var lock sync.Mutex
@@ -31,7 +32,7 @@ func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
 		page := page
 		g.Go(func() error {
 			defer func() { <-sem }()
-			result, err := gh.getStargazersPage(repo, page)
+			result, err := gh.getStargazersPage(ctx, repo, page)
 			if errors.Is(err, errNoMorePages) {
 				return nil
 			}
@@ -53,23 +54,23 @@ func (gh *GitHub) Stargazers(repo Repository) (stars []Stargazer, err error) {
 
 // nolint: funlen
 // TODO: refactor.
-func (gh *GitHub) getStargazersPage(repo Repository, page int) ([]Stargazer, error) {
+func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page int) ([]Stargazer, error) {
 	var stars []Stargazer
-	var ctx = log.WithField("repo", repo.FullName).WithField("page", page)
+	var log = log.WithField("repo", repo.FullName).WithField("page", page)
 	var err = gh.cache.Get(fmt.Sprintf("%s_%d", repo.FullName, page), &stars)
 	if err == nil {
-		ctx.Info("got from cache")
+		log.Info("got from cache")
 		return stars, err
 	}
-	defer ctx.Trace("got page from api").Stop(&err)
-	ctx.Infof("getting page from api")
+	defer log.Trace("got page from api").Stop(&err)
+	log.Infof("getting page from api")
 	var url = fmt.Sprintf(
 		"https://api.github.com/repos/%s/stargazers?page=%d&per_page=%d",
 		repo.FullName,
 		page,
 		gh.pageSize,
 	)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if errors.Is(err, errNoMorePages) {
 		return stars, nil
 	}
@@ -89,7 +90,7 @@ func (gh *GitHub) getStargazersPage(repo Repository, page int) ([]Stargazer, err
 	// rate limit
 	if resp.StatusCode == http.StatusForbidden {
 		gh.RateLimits.Inc()
-		ctx.Warn("rate limit hit")
+		log.Warn("rate limit hit")
 		return stars, ErrRateLimit
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -107,13 +108,13 @@ func (gh *GitHub) getStargazersPage(repo Repository, page int) ([]Stargazer, err
 	if page == gh.lastPage(repo) {
 		expire = time.Hour * 2
 	}
-	ctx.WithField("expire", expire).Info("caching...")
+	log.WithField("expire", expire).Info("caching...")
 	if err := gh.cache.Put(
 		fmt.Sprintf("%s_%d", repo.FullName, page),
 		stars,
 		expire,
 	); err != nil {
-		ctx.WithError(err).Warn("failed to cache")
+		log.WithError(err).Warn("failed to cache")
 	}
 	return stars, err
 }

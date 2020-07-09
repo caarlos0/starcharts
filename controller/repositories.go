@@ -22,7 +22,7 @@ func GetRepo(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 			mux.Vars(r)["owner"],
 			mux.Vars(r)["repo"],
 		)
-		details, err := github.RepoDetails(name)
+		details, err := github.RepoDetails(r.Context(), name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -51,14 +51,14 @@ func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 			mux.Vars(r)["owner"],
 			mux.Vars(r)["repo"],
 		)
-		var ctx = log.WithField("repo", name)
-		defer ctx.Trace("collect_stars").Stop(nil)
-		repo, err := github.RepoDetails(name)
+		var log = log.WithField("repo", name)
+		defer log.Trace("collect_stars").Stop(nil)
+		repo, err := github.RepoDetails(r.Context(), name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		stargazers, err := github.Stargazers(repo)
+		stargazers, err := github.Stargazers(r.Context(), repo)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
@@ -80,7 +80,7 @@ func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 			series.YValues = append(series.YValues, float64(i))
 		}
 		if len(series.XValues) < 2 {
-			ctx.Info("not enough results, adding some fake ones")
+			log.Info("not enough results, adding some fake ones")
 			series.XValues = append(series.XValues, time.Now())
 			series.YValues = append(series.YValues, 1)
 		}
@@ -117,7 +117,7 @@ func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 			},
 			Series: []chart.Series{series},
 		}
-		defer ctx.Trace("chart").Stop(&err)
+		defer log.Trace("chart").Stop(&err)
 		w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
 		w.Header().Add("cache-control", "public, max-age=86400")
 		w.Header().Add("date", time.Now().Format(time.RFC1123))

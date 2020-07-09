@@ -1,6 +1,7 @@
 package github
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -41,14 +42,14 @@ func TestStargazers(t *testing.T) {
 	var gt = New(config, cache)
 
 	t.Run("get stargazers from api", func(t *testing.T) {
-		_, err := gt.Stargazers(repo)
+		_, err := gt.Stargazers(context.TODO(), repo)
 		if err != nil {
 			t.Errorf("RepoDetails returned error %v", err)
 		}
 	})
 
 	t.Run("get stargazers from cache", func(t *testing.T) {
-		_, err := gt.Stargazers(repo)
+		_, err := gt.Stargazers(context.TODO(), repo)
 		if err != nil {
 			t.Errorf("RepoDetails returned error %v", err)
 		}
@@ -96,7 +97,7 @@ func TestStargazers_EmptyResponseOnPagination(t *testing.T) {
 	gt.token = "12345"
 
 	t.Run("get stargazers from api", func(t *testing.T) {
-		_, err := gt.Stargazers(repo)
+		_, err := gt.Stargazers(context.TODO(), repo)
 		if err != nil {
 			t.Errorf("RepoDetails returned error %v", err)
 		}
@@ -141,13 +142,13 @@ func TestStargazers_APIFailure(t *testing.T) {
 	var gt = New(config, cache)
 
 	t.Run("set error if api return 404", func(t *testing.T) {
-		details, err := gt.Stargazers(repo1)
+		details, err := gt.Stargazers(context.TODO(), repo1)
 		if err == nil {
 			t.Errorf("Expected error but got %v", details)
 		}
 	})
 	t.Run("set error if api return 403", func(t *testing.T) {
-		details, err := gt.Stargazers(repo2)
+		details, err := gt.Stargazers(context.TODO(), repo2)
 		if err == nil {
 			t.Errorf("Expected error but got %v", details)
 		}

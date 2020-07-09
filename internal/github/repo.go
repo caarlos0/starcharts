@@ -1,6 +1,7 @@
 package github
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -18,16 +19,16 @@ type Repository struct {
 }
 
 // RepoDetails gets the given repository details.
-func (gh *GitHub) RepoDetails(name string) (Repository, error) {
+func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, error) {
 	var repo Repository
-	var ctx = log.WithField("repo", name)
+	var log = log.WithField("repo", name)
 	err := gh.cache.Get(name, &repo)
 	if err == nil {
-		ctx.Info("got from cache")
+		log.Info("got from cache")
 		return repo, err
 	}
 	var url = fmt.Sprintf("https://api.github.com/repos/%s", name)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return repo, err
 	}
@@ -41,7 +42,7 @@ func (gh *GitHub) RepoDetails(name string) (Repository, error) {
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusForbidden {
 		gh.RateLimits.Inc()
-		ctx.Warn("rate limit hit")
+		log.Warn("rate limit hit")
 		return repo, ErrRateLimit
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -53,7 +54,7 @@ func (gh *GitHub) RepoDetails(name string) (Repository, error) {
 	}
 	err = json.NewDecoder(resp.Body).Decode(&repo)
 	if err := gh.cache.Put(name, repo, time.Hour*2); err != nil {
-		ctx.Warn("failed to cache")
+		log.Warn("failed to cache")
 	}
 	return repo, err
 }
