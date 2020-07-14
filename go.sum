@@ -14,12 +14,9 @@ github.com/alicebob/miniredis v2.5.0+incompatible/go.mod h1:8HZjEj4yU0dwhYHky+Dx
 github.com/apex/httplog v1.0.0 h1:5uJFk6Ga4rRGG3Xt+ldofR5/RCgSzRiQn1WRXe2TXt0=
 github.com/apex/httplog v1.0.0/go.mod h1:cjjeMniS2rpajsvqBd2X521ua0Tmwtt4y0avzGRIG9M=
 github.com/apex/log v1.1.2/go.mod h1:SyfRweFO+TlkIJ3DVizTSeI1xk7jOIIqOnUPZQTTsww=
-github.com/apex/log v1.5.0 h1:eOSyWoylstNP8a6yEeEMAxDjZCJxIdogtL6Vi/LRwDk=
-github.com/apex/log v1.5.0/go.mod h1:hmgUUnPXQH5Ktkmip4AKbmYJ07s7Gr4WTjZPzFseKdE=
 github.com/apex/log v1.6.0 h1:Y50wF1PBIIexIgTm0/7G6gcLitkO5jHK5Mb6wcMY0UI=
 github.com/apex/log v1.6.0/go.mod h1:x7s+P9VtvFBXge9Vbn+8TrqKmuzmD35TTkeBHul8UtY=
 github.com/apex/logs v0.0.3/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDwo=
-github.com/apex/logs v0.9.5/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDwo=
 github.com/apex/logs v1.0.0/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDwo=
 github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a/go.mod h1:3NqKYiepwy8kCu4PNA+aP7WUV72eXWJeP9/r3/K9aLE=
 github.com/aphistic/sweet v0.2.0/go.mod h1:fWDlIh/isSE9n6EPsRmC0det+whmX6dJid3stzu0Xys=
