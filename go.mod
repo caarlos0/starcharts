@@ -6,7 +6,7 @@ require (
 	github.com/alicebob/gopher-json v0.0.0-20180125190556-5a6b3ba71ee6 // indirect
 	github.com/alicebob/miniredis v2.5.0+incompatible
 	github.com/apex/httplog v1.0.0
-	github.com/apex/log v1.7.0
+	github.com/apex/log v1.8.0
 	github.com/blend/go-sdk v1.1.1 // indirect
 	github.com/caarlos0/env/v6 v6.3.0
 	github.com/go-redis/cache v6.4.0+incompatible

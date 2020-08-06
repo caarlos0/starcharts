@@ -16,6 +16,8 @@ github.com/apex/httplog v1.0.0/go.mod h1:cjjeMniS2rpajsvqBd2X521ua0Tmwtt4y0avzGR
 github.com/apex/log v1.1.2/go.mod h1:SyfRweFO+TlkIJ3DVizTSeI1xk7jOIIqOnUPZQTTsww=
 github.com/apex/log v1.7.0 h1:h/3INlfLuGkjzS6595inb1N53nr2e8KwPSy4FKpLC0k=
 github.com/apex/log v1.7.0/go.mod h1:m82fZlWIuiWzWP04XCTXmnX0xRkYYbCdYn8jbJeLBEA=
+github.com/apex/log v1.8.0 h1:+W4j+dttibFvynPLlctdnYFUn1eLKT37BZWWW2iMfEM=
+github.com/apex/log v1.8.0/go.mod h1:m82fZlWIuiWzWP04XCTXmnX0xRkYYbCdYn8jbJeLBEA=
 github.com/apex/logs v0.0.3/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDwo=
 github.com/apex/logs v1.0.0/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDwo=
 github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a/go.mod h1:3NqKYiepwy8kCu4PNA+aP7WUV72eXWJeP9/r3/K9aLE=
