@@ -14,8 +14,6 @@ github.com/alicebob/miniredis v2.5.0+incompatible/go.mod h1:8HZjEj4yU0dwhYHky+Dx
 github.com/apex/httplog v1.0.0 h1:5uJFk6Ga4rRGG3Xt+ldofR5/RCgSzRiQn1WRXe2TXt0=
 github.com/apex/httplog v1.0.0/go.mod h1:cjjeMniS2rpajsvqBd2X521ua0Tmwtt4y0avzGRIG9M=
 github.com/apex/log v1.1.2/go.mod h1:SyfRweFO+TlkIJ3DVizTSeI1xk7jOIIqOnUPZQTTsww=
-github.com/apex/log v1.7.0 h1:h/3INlfLuGkjzS6595inb1N53nr2e8KwPSy4FKpLC0k=
-github.com/apex/log v1.7.0/go.mod h1:m82fZlWIuiWzWP04XCTXmnX0xRkYYbCdYn8jbJeLBEA=
 github.com/apex/log v1.9.0 h1:FHtw/xuaM8AgmvDDTI9fiwoAL25Sq2cxojnZICUU8l0=
 github.com/apex/log v1.9.0/go.mod h1:m82fZlWIuiWzWP04XCTXmnX0xRkYYbCdYn8jbJeLBEA=
 github.com/apex/logs v0.0.3/go.mod h1:XzxuLZ5myVHDy9SAmYpamKKRNApGj54PfYLcFrXqDwo=
