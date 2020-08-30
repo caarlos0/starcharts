@@ -10,7 +10,7 @@ require (
 	github.com/blend/go-sdk v1.1.1 // indirect
 	github.com/caarlos0/env/v6 v6.3.0
 	github.com/go-redis/cache v6.4.0+incompatible
-	github.com/go-redis/redis v6.15.8+incompatible
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/gorilla/mux v1.8.0
