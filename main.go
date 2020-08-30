@@ -5,14 +5,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/caarlos0/starcharts/internal/github"
-
 	"github.com/apex/httplog"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/controller"
 	"github.com/caarlos0/starcharts/internal/cache"
+	"github.com/caarlos0/starcharts/internal/github"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
