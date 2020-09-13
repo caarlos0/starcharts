@@ -1,0 +1,12 @@
+.git
+.git/
+.git/*
+.git/**
+Dockerfile
+docker-compose.yml
+.env-example
+*.md
+*.csv
+*.txt
+*.tar.gz
+

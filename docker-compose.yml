@@ -1,0 +1,45 @@
+---
+version: '3.8'
+services:
+
+  starcharts:
+    image: papper2code/starcharts:latest
+    container_name: ${NAMESPACE}-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      REDIS_URL: redis://redis:6379
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      GITHUB_PAGE_SIZE: ${GITHUB_PAGE_SIZE}
+      PORT: ${PORT}
+    ports:
+    - 3000:3000
+    networks:
+    - internal
+    - web       
+    restart: unless-stopped
+
+  redis:
+    image: redis:6-alpine
+    container_name: ${NAMESPACE}-redis
+    networks:
+    - internal
+    volumes:
+    - redis-data:/data
+    restart: unless-stopped
+    command:
+    - "redis-server"
+    - "--maxmemory 2G"
+    - "--maxmemory-policy allkeys-lru"
+
+  # promotheus
+
+networks:
+  internal:
+    driver: bridge
+  web:
+    external: true
+
+volumes:
+  redis-data:
