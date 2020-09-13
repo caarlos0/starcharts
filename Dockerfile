@@ -1,5 +1,5 @@
-# GitHub:       https://github.com/lucmichalski
 FROM golang:1.15-alpine AS build
+MAINTAINER paper2code <contact@paper2code.com>
 
 ARG VERSION
 ARG GIT_COMMIT
@@ -19,20 +19,19 @@ RUN apk update && \
 
 RUN go build -ldflags "-extldflags=-static -extldflags=-lm" -o /go/bin/starcharts
 
-FROM paper2code/starcharts:latest as twint
-
 FROM alpine:3.12
+MAINTAINER paper2code <contact@paper2code.com>
 
 COPY --from=build /go/bin/starcharts /usr/bin/starcharts
 
 RUN apk update && \
     apk add --no-cache ca-certificates nano bash
 
-VOLUME /data
-WORKDIR /data
+WORKDIR /opt/starcharts
+VOLUME /opt/starcharts/data
 
 # Expose port for live server
 EXPOSE 3000
 
-CMD ["/usr/bin/starcharts"]
+CMD ["starcharts"]
 

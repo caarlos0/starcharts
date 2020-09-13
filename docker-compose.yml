@@ -3,22 +3,28 @@ version: '3.8'
 services:
 
   starcharts:
-    image: papper2code/starcharts:latest
+    image: starcharts:latest-alpine
     container_name: ${NAMESPACE}-web
     build:
       context: .
       dockerfile: Dockerfile
     environment:
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: ${REDIS_URL}
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       GITHUB_PAGE_SIZE: ${GITHUB_PAGE_SIZE}
       PORT: ${PORT}
+    volumes:
+    - ./static:/opt/starcharts/static
+    - ./templates:/opt/starcharts/templates
+    depends_on:
+    - redis
     ports:
     - 3000:3000
     networks:
     - internal
     - web       
     restart: unless-stopped
+    command: ["starcharts"]
 
   redis:
     image: redis:6-alpine
@@ -32,8 +38,6 @@ services:
     - "redis-server"
     - "--maxmemory 2G"
     - "--maxmemory-policy allkeys-lru"
-
-  # promotheus
 
 networks:
   internal:
