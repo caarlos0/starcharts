@@ -64,12 +64,12 @@
 	{{ end }}
 	{{ else }}
 	<div class="main">
-		Check some repository chart by browsing to user/repo, for example,
-		<a href="/caarlos0/starcharts">
-			caarlos0/starcharts
-		</a>
+		<p>Check some repository chart by browsing to user/repo, for example, <a href="/caarlos0/starcharts">caarlos0/starcharts</a>.</p>
 	</div>
 	{{ end }}
+	<div class="footer">
+		<p>Created by <a href="https://github.com/caarlos0">@caarlos0</a>.</p>
+	</div>
 	<script
 		src="//cdnjs.cloudflare.com/ajax/libs/timeago.js/3.0.2/timeago.min.js">
 	</script>
@@ -79,7 +79,6 @@
 	<script>
 		hljs.initHighlightingOnLoad();
 		timeago().render(document.querySelectorAll('time'));
-
 	</script>
 </body>
 
