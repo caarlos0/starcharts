@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"net/http"
 	"os"
 	"time"
@@ -19,6 +20,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+//go:embed static/*
+var static embed.FS
+
 func main() {
 	log.SetHandler(text.New(os.Stderr))
 	var config = config.Get()
@@ -35,16 +39,16 @@ func main() {
 	var r = mux.NewRouter()
 	r.Path("/").
 		Methods(http.MethodGet).
-		HandlerFunc(controller.Index())
+		HandlerFunc(controller.Index(static))
 	r.PathPrefix("/static/").
 		Methods(http.MethodGet).
-		Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+		Handler(http.FileServer(http.FS(static)))
 	r.Path("/{owner}/{repo}.svg").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.GetRepoChart(github, cache))
 	r.Path("/{owner}/{repo}").
 		Methods(http.MethodGet).
-		HandlerFunc(controller.GetRepo(github, cache))
+		HandlerFunc(controller.GetRepo(static, github, cache))
 
 	// generic metrics
 	var requestCounter = promauto.NewCounterVec(prometheus.CounterOpts{

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"embed"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -15,7 +16,7 @@ import (
 )
 
 // GetRepo shows the given repo chart.
-func GetRepo(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
+func GetRepo(fs embed.FS, github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var name = fmt.Sprintf(
 			"%s/%s",
@@ -27,7 +28,7 @@ func GetRepo(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err = template.Must(template.ParseFiles("templates/index.html")).
+		err = template.Must(template.ParseFS(fs, "static/templates/index.html")).
 			Execute(w, details)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

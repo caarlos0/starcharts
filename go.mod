@@ -1,6 +1,6 @@
 module github.com/caarlos0/starcharts
 
-go 1.14
+go 1.16
 
 require (
 	github.com/alicebob/gopher-json v0.0.0-20180125190556-5a6b3ba71ee6 // indirect
