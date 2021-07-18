@@ -1,3 +1,4 @@
 vendor
 bin
 coverage.txt
+dist

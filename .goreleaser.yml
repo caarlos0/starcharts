@@ -1,0 +1,30 @@
+gomod:
+  proxy: true
+builds:
+- env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  goarch:
+  - amd64
+  mod_timestamp: '{{ .CommitTimestamp }}'
+  flags:
+    - -trimpath
+  ldflags:
+    - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
+
+nfpms:
+- homepage: 'https://github.com/caarlos0/{{ .ProjectName }}'
+  description: 'Plot your repository stars over time.'
+  maintainer: Carlos Alexandro Becker <carlos@becker.software>
+  license: MIT
+  vendor: Becker Software
+  formats:
+  - apk
+  - deb
+  - rpm
+
+release:
+  footer: |
+    ---
+    _Released with [GoReleaser Pro](https://goreleaser.com/pro)!_
