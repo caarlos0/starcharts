@@ -25,18 +25,18 @@ var static embed.FS
 
 func main() {
 	log.SetHandler(text.New(os.Stderr))
-	var config = config.Get()
-	var ctx = log.WithField("port", config.Port)
+	config := config.Get()
+	ctx := log.WithField("port", config.Port)
 	options, err := redis.ParseURL(config.RedisURL)
 	if err != nil {
 		log.WithError(err).Fatal("invalid redis_url")
 	}
-	var redis = redis.NewClient(options)
-	var cache = cache.New(redis)
+	redis := redis.NewClient(options)
+	cache := cache.New(redis)
 	defer cache.Close()
-	var github = github.New(config, cache)
+	github := github.New(config, cache)
 
-	var r = mux.NewRouter()
+	r := mux.NewRouter()
 	r.Path("/").
 		Methods(http.MethodGet).
 		HandlerFunc(controller.Index(static))
@@ -50,14 +50,14 @@ func main() {
 		Methods(http.MethodGet).
 		HandlerFunc(controller.GetRepo(static, github, cache))
 
-	// generic metrics
-	var requestCounter = promauto.NewCounterVec(prometheus.CounterOpts{
+		// generic metrics
+	requestCounter := promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: "starcharts",
 		Subsystem: "http",
 		Name:      "requests_total",
 		Help:      "total requests",
 	}, []string{"code", "method"})
-	var responseObserver = promauto.NewSummaryVec(prometheus.SummaryOpts{
+	responseObserver := promauto.NewSummaryVec(prometheus.SummaryOpts{
 		Namespace: "starcharts",
 		Subsystem: "http",
 		Name:      "responses",
@@ -67,7 +67,7 @@ func main() {
 
 	r.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
 
-	var srv = &http.Server{
+	srv := &http.Server{
 		Handler: httplog.New(
 			promhttp.InstrumentHandlerDuration(
 				responseObserver,

@@ -36,10 +36,10 @@ func TestStargazers(t *testing.T) {
 		Addr: mr.Addr(),
 	})
 
-	var config = config.Get()
-	var cache = cache.New(rc)
+	config := config.Get()
+	cache := cache.New(rc)
 	defer cache.Close()
-	var gt = New(config, cache)
+	gt := New(config, cache)
 
 	t.Run("get stargazers from api", func(t *testing.T) {
 		_, err := gt.Stargazers(context.TODO(), repo)
@@ -89,10 +89,10 @@ func TestStargazers_EmptyResponseOnPagination(t *testing.T) {
 		Addr: mr.Addr(),
 	})
 
-	var config = config.Get()
-	var cache = cache.New(rc)
+	config := config.Get()
+	cache := cache.New(rc)
 	defer cache.Close()
-	var gt = New(config, cache)
+	gt := New(config, cache)
 	gt.pageSize = 2
 	gt.token = "12345"
 
@@ -136,10 +136,10 @@ func TestStargazers_APIFailure(t *testing.T) {
 		Addr: mr.Addr(),
 	})
 
-	var config = config.Get()
-	var cache = cache.New(rc)
+	config := config.Get()
+	cache := cache.New(rc)
 	defer cache.Close()
-	var gt = New(config, cache)
+	gt := New(config, cache)
 
 	t.Run("set error if api return 404", func(t *testing.T) {
 		details, err := gt.Stargazers(context.TODO(), repo1)

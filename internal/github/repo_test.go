@@ -30,10 +30,10 @@ func TestRepoDetails(t *testing.T) {
 		Addr: mr.Addr(),
 	})
 
-	var config = config.Get()
-	var cache = cache.New(rc)
+	config := config.Get()
+	cache := cache.New(rc)
 	defer cache.Close()
-	var gt = New(config, cache)
+	gt := New(config, cache)
 
 	t.Run("get repo details from api", func(t *testing.T) {
 		_, err := gt.RepoDetails(context.TODO(), "test/test")
@@ -66,10 +66,10 @@ func TestRepoDetails_APIfailure(t *testing.T) {
 		Addr: mr.Addr(),
 	})
 
-	var config = config.Get()
-	var cache = cache.New(rc)
+	config := config.Get()
+	cache := cache.New(rc)
 	defer cache.Close()
-	var gt = New(config, cache)
+	gt := New(config, cache)
 
 	t.Run("set error if api return 404", func(t *testing.T) {
 		details, err := gt.RepoDetails(context.TODO(), "test/test")
@@ -104,10 +104,10 @@ func TestRepoDetails_WithAuthToken(t *testing.T) {
 		Addr: mr.Addr(),
 	})
 
-	var config = config.Get()
-	var cache = cache.New(rc)
+	config := config.Get()
+	cache := cache.New(rc)
 	defer cache.Close()
-	var gt = New(config, cache)
+	gt := New(config, cache)
 	gt.token = "12345"
 
 	t.Run("get repo with auth token", func(t *testing.T) {

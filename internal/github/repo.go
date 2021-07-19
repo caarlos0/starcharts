@@ -21,13 +21,13 @@ type Repository struct {
 // RepoDetails gets the given repository details.
 func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, error) {
 	var repo Repository
-	var log = log.WithField("repo", name)
+	log := log.WithField("repo", name)
 	err := gh.cache.Get(name, &repo)
 	if err == nil {
 		log.Info("got from cache")
 		return repo, err
 	}
-	var url = fmt.Sprintf("https://api.github.com/repos/%s", name)
+	url := fmt.Sprintf("https://api.github.com/repos/%s", name)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return repo, err

@@ -56,15 +56,15 @@ func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Star
 // TODO: refactor.
 func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page int) ([]Stargazer, error) {
 	var stars []Stargazer
-	var log = log.WithField("repo", repo.FullName).WithField("page", page)
-	var err = gh.cache.Get(fmt.Sprintf("%s_%d", repo.FullName, page), &stars)
+	log := log.WithField("repo", repo.FullName).WithField("page", page)
+	err := gh.cache.Get(fmt.Sprintf("%s_%d", repo.FullName, page), &stars)
 	if err == nil {
 		log.Info("got from cache")
 		return stars, err
 	}
 	defer log.Trace("got page from api").Stop(&err)
 	log.Infof("getting page from api")
-	var url = fmt.Sprintf(
+	url := fmt.Sprintf(
 		"https://api.github.com/repos/%s/stargazers?page=%d&per_page=%d",
 		repo.FullName,
 		page,
@@ -104,7 +104,7 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 	if len(stars) == 0 {
 		return stars, errNoMorePages
 	}
-	var expire = time.Hour * 24 * 7
+	expire := time.Hour * 24 * 7
 	if page == gh.lastPage(repo) {
 		expire = time.Hour * 2
 	}

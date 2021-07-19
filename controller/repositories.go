@@ -18,7 +18,7 @@ import (
 // GetRepo shows the given repo chart.
 func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var name = fmt.Sprintf(
+		name := fmt.Sprintf(
 			"%s/%s",
 			mux.Vars(r)["owner"],
 			mux.Vars(r)["repo"],
@@ -47,12 +47,12 @@ func IntValueFormatter(v interface{}) string {
 // TODO: refactor.
 func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var name = fmt.Sprintf(
+		name := fmt.Sprintf(
 			"%s/%s",
 			mux.Vars(r)["owner"],
 			mux.Vars(r)["repo"],
 		)
-		var log = log.WithField("repo", name)
+		log := log.WithField("repo", name)
 		defer log.Trace("collect_stars").Stop(nil)
 		repo, err := github.RepoDetails(r.Context(), name)
 		if err != nil {
@@ -64,7 +64,7 @@ func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
 		}
-		var series = chart.TimeSeries{
+		series := chart.TimeSeries{
 			Style: chart.Style{
 				Show: true,
 				StrokeColor: drawing.Color{
@@ -86,7 +86,7 @@ func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 			series.YValues = append(series.YValues, 1)
 		}
 
-		var graph = chart.Chart{
+		graph := chart.Chart{
 			XAxis: chart.XAxis{
 				Name:      "Time",
 				NameStyle: chart.StyleShow(),
