@@ -78,8 +78,7 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 		log.WithError(err).Warnf("failed to get %s from cache", etagKey)
 	}
 
-	log.Infof("getting page from api")
-	resp, err := gh.request(ctx, repo, page, etag)
+	resp, err := gh.makeStarPageRequest(ctx, repo, page, etag)
 	if err != nil {
 		return stars, err
 	}
@@ -103,7 +102,6 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 		}
 		return stars, err
 	case http.StatusForbidden:
-		log.Info("rate limited")
 		gh.RateLimits.Inc()
 		log.Warn("rate limit hit")
 		return stars, ErrRateLimit
@@ -119,7 +117,6 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 		}
 
 		etag = resp.Header.Get("etag")
-		log.Infof("ETAG %s", etag)
 		if etag != "" {
 			if err := gh.cache.Put(etagKey, etag); err != nil {
 				log.WithError(err).Warnf("failed to cache %s", etagKey)
@@ -136,7 +133,7 @@ func (gh *GitHub) lastPage(repo Repository) int {
 	return (repo.StargazersCount / gh.pageSize) + 1
 }
 
-func (gh *GitHub) request(ctx context.Context, repo Repository, page int, etag string) (*http.Response, error) {
+func (gh *GitHub) makeStarPageRequest(ctx context.Context, repo Repository, page int, etag string) (*http.Response, error) {
 	url := fmt.Sprintf(
 		"https://api.github.com/repos/%s/stargazers?page=%d&per_page=%d",
 		repo.FullName,

@@ -21,39 +21,73 @@ type Repository struct {
 func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, error) {
 	var repo Repository
 	log := log.WithField("repo", name)
-	err := gh.cache.Get(name, &repo)
-	if err == nil {
-		log.Info("got from cache")
-		return repo, err
+
+	var etag string
+	etagKey := name + "_etag"
+
+	if err := gh.cache.Get(etagKey, &etag); err != nil {
+		log.WithError(err).Warnf("failed to get %s from cache", etagKey)
 	}
-	url := fmt.Sprintf("https://api.github.com/repos/%s", name)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+
+	resp, err := gh.makeRepoRequest(ctx, name, etag)
 	if err != nil {
 		return repo, err
 	}
-	if gh.token != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("token %s", gh.token))
-	}
-	resp, err := http.DefaultClient.Do(req)
+
+	bts, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return repo, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusForbidden {
+
+	switch resp.StatusCode {
+	case http.StatusNotModified:
+		log.Info("not modified")
+		err := gh.cache.Get(name, &repo)
+		if err != nil {
+			log.WithError(err).Warnf("failed to get %s from cache", name)
+			if err := gh.cache.Delete(etagKey); err != nil {
+				log.WithError(err).Warnf("failed to delete %s from cache", etagKey)
+			}
+			return gh.RepoDetails(ctx, name)
+		}
+		return repo, err
+	case http.StatusForbidden:
 		gh.RateLimits.Inc()
 		log.Warn("rate limit hit")
 		return repo, ErrRateLimit
-	}
-	if resp.StatusCode != http.StatusOK {
-		bts, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
+	case http.StatusOK:
+		if err := json.Unmarshal(bts, &repo); err != nil {
 			return repo, err
 		}
+		if err := gh.cache.Put(name, repo); err != nil {
+			log.WithError(err).Warnf("failed to cache %s", name)
+		}
+
+		etag = resp.Header.Get("etag")
+		if etag != "" {
+			if err := gh.cache.Put(etagKey, etag); err != nil {
+				log.WithError(err).Warnf("failed to cache %s", etagKey)
+			}
+		}
+
+		return repo, nil
+	default:
 		return repo, fmt.Errorf("%w: %v", ErrGitHubAPI, string(bts))
 	}
-	err = json.NewDecoder(resp.Body).Decode(&repo)
-	if err := gh.cache.Put(name, repo); err != nil {
-		log.Warn("failed to cache")
+}
+
+func (gh *GitHub) makeRepoRequest(ctx context.Context, name, etag string) (*http.Response, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s", name)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
 	}
-	return repo, err
+	if etag != "" {
+		req.Header.Add("If-None-Match", etag)
+	}
+	if gh.token != "" {
+		req.Header.Add("Authorization", fmt.Sprintf("token %s", gh.token))
+	}
+	return http.DefaultClient.Do(req)
 }
