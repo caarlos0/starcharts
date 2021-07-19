@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"time"
 
 	"github.com/apex/log"
 )
@@ -53,7 +52,7 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 		return repo, fmt.Errorf("%w: %v", ErrGitHubAPI, string(bts))
 	}
 	err = json.NewDecoder(resp.Body).Decode(&repo)
-	if err := gh.cache.Put(name, repo, time.Hour*2); err != nil {
+	if err := gh.cache.Put(name, repo); err != nil {
 		log.Warn("failed to cache")
 	}
 	return repo, err
