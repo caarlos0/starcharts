@@ -5,22 +5,16 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="theme-color" content="#000000">
-	<meta name="viewport"
-		content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="apple-touch-icon-precomposed" sizes="144x144"
-		href="/static/favicon.png" />
-	<link rel="apple-touch-icon-precomposed" sizes="152x152"
-		href="/static/favicon.png" />
-	<link rel="icon" type="image/png" href="/static/favicon.png"
-		sizes="32x32" />
-	<link rel="icon" type="image/png" href="/static/favicon.png"
-		sizes="16x16" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/static/favicon.png" />
+	<link rel="apple-touch-icon-precomposed" sizes="152x152" href="/static/favicon.png" />
+	<link rel="icon" type="image/png" href="/static/favicon.png" sizes="32x32" />
+	<link rel="icon" type="image/png" href="/static/favicon.png" sizes="16x16" />
 	<title>Star Charts</title>
 	<meta name="description" content="StarCharts">
 	<meta name="author" content="https://github/caarlos0">
 	<link rel="stylesheet" href="/static/styles.css">
-	<link rel="stylesheet"
-		href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/darcula.min.css">
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/darcula.min.css">
 </head>
 
 <body>
@@ -54,12 +48,19 @@
 			You can include the chart on your repository's
 			<code>README.md</code>
 			as follows:
-			<pre><code class="markdown">
+		<pre><code class="markdown">
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/{{ .FullName }}.svg)](https://starchart.cc/{{ .FullName }})
       </code></pre>
 		</p>
+	</div>
+	<div class="footer">
+		<a
+			href="https://www.digitalocean.com/?refcode=7e8e9efb2f77&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge">
+			<img src="https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg"
+				alt="DigitalOcean Referral Badge" width="150px" />
+		</a>
 	</div>
 	{{ end }}
 	{{ else }}
@@ -70,16 +71,12 @@
 		</a>
 	</div>
 	{{ end }}
-	<script
-		src="//cdnjs.cloudflare.com/ajax/libs/timeago.js/3.0.2/timeago.min.js">
-	</script>
-	<script
-		src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js">
-	</script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/timeago.js/3.0.2/timeago.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
+	<script defer data-domain="starchart.cc" src="https://plausible.io/js/plausible.js"></script>
 	<script>
 		hljs.initHighlightingOnLoad();
 		timeago().render(document.querySelectorAll('time'));
-
 	</script>
 </body>
 
