@@ -13,7 +13,7 @@ var cacheGets = prometheus.NewCounter(
 		Namespace: "starcharts",
 		Subsystem: "cache",
 		Name:      "gets_total",
-		Help:      "Total number of successfull cache gets",
+		Help:      "Total number of successful cache gets",
 	},
 )
 
@@ -23,7 +23,7 @@ var cachePuts = prometheus.NewCounter(
 		Namespace: "starcharts",
 		Subsystem: "cache",
 		Name:      "puts_total",
-		Help:      "Total number of successfull cache puts",
+		Help:      "Total number of successful cache puts",
 	},
 )
 
@@ -33,7 +33,7 @@ var cacheDeletes = prometheus.NewCounter(
 		Namespace: "starcharts",
 		Subsystem: "cache",
 		Name:      "deletes_total",
-		Help:      "Total number of successfull cache deletes",
+		Help:      "Total number of successful cache deletes",
 	},
 )
 
