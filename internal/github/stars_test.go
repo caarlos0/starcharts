@@ -26,11 +26,6 @@ func TestStargazers(t *testing.T) {
 		StargazersCount: 2,
 	}
 
-	gock.New("https://api.github.com").
-		Get("/repos/test/test/stargazers").
-		Reply(200).
-		JSON(stargazers)
-
 	mr, _ := miniredis.Run()
 	rc := redis.NewClient(&redis.Options{
 		Addr: mr.Addr(),
@@ -42,6 +37,10 @@ func TestStargazers(t *testing.T) {
 	gt := New(config, cache)
 
 	t.Run("get stargazers from api", func(t *testing.T) {
+		gock.New("https://api.github.com").
+			Get("/repos/test/test/stargazers").
+			Reply(200).
+			JSON(stargazers)
 		_, err := gt.Stargazers(context.TODO(), repo)
 		if err != nil {
 			t.Errorf("RepoDetails returned error %v", err)
@@ -49,6 +48,12 @@ func TestStargazers(t *testing.T) {
 	})
 
 	t.Run("get stargazers from cache", func(t *testing.T) {
+		cache.Put(repo.FullName+"_1_etag", "asdasd")
+		gock.New("https://api.github.com").
+			Get("/repos/test/test/stargazers").
+			MatchHeader("If-None-Match", "asdasd").
+			Reply(304).
+			JSON([]Stargazer{})
 		_, err := gt.Stargazers(context.TODO(), repo)
 		if err != nil {
 			t.Errorf("RepoDetails returned error %v", err)
