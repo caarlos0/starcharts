@@ -43,6 +43,7 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 	switch resp.StatusCode {
 	case http.StatusNotModified:
 		log.Info("not modified")
+		gh.effectiveEtags.Inc()
 		err := gh.cache.Get(name, &repo)
 		if err != nil {
 			log.WithError(err).Warnf("failed to get %s from cache", name)
@@ -53,7 +54,7 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 		}
 		return repo, err
 	case http.StatusForbidden:
-		gh.RateLimits.Inc()
+		gh.rateLimits.Inc()
 		log.Warn("rate limit hit")
 		return repo, ErrRateLimit
 	case http.StatusOK:

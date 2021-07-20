@@ -63,7 +63,6 @@ func main() {
 		Name:      "responses",
 		Help:      "response times and counts",
 	}, []string{"code", "method"})
-	prometheus.MustRegister(github.RateLimits)
 
 	r.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
 

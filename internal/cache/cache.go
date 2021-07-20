@@ -10,16 +10,30 @@ import (
 // nolint: gochecknoglobals
 var cacheGets = prometheus.NewCounter(
 	prometheus.CounterOpts{
-		Name: "cache_get_total",
-		Help: "Total number of cache gets",
+		Namespace: "starcharts",
+		Subsystem: "cache",
+		Name:      "gets_total",
+		Help:      "Total number of successfull cache gets",
 	},
 )
 
 // nolint: gochecknoglobals
 var cachePuts = prometheus.NewCounter(
 	prometheus.CounterOpts{
-		Name: "cache_put_total",
-		Help: "Total number of cache puts",
+		Namespace: "starcharts",
+		Subsystem: "cache",
+		Name:      "puts_total",
+		Help:      "Total number of successfull cache puts",
+	},
+)
+
+// nolint: gochecknoglobals
+var cacheDeletes = prometheus.NewCounter(
+	prometheus.CounterOpts{
+		Namespace: "starcharts",
+		Subsystem: "cache",
+		Name:      "deletes_total",
+		Help:      "Total number of successfull cache deletes",
 	},
 )
 
@@ -59,19 +73,30 @@ func (c *Redis) Close() error {
 
 // Get from cache by key.
 func (c *Redis) Get(key string, result interface{}) error {
+	if err := c.codec.Get(key, result); err != nil {
+		return err
+	}
 	cacheGets.Inc()
-	return c.codec.Get(key, result)
+	return nil
 }
 
 // Put on cache.
 func (c *Redis) Put(key string, obj interface{}) error {
-	cachePuts.Inc()
-	return c.codec.Set(&rediscache.Item{
+	if err := c.codec.Set(&rediscache.Item{
 		Key:    key,
 		Object: obj,
-	})
+	}); err != nil {
+		return err
+	}
+	cachePuts.Inc()
+	return nil
 }
 
+// Delete from cache.
 func (c *Redis) Delete(key string) error {
-	return c.codec.Delete(key)
+	if err := c.codec.Delete(key); err != nil {
+		return err
+	}
+	cacheDeletes.Inc()
+	return nil
 }
