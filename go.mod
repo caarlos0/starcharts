@@ -8,7 +8,7 @@ require (
 	github.com/apex/httplog v1.0.0
 	github.com/apex/log v1.9.0
 	github.com/blend/go-sdk v1.1.1 // indirect
-	github.com/caarlos0/env/v6 v6.4.0
+	github.com/caarlos0/env/v6 v6.6.2
 	github.com/go-redis/cache v6.4.0+incompatible
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
@@ -23,6 +23,6 @@ require (
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
-	gopkg.in/h2non/gock.v1 v1.0.16
-	gopkg.in/vmihailenco/msgpack.v2 v2.9.1
+	gopkg.in/h2non/gock.v1 v1.1.0
+	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
 )
