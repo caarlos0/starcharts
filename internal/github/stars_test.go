@@ -9,6 +9,7 @@ import (
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/go-redis/redis"
+	"github.com/matryer/is"
 	"gopkg.in/h2non/gock.v1"
 )
 
@@ -26,11 +27,6 @@ func TestStargazers(t *testing.T) {
 		StargazersCount: 2,
 	}
 
-	gock.New("https://api.github.com").
-		Get("/repos/test/test/stargazers").
-		Reply(200).
-		JSON(stargazers)
-
 	mr, _ := miniredis.Run()
 	rc := redis.NewClient(&redis.Options{
 		Addr: mr.Addr(),
@@ -42,17 +38,25 @@ func TestStargazers(t *testing.T) {
 	gt := New(config, cache)
 
 	t.Run("get stargazers from api", func(t *testing.T) {
+		is := is.New(t)
+		gock.New("https://api.github.com").
+			Get("/repos/test/test/stargazers").
+			Reply(200).
+			JSON(stargazers)
 		_, err := gt.Stargazers(context.TODO(), repo)
-		if err != nil {
-			t.Errorf("RepoDetails returned error %v", err)
-		}
+		is.NoErr(err) // should not have errored
 	})
 
 	t.Run("get stargazers from cache", func(t *testing.T) {
+		is := is.New(t)
+		is.NoErr(cache.Put(repo.FullName+"_1_etag", "asdasd"))
+		gock.New("https://api.github.com").
+			Get("/repos/test/test/stargazers").
+			MatchHeader("If-None-Match", "asdasd").
+			Reply(304).
+			JSON([]Stargazer{})
 		_, err := gt.Stargazers(context.TODO(), repo)
-		if err != nil {
-			t.Errorf("RepoDetails returned error %v", err)
-		}
+		is.NoErr(err) // should not have errored
 	})
 }
 
@@ -97,10 +101,9 @@ func TestStargazers_EmptyResponseOnPagination(t *testing.T) {
 	gt.token = "12345"
 
 	t.Run("get stargazers from api", func(t *testing.T) {
+		is := is.New(t)
 		_, err := gt.Stargazers(context.TODO(), repo)
-		if err != nil {
-			t.Errorf("RepoDetails returned error %v", err)
-		}
+		is.NoErr(err) // should not have errored
 	})
 }
 
@@ -142,15 +145,13 @@ func TestStargazers_APIFailure(t *testing.T) {
 	gt := New(config, cache)
 
 	t.Run("set error if api return 404", func(t *testing.T) {
-		details, err := gt.Stargazers(context.TODO(), repo1)
-		if err == nil {
-			t.Errorf("Expected error but got %v", details)
-		}
+		is := is.New(t)
+		_, err := gt.Stargazers(context.TODO(), repo1)
+		is.True(err != nil) // should not have errored
 	})
 	t.Run("set error if api return 403", func(t *testing.T) {
-		details, err := gt.Stargazers(context.TODO(), repo2)
-		if err == nil {
-			t.Errorf("Expected error but got %v", details)
-		}
+		is := is.New(t)
+		_, err := gt.Stargazers(context.TODO(), repo2)
+		is.True(err != nil) // should not have errored
 	})
 }

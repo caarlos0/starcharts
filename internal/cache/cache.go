@@ -1,8 +1,6 @@
 package cache
 
 import (
-	"time"
-
 	rediscache "github.com/go-redis/cache"
 	"github.com/go-redis/redis"
 	"github.com/prometheus/client_golang/prometheus"
@@ -60,17 +58,20 @@ func (c *Redis) Close() error {
 }
 
 // Get from cache by key.
-func (c *Redis) Get(key string, result interface{}) (err error) {
+func (c *Redis) Get(key string, result interface{}) error {
 	cacheGets.Inc()
 	return c.codec.Get(key, result)
 }
 
 // Put on cache.
-func (c *Redis) Put(key string, obj interface{}, expire time.Duration) (err error) {
+func (c *Redis) Put(key string, obj interface{}) error {
 	cachePuts.Inc()
 	return c.codec.Set(&rediscache.Item{
-		Key:        key,
-		Object:     obj,
-		Expiration: expire,
+		Key:    key,
+		Object: obj,
 	})
+}
+
+func (c *Redis) Delete(key string) error {
+	return c.codec.Delete(key)
 }

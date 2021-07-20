@@ -8,6 +8,7 @@ import (
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/go-redis/redis"
+	"github.com/matryer/is"
 	"gopkg.in/h2non/gock.v1"
 )
 
@@ -20,11 +21,6 @@ func TestRepoDetails(t *testing.T) {
 		StargazersCount: 3811,
 	}
 
-	gock.New("https://api.github.com").
-		Get("/repos/test/test").
-		Reply(200).
-		JSON(repo)
-
 	mr, _ := miniredis.Run()
 	rc := redis.NewClient(&redis.Options{
 		Addr: mr.Addr(),
@@ -36,17 +32,25 @@ func TestRepoDetails(t *testing.T) {
 	gt := New(config, cache)
 
 	t.Run("get repo details from api", func(t *testing.T) {
+		is := is.New(t)
+		gock.New("https://api.github.com").
+			Get("/repos/test/test").
+			Reply(200).
+			JSON(repo)
 		_, err := gt.RepoDetails(context.TODO(), "test/test")
-		if err != nil {
-			t.Errorf("RepoDetails returned error %v", err)
-		}
+		is.NoErr(err) // should not fail to get from api
 	})
 
 	t.Run("get repo details from cache", func(t *testing.T) {
+		is := is.New(t)
+		is.NoErr(cache.Put("test/test_etag", "a"))
+		gock.New("https://api.github.com").
+			Get("/repos/test/test").
+			MatchHeader("If-None-Match", "a").
+			Reply(200).
+			JSON(repo)
 		_, err := gt.RepoDetails(context.TODO(), "test/test")
-		if err != nil {
-			t.Errorf("RepoDetails returned error %v", err)
-		}
+		is.NoErr(err) // should not fail to get from cache
 	})
 }
 
@@ -72,16 +76,14 @@ func TestRepoDetails_APIfailure(t *testing.T) {
 	gt := New(config, cache)
 
 	t.Run("set error if api return 404", func(t *testing.T) {
-		details, err := gt.RepoDetails(context.TODO(), "test/test")
-		if err == nil {
-			t.Errorf("Expected error but got %v", details)
-		}
+		is := is.New(t)
+		_, err := gt.RepoDetails(context.TODO(), "test/test")
+		is.True(err != nil) //Expected error
 	})
 	t.Run("set error if api return 403", func(t *testing.T) {
-		details, err := gt.RepoDetails(context.TODO(), "private/private")
-		if err == nil {
-			t.Errorf("Expected error but got %v", details)
-		}
+		is := is.New(t)
+		_, err := gt.RepoDetails(context.TODO(), "private/private")
+		is.True(err != nil) //Expected error
 	})
 }
 
@@ -111,9 +113,8 @@ func TestRepoDetails_WithAuthToken(t *testing.T) {
 	gt.token = "12345"
 
 	t.Run("get repo with auth token", func(t *testing.T) {
+		is := is.New(t)
 		_, err := gt.RepoDetails(context.TODO(), "test/private")
-		if err != nil {
-			t.Errorf("RepoDetails returned error %v", err)
-		}
+		is.NoErr(err) // should not fail to get from api with auth token
 	})
 }
