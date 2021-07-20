@@ -49,7 +49,7 @@ func TestStargazers(t *testing.T) {
 
 	t.Run("get stargazers from cache", func(t *testing.T) {
 		is := is.New(t)
-		cache.Put(repo.FullName+"_1_etag", "asdasd")
+		is.NoErr(cache.Put(repo.FullName+"_1_etag", "asdasd"))
 		gock.New("https://api.github.com").
 			Get("/repos/test/test/stargazers").
 			MatchHeader("If-None-Match", "asdasd").
