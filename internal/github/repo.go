@@ -41,6 +41,10 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 	defer resp.Body.Close()
 
 	switch resp.StatusCode {
+	case http.StatusUnauthorized:
+		log.Info("retrying with another token")
+		gh.retryNewTokens.Inc()
+		return gh.RepoDetails(ctx, name)
 	case http.StatusNotModified:
 		log.Info("not modified")
 		gh.effectiveEtags.Inc()
@@ -87,8 +91,6 @@ func (gh *GitHub) makeRepoRequest(ctx context.Context, name, etag string) (*http
 	if etag != "" {
 		req.Header.Add("If-None-Match", etag)
 	}
-	if len(gh.tokens) > 0 {
-		req.Header.Add("Authorization", fmt.Sprintf("token %s", gh.token))
-	}
-	return http.DefaultClient.Do(req)
+
+	return gh.authorizedDo(req)
 }

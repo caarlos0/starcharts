@@ -8,6 +8,7 @@ import (
 	"github.com/alicebob/miniredis"
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/internal/cache"
+	"github.com/caarlos0/starcharts/internal/roundrobin"
 	"github.com/go-redis/redis"
 	"github.com/matryer/is"
 	"gopkg.in/h2non/gock.v1"
@@ -98,7 +99,7 @@ func TestStargazers_EmptyResponseOnPagination(t *testing.T) {
 	defer cache.Close()
 	gt := New(config, cache)
 	gt.pageSize = 2
-	gt.token = "12345"
+	gt.tokens = roundrobin.New([]string{"12345"})
 
 	t.Run("get stargazers from api", func(t *testing.T) {
 		is := is.New(t)

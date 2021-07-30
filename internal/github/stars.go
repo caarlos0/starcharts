@@ -90,6 +90,10 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 	defer resp.Body.Close()
 
 	switch resp.StatusCode {
+	case http.StatusUnauthorized:
+		log.Info("retrying with another token")
+		gh.retryNewTokens.Inc()
+		return gh.getStargazersPage(ctx, repo, page)
 	case http.StatusNotModified:
 		gh.effectiveEtags.Inc()
 		log.Info("not modified")
@@ -151,9 +155,6 @@ func (gh *GitHub) makeStarPageRequest(ctx context.Context, repo Repository, page
 	if etag != "" {
 		req.Header.Add("If-None-Match", etag)
 	}
-	if gh.token != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("token %s", gh.token))
-	}
 
-	return http.DefaultClient.Do(req)
+	return gh.authorizedDo(req)
 }
