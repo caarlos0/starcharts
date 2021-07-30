@@ -70,9 +70,9 @@ func NewToken(token string) *Token {
 	}
 }
 
-// String returns the last 5 chars for the token.
+// String returns the last 3 chars for the token.
 func (t *Token) String() string {
-	return t.token[len(t.token)-5:]
+	return t.token[len(t.token)-3:]
 }
 
 // Key returns the actual token.

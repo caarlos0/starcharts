@@ -43,10 +43,10 @@ func TestRoundRobinWithInvalidatedKeys(t *testing.T) {
 
 func TestTokenString(t *testing.T) {
 	is := is.New(t)
-	is.Equal("okenA", NewToken(tokenA).String())
-	is.Equal("okenB", NewToken(tokenB).String())
-	is.Equal("okenC", NewToken(tokenC).String())
-	is.Equal("okenD", NewToken(tokenD).String())
+	is.Equal("enA", NewToken(tokenA).String())
+	is.Equal("enB", NewToken(tokenB).String())
+	is.Equal("enC", NewToken(tokenC).String())
+	is.Equal("enD", NewToken(tokenD).String())
 }
 
 func TestNoTokens(t *testing.T) {
