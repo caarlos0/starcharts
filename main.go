@@ -25,6 +25,7 @@ var static embed.FS
 
 func main() {
 	log.SetHandler(text.New(os.Stderr))
+	// log.SetLevel(log.DebugLevel)
 	config := config.Get()
 	ctx := log.WithField("port", config.Port)
 	options, err := redis.ParseURL(config.RedisURL)
@@ -50,7 +51,7 @@ func main() {
 		Methods(http.MethodGet).
 		HandlerFunc(controller.GetRepo(static, github, cache))
 
-		// generic metrics
+	// generic metrics
 	requestCounter := promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: "starcharts",
 		Subsystem: "http",

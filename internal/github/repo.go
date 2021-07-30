@@ -43,7 +43,7 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 	switch resp.StatusCode {
 	case http.StatusNotModified:
 		log.Info("not modified")
-		gh.effectiveEtags.Inc()
+		effectiveEtags.Inc()
 		err := gh.cache.Get(name, &repo)
 		if err != nil {
 			log.WithError(err).Warnf("failed to get %s from cache", name)
@@ -54,7 +54,7 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 		}
 		return repo, err
 	case http.StatusForbidden:
-		gh.rateLimits.Inc()
+		rateLimits.Inc()
 		log.Warn("rate limit hit")
 		return repo, ErrRateLimit
 	case http.StatusOK:
@@ -87,8 +87,6 @@ func (gh *GitHub) makeRepoRequest(ctx context.Context, name, etag string) (*http
 	if etag != "" {
 		req.Header.Add("If-None-Match", etag)
 	}
-	if gh.token != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("token %s", gh.token))
-	}
-	return http.DefaultClient.Do(req)
+
+	return gh.authorizedDo(req, 0)
 }

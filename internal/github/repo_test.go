@@ -7,6 +7,7 @@ import (
 	"github.com/alicebob/miniredis"
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/internal/cache"
+	"github.com/caarlos0/starcharts/internal/roundrobin"
 	"github.com/go-redis/redis"
 	"github.com/matryer/is"
 	"gopkg.in/h2non/gock.v1"
@@ -30,6 +31,11 @@ func TestRepoDetails(t *testing.T) {
 	cache := cache.New(rc)
 	defer cache.Close()
 	gt := New(config, cache)
+
+	gock.New("https://api.github.com").
+		Get("/rate_limit").
+		Reply(200).
+		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
 
 	t.Run("get repo details from api", func(t *testing.T) {
 		is := is.New(t)
@@ -58,6 +64,11 @@ func TestRepoDetails_APIfailure(t *testing.T) {
 	defer gock.Off()
 
 	gock.New("https://api.github.com").
+		Get("/rate_limit").
+		Reply(200).
+		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
+
+	gock.New("https://api.github.com").
 		Get("/repos/test/test").
 		Reply(404)
 
@@ -78,17 +89,22 @@ func TestRepoDetails_APIfailure(t *testing.T) {
 	t.Run("set error if api return 404", func(t *testing.T) {
 		is := is.New(t)
 		_, err := gt.RepoDetails(context.TODO(), "test/test")
-		is.True(err != nil) //Expected error
+		is.True(err != nil) // Expected error
 	})
 	t.Run("set error if api return 403", func(t *testing.T) {
 		is := is.New(t)
 		_, err := gt.RepoDetails(context.TODO(), "private/private")
-		is.True(err != nil) //Expected error
+		is.True(err != nil) // Expected error
 	})
 }
 
 func TestRepoDetails_WithAuthToken(t *testing.T) {
 	defer gock.Off()
+
+	gock.New("https://api.github.com").
+		Get("/rate_limit").
+		Reply(200).
+		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
 
 	repo := Repository{
 		FullName:        "aasm/aasm",
@@ -110,7 +126,7 @@ func TestRepoDetails_WithAuthToken(t *testing.T) {
 	cache := cache.New(rc)
 	defer cache.Close()
 	gt := New(config, cache)
-	gt.token = "12345"
+	gt.tokens = roundrobin.New([]string{"12345"})
 
 	t.Run("get repo with auth token", func(t *testing.T) {
 		is := is.New(t)
