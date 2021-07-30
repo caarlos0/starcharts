@@ -25,8 +25,6 @@ type GitHub struct {
 	tokens   roundrobin.RoundRobiner
 	pageSize int
 	cache    *cache.Redis
-
-	rateLimits, effectiveEtags, retryNewTokens prometheus.Counter
 }
 
 var rateLimits = prometheus.NewCounter(prometheus.CounterOpts{
@@ -41,10 +39,16 @@ var effectiveEtags = prometheus.NewCounter(prometheus.CounterOpts{
 	Name:      "effective_etag_uses_total",
 })
 
-var retryNewTokens = prometheus.NewCounter(prometheus.CounterOpts{
+var tokensCount = prometheus.NewGauge(prometheus.GaugeOpts{
 	Namespace: "starcharts",
 	Subsystem: "github",
-	Name:      "next_token_retries",
+	Name:      "available_tokens",
+})
+
+var invalidatedTokens = prometheus.NewCounter(prometheus.CounterOpts{
+	Namespace: "starcharts",
+	Subsystem: "github",
+	Name:      "invalidated_tokens_total",
 })
 
 var rateLimiters = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -53,20 +57,17 @@ var rateLimiters = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 	Name:      "rate_limit_remaining",
 }, []string{"token"})
 
-
 func init() {
-	prometheus.MustRegister(rateLimits, effectiveEtags, retryNewTokens,rateLimiters)
+	prometheus.MustRegister(rateLimits, effectiveEtags, invalidatedTokens, tokensCount, rateLimiters)
 }
 
 // New github client.
 func New(config config.Config, cache *cache.Redis) *GitHub {
+	tokensCount.Set(float64(len(config.GitHubTokens)))
 	return &GitHub{
-		tokens:         roundrobin.New(config.GitHubTokens),
-		pageSize:       config.GitHubPageSize,
-		cache:          cache,
-		rateLimits:     rateLimits,
-		effectiveEtags: effectiveEtags,
-		retryNewTokens: retryNewTokens,
+		tokens:   roundrobin.New(config.GitHubTokens),
+		pageSize: config.GitHubPageSize,
+		cache:    cache,
 	}
 }
 
@@ -79,63 +80,68 @@ func (gh *GitHub) authorizedDo(req *http.Request, try int) (*http.Response, erro
 	token, err := gh.tokens.Pick()
 	if err != nil || token == nil {
 		log.WithError(err).Error("couldn't get a valid token")
-		return http.DefaultClient.Do(req)
+		return http.DefaultClient.Do(req) // try unauthorized request
 	}
 
-	ok, err := gh.checkRateLimit(token)
-	if err != nil {
-		log.WithError(err).Error("couldn't check rate limit, trying next token")
-		return gh.authorizedDo(req, try+1)
-	}
-	if !ok {
-		log.Warn("skipping token because it used too much of its limit")
-		return gh.authorizedDo(req, try+1)
+	if err := gh.checkToken(token); err != nil {
+		log.WithError(err).Error("couldn't check rate limit, trying again")
+		return gh.authorizedDo(req, try+1) // try next token
 	}
 
+	// got a valid token, use it
 	req.Header.Add("Authorization", fmt.Sprintf("token %s", token.Key()))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return resp, err
 	}
-	if resp.StatusCode == http.StatusUnauthorized {
-		token.Invalidate()
-	}
 	return resp, err
 }
 
-func (gh *GitHub) checkRateLimit(token *roundrobin.Token) (bool, error) {
+func (gh *GitHub) checkToken(token *roundrobin.Token) error {
 	req, err := http.NewRequest(http.MethodGet, "https://api.github.com/rate_limit", nil)
 	if err != nil {
-		return false, err
+		return err
 	}
 	req.Header.Add("Authorization", fmt.Sprintf("token %s", token.Key()))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return false, err
+		return err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		token.Invalidate()
+		invalidatedTokens.Inc()
+		return fmt.Errorf("token is invalid")
+	}
+
 	if resp.StatusCode != http.StatusOK {
-		return false, err
+		return fmt.Errorf("request failed with status %d", resp.StatusCode)
 	}
 
 	bts, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	var limit rateLimit
 	if err := json.Unmarshal(bts, &limit); err != nil {
-		return false, err
+		return err
 	}
 	rate := limit.Rate
 	log.Debugf("%s rate %d/%d", token, rate.Remaining, rate.Limit)
 	rateLimiters.WithLabelValues(token.String()).Set(float64(rate.Remaining))
-	return rate.Remaining > rate.Limit/2, nil // allow at most 50% rate limit usage
+	if rate.Remaining > rate.Limit/2 {
+		return nil // allow at most 50% rate limit usage
+	}
+	return fmt.Errorf("token usage is too high: %d/%d", rate.Remaining, rate.Limit)
 }
 
 type rateLimit struct {
-	Rate struct {
-		Remaining int `json:"remaining"`
-		Limit     int `json:"limit"`
-	} `json:"rate"`
+	Rate rate `json:"rate"`
+}
+
+type rate struct {
+	Remaining int `json:"remaining"`
+	Limit     int `json:"limit"`
 }

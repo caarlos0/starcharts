@@ -17,6 +17,11 @@ import (
 func TestStargazers(t *testing.T) {
 	defer gock.Off()
 
+	gock.New("https://api.github.com").
+		Get("/rate_limit").
+		Reply(200).
+		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
+
 	stargazers := []Stargazer{
 		{StarredAt: time.Now()},
 		{StarredAt: time.Now()},
@@ -64,6 +69,16 @@ func TestStargazers(t *testing.T) {
 func TestStargazers_EmptyResponseOnPagination(t *testing.T) {
 	defer gock.Off()
 
+	gock.New("https://api.github.com").
+		Get("/rate_limit").
+		Reply(200).
+		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
+
+	gock.New("https://api.github.com").
+		Get("/rate_limit").
+		Reply(200).
+		JSON(rateLimit{rate{Limit: 5000, Remaining: 3999}})
+
 	stargazers := []Stargazer{
 		{StarredAt: time.Now()},
 		{StarredAt: time.Now()},
@@ -110,6 +125,11 @@ func TestStargazers_EmptyResponseOnPagination(t *testing.T) {
 
 func TestStargazers_APIFailure(t *testing.T) {
 	defer gock.Off()
+
+	gock.New("https://api.github.com").
+		Get("/rate_limit").
+		Reply(200).
+		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
 
 	repo1 := Repository{
 		FullName:        "test/test",

@@ -90,12 +90,8 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 	defer resp.Body.Close()
 
 	switch resp.StatusCode {
-	case http.StatusUnauthorized:
-		log.Info("retrying with another token")
-		gh.retryNewTokens.Inc()
-		return gh.getStargazersPage(ctx, repo, page)
 	case http.StatusNotModified:
-		gh.effectiveEtags.Inc()
+		effectiveEtags.Inc()
 		log.Info("not modified")
 		err := gh.cache.Get(key, &stars)
 		if err != nil {
@@ -107,7 +103,7 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 		}
 		return stars, err
 	case http.StatusForbidden:
-		gh.rateLimits.Inc()
+		rateLimits.Inc()
 		log.Warn("rate limit hit")
 		return stars, ErrRateLimit
 	case http.StatusOK:

@@ -32,6 +32,11 @@ func TestRepoDetails(t *testing.T) {
 	defer cache.Close()
 	gt := New(config, cache)
 
+	gock.New("https://api.github.com").
+		Get("/rate_limit").
+		Reply(200).
+		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
+
 	t.Run("get repo details from api", func(t *testing.T) {
 		is := is.New(t)
 		gock.New("https://api.github.com").
@@ -57,6 +62,11 @@ func TestRepoDetails(t *testing.T) {
 
 func TestRepoDetails_APIfailure(t *testing.T) {
 	defer gock.Off()
+
+	gock.New("https://api.github.com").
+		Get("/rate_limit").
+		Reply(200).
+		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
 
 	gock.New("https://api.github.com").
 		Get("/repos/test/test").
@@ -90,6 +100,11 @@ func TestRepoDetails_APIfailure(t *testing.T) {
 
 func TestRepoDetails_WithAuthToken(t *testing.T) {
 	defer gock.Off()
+
+	gock.New("https://api.github.com").
+		Get("/rate_limit").
+		Reply(200).
+		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
 
 	repo := Repository{
 		FullName:        "aasm/aasm",
