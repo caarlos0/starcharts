@@ -47,8 +47,15 @@ var retryNewTokens = prometheus.NewCounter(prometheus.CounterOpts{
 	Name:      "next_token_retries",
 })
 
+var rateLimiters = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	Namespace: "starcharts",
+	Subsystem: "github",
+	Name:      "rate_limit_remaining",
+}, []string{"token"})
+
+
 func init() {
-	prometheus.MustRegister(rateLimits, effectiveEtags, retryNewTokens)
+	prometheus.MustRegister(rateLimits, effectiveEtags, retryNewTokens,rateLimiters)
 }
 
 // New github client.
@@ -122,6 +129,7 @@ func (gh *GitHub) checkRateLimit(token *roundrobin.Token) (bool, error) {
 	}
 	rate := limit.Rate
 	log.Debugf("%s rate %d/%d", token, rate.Remaining, rate.Limit)
+	rateLimiters.WithLabelValues(token.String()).Set(float64(rate.Remaining))
 	return rate.Remaining > rate.Limit/2, nil // allow at most 50% rate limit usage
 }
 
