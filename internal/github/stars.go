@@ -16,6 +16,7 @@ import (
 )
 
 var errNoMorePages = errors.New("no more pages to get")
+var ErrTooManyStars = errors.New("repo has too many stargazers, github won't allow us to list all stars")
 
 // Stargazer is a star at a given time.
 type Stargazer struct {
@@ -25,6 +26,11 @@ type Stargazer struct {
 // Stargazers returns all the stargazers of a given repo.
 func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Stargazer, err error) {
 	sem := make(chan bool, 4)
+
+	if gh.totalPages(repo) > 400 {
+		return stars, ErrTooManyStars
+	}
+
 	var g errgroup.Group
 	var lock sync.Mutex
 	for page := 1; page <= gh.lastPage(repo); page++ {
@@ -130,8 +136,13 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 	}
 }
 
+func (gh *GitHub) totalPages(repo Repository) int {
+	return repo.StargazersCount / gh.pageSize
+}
+
+
 func (gh *GitHub) lastPage(repo Repository) int {
-	return (repo.StargazersCount / gh.pageSize) + 1
+	return gh.totalPages(repo) + 1
 }
 
 func (gh *GitHub) makeStarPageRequest(ctx context.Context, repo Repository, page int, etag string) (*http.Response, error) {

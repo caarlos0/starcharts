@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -45,7 +46,7 @@ func IntValueFormatter(v interface{}) string {
 //
 // nolint: funlen
 // TODO: refactor.
-func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
+func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := fmt.Sprintf(
 			"%s/%s",
@@ -54,13 +55,24 @@ func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 		)
 		log := log.WithField("repo", name)
 		defer log.Trace("collect_stars").Stop(nil)
-		repo, err := github.RepoDetails(r.Context(), name)
+		repo, err := gh.RepoDetails(r.Context(), name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		stargazers, err := github.Stargazers(r.Context(), repo)
+
+		w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
+		w.Header().Add("cache-control", "public, max-age=86400")
+		w.Header().Add("date", time.Now().Format(time.RFC1123))
+		w.Header().Add("expires", time.Now().Format(time.RFC1123))
+
+		stargazers, err := gh.Stargazers(r.Context(), repo)
+		if errors.Is(err, github.ErrTooManyStars) {
+			w.Write([]byte(errSvg(err)))
+			return
+		}
 		if err != nil {
+			log.WithError(err).Error("failed to get stars")
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
 		}
@@ -119,12 +131,14 @@ func GetRepoChart(github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 			Series: []chart.Series{series},
 		}
 		defer log.Trace("chart").Stop(&err)
-		w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
-		w.Header().Add("cache-control", "public, max-age=86400")
-		w.Header().Add("date", time.Now().Format(time.RFC1123))
-		w.Header().Add("expires", time.Now().Format(time.RFC1123))
 		if err := graph.Render(chart.SVG, w); err != nil {
 			log.WithError(err).Error("failed to render graph")
 		}
 	}
+}
+
+func errSvg(err error) string {
+	return fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="50">
+	<text xmlns="http://www.w3.org/2000/svg" y="20" x="100" fill="red">%s</text>
+ </svg>`, err.Error())
 }
