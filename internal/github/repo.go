@@ -87,7 +87,7 @@ func (gh *GitHub) makeRepoRequest(ctx context.Context, name, etag string) (*http
 	if etag != "" {
 		req.Header.Add("If-None-Match", etag)
 	}
-	if gh.token != "" {
+	if len(gh.tokens) > 0 {
 		req.Header.Add("Authorization", fmt.Sprintf("token %s", gh.token))
 	}
 	return http.DefaultClient.Do(req)

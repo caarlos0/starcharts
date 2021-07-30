@@ -16,7 +16,7 @@ var ErrGitHubAPI = errors.New("failed to talk with github api")
 
 // GitHub client struct.
 type GitHub struct {
-	token    string
+	tokens    []string
 	pageSize int
 	cache    *cache.Redis
 
@@ -41,9 +41,8 @@ func init() {
 
 // New github client.
 func New(config config.Config, cache *cache.Redis) *GitHub {
-
 	return &GitHub{
-		token:          config.GitHubToken,
+		tokens:          config.GitHubTokens,
 		pageSize:       config.GitHubPageSize,
 		cache:          cache,
 		rateLimits:     rateLimits,
