@@ -14,10 +14,6 @@ type RoundRobiner interface {
 	Pick() (*Token, error)
 }
 
-type realRoundRobin struct {
-	tokens []*Token
-	next   int64
-}
 
 // New round robin implementation with the given list of tokens.
 func New(tokens []string) RoundRobiner {
@@ -30,6 +26,11 @@ func New(tokens []string) RoundRobiner {
 		result = append(result, NewToken(item))
 	}
 	return &realRoundRobin{tokens: result}
+}
+
+type realRoundRobin struct {
+	tokens []*Token
+	next   int64
 }
 
 func (rr *realRoundRobin) Pick() (*Token, error) {
