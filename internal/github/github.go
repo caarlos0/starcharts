@@ -22,9 +22,9 @@ var ErrGitHubAPI = errors.New("failed to talk with github api")
 
 // GitHub client struct.
 type GitHub struct {
-	tokens   roundrobin.RoundRobiner
-	pageSize int
-	cache    *cache.Redis
+	tokens          roundrobin.RoundRobiner
+	pageSize        int
+	cache           *cache.Redis
 	maxRateUsagePct int
 }
 
@@ -139,7 +139,7 @@ func (gh *GitHub) checkToken(token *roundrobin.Token) error {
 }
 
 func isAboveTargetUsage(rate rate, target int) bool {
-	return rate.Remaining*100 / rate.Limit < target
+	return rate.Remaining*100/rate.Limit < target
 }
 
 type rateLimit struct {

@@ -15,8 +15,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var errNoMorePages = errors.New("no more pages to get")
-var ErrTooManyStars = errors.New("repo has too many stargazers, github won't allow us to list all stars")
+var (
+	errNoMorePages  = errors.New("no more pages to get")
+	ErrTooManyStars = errors.New("repo has too many stargazers, github won't allow us to list all stars")
+)
 
 // Stargazer is a star at a given time.
 type Stargazer struct {
@@ -139,7 +141,6 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 func (gh *GitHub) totalPages(repo Repository) int {
 	return repo.StargazersCount / gh.pageSize
 }
-
 
 func (gh *GitHub) lastPage(repo Repository) int {
 	return gh.totalPages(repo) + 1

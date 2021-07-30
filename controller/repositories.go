@@ -68,7 +68,7 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 
 		stargazers, err := gh.Stargazers(r.Context(), repo)
 		if errors.Is(err, github.ErrTooManyStars) {
-			w.Write([]byte(errSvg(err)))
+			_, _ = w.Write([]byte(errSvg(err)))
 			return
 		}
 		if err != nil {
