@@ -25,6 +25,7 @@ type GitHub struct {
 	tokens   roundrobin.RoundRobiner
 	pageSize int
 	cache    *cache.Redis
+	maxRateUsagePct int
 }
 
 var rateLimits = prometheus.NewCounter(prometheus.CounterOpts{
@@ -131,10 +132,14 @@ func (gh *GitHub) checkToken(token *roundrobin.Token) error {
 	rate := limit.Rate
 	log.Debugf("%s rate %d/%d", token, rate.Remaining, rate.Limit)
 	rateLimiters.WithLabelValues(token.String()).Set(float64(rate.Remaining))
-	if rate.Remaining > rate.Limit/2 {
-		return nil // allow at most 50% rate limit usage
+	if isAboveTargetUsage(rate, gh.maxRateUsagePct) {
+		return fmt.Errorf("token usage is too high: %d/%d", rate.Remaining, rate.Limit)
 	}
-	return fmt.Errorf("token usage is too high: %d/%d", rate.Remaining, rate.Limit)
+	return nil // allow at most x% rate limit usage
+}
+
+func isAboveTargetUsage(rate rate, target int) bool {
+	return rate.Remaining*100 / rate.Limit < target
 }
 
 type rateLimit struct {
