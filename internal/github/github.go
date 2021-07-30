@@ -1,8 +1,10 @@
 package github
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/apex/log"
@@ -61,17 +63,71 @@ func New(config config.Config, cache *cache.Redis) *GitHub {
 	}
 }
 
-func (gh *GitHub) authorizedDo(req *http.Request) (*http.Response, error) {
+const maxTries = 3
+
+func (gh *GitHub) authorizedDo(req *http.Request, try int) (*http.Response, error) {
+	if try > maxTries {
+		return nil, fmt.Errorf("couldn't find a valid token")
+	}
 	token, err := gh.tokens.Pick()
 	if err != nil || token == nil {
 		log.WithError(err).Error("couldn't get a valid token")
 		return http.DefaultClient.Do(req)
 	}
 
+	ok, err := gh.checkRateLimit(token)
+	if err != nil {
+		log.WithError(err).Error("couldn't check rate limit, trying next token")
+		return gh.authorizedDo(req, try+1)
+	}
+	if !ok {
+		log.Warn("skipping token because it used too much of its limit")
+		return gh.authorizedDo(req, try+1)
+	}
+
 	req.Header.Add("Authorization", fmt.Sprintf("token %s", token.Key()))
 	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return resp, err
+	}
 	if resp.StatusCode == http.StatusUnauthorized {
 		token.Invalidate()
 	}
 	return resp, err
+}
+
+func (gh *GitHub) checkRateLimit(token *roundrobin.Token) (bool, error) {
+	req, err := http.NewRequest(http.MethodGet, "https://api.github.com/rate_limit", nil)
+	if err != nil {
+		return false, err
+	}
+	req.Header.Add("Authorization", fmt.Sprintf("token %s", token.Key()))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return false, err
+	}
+
+	bts, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	var limit rateLimit
+	if err := json.Unmarshal(bts, &limit); err != nil {
+		return false, err
+	}
+	rate := limit.Rate
+	log.Debugf("%s rate %d/%d", token, rate.Remaining, rate.Limit)
+	return rate.Remaining > rate.Limit/2, nil // allow at most 50% rate limit usage
+}
+
+type rateLimit struct {
+	Rate struct {
+		Remaining int `json:"remaining"`
+		Limit     int `json:"limit"`
+	} `json:"rate"`
 }

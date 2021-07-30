@@ -92,5 +92,5 @@ func (gh *GitHub) makeRepoRequest(ctx context.Context, name, etag string) (*http
 		req.Header.Add("If-None-Match", etag)
 	}
 
-	return gh.authorizedDo(req)
+	return gh.authorizedDo(req, 0)
 }

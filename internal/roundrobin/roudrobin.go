@@ -14,7 +14,6 @@ type RoundRobiner interface {
 	Pick() (*Token, error)
 }
 
-
 // New round robin implementation with the given list of tokens.
 func New(tokens []string) RoundRobiner {
 	log.Debugf("creating round robin with %d tokens", len(tokens))

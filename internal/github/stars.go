@@ -156,5 +156,5 @@ func (gh *GitHub) makeStarPageRequest(ctx context.Context, repo Repository, page
 		req.Header.Add("If-None-Match", etag)
 	}
 
-	return gh.authorizedDo(req)
+	return gh.authorizedDo(req, 0)
 }
