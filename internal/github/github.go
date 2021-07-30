@@ -46,7 +46,7 @@ var tokensCount = prometheus.NewGauge(prometheus.GaugeOpts{
 	Name:      "available_tokens",
 })
 
-var invalidatedTokens = prometheus.NewCounter(prometheus.CounterOpts{
+var invalidatedTokens = prometheus.NewGauge(prometheus.GaugeOpts{
 	Namespace: "starcharts",
 	Subsystem: "github",
 	Name:      "invalidated_tokens_total",
