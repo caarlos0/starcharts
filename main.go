@@ -80,9 +80,9 @@ func main() {
 				),
 			),
 		),
-		Addr:         "127.0.0.1:" + config.Port,
-		WriteTimeout: 30 * time.Second,
-		ReadTimeout:  30 * time.Second,
+		Addr:         config.Listen,
+		WriteTimeout: 60 * time.Second,
+		ReadTimeout:  60 * time.Second,
 	}
 	ctx.Info("starting up...")
 	ctx.WithError(srv.ListenAndServe()).Error("failed to start up server")

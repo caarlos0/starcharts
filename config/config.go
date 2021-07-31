@@ -11,7 +11,7 @@ type Config struct {
 	GitHubTokens          []string `env:"GITHUB_TOKENS"`
 	GitHubPageSize        int      `env:"GITHUB_PAGE_SIZE" envDefault:"100"`
 	GitHubMaxRateUsagePct int      `env:"GITHUB_MAX_RATE_LIMIT_USAGE" envDefault:"80"`
-	Port                  string   `env:"PORT" envDefault:"3000"`
+	Listen                string   `env:"LISTEN" envDefault:"127.0.0.1:3000"`
 }
 
 // Get the current Config.
