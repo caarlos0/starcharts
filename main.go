@@ -27,7 +27,7 @@ func main() {
 	log.SetHandler(text.New(os.Stderr))
 	// log.SetLevel(log.DebugLevel)
 	config := config.Get()
-	ctx := log.WithField("port", config.Port)
+	ctx := log.WithField("listen", config.Listen)
 	options, err := redis.ParseURL(config.RedisURL)
 	if err != nil {
 		log.WithError(err).Fatal("invalid redis_url")

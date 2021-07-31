@@ -88,6 +88,11 @@ div.title>span.subtitle {
 	color: #555;
 }
 
+div.main {
+	width: 20%;
+	max-width: 800px;
+}
+
 div.main,
 div.code {
 	padding-top: 30px;
