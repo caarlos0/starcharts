@@ -65,10 +65,13 @@
 	{{ end }}
 	{{ else }}
 	<div class="main">
-		Check some repository chart by browsing to user/repo, for example,
-		<a href="/caarlos0/starcharts">
-			caarlos0/starcharts
-		</a>
+		<form method="POST">
+			<label for="username">Username:</label>
+			<input type="text" id="username" name="username"><br><br>
+			<label for="repo">Repository:</label>
+			<input type="text" id="repository" name="repository"><br><br>
+			<input type="submit" value="Submit">
+		</form>
 	</div>
 	{{ end }}
 	<script src="//cdnjs.cloudflare.com/ajax/libs/timeago.js/3.0.2/timeago.min.js"></script>
