@@ -16,7 +16,7 @@ import (
 )
 
 // GetRepo shows the given repo chart.
-func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis) http.Handler {
+func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis, version string) http.Handler {
 	return httperr.NewF(func(w http.ResponseWriter, r *http.Request) error {
 		name := fmt.Sprintf(
 			"%s/%s",
@@ -29,7 +29,10 @@ func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis) http.Handler
 				"Error": err,
 			})
 		}
-		return executeTemplate(fsys, w, details)
+		return executeTemplate(fsys, w, map[string]interface{}{
+			"Version": version,
+			"Details": details,
+		})
 	})
 }
 

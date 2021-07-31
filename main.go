@@ -23,6 +23,8 @@ import (
 //go:embed static/*
 var static embed.FS
 
+var version = "devel"
+
 func main() {
 	log.SetHandler(text.New(os.Stderr))
 	// log.SetLevel(log.DebugLevel)
@@ -40,7 +42,7 @@ func main() {
 	r := mux.NewRouter()
 	r.Path("/").
 		Methods(http.MethodGet).
-		Handler(controller.Index(static))
+		Handler(controller.Index(static, version))
 	r.Path("/").
 		Methods(http.MethodPost).
 		HandlerFunc(controller.HandleForm(static))
@@ -52,7 +54,7 @@ func main() {
 		Handler(controller.GetRepoChart(github, cache))
 	r.Path("/{owner}/{repo}").
 		Methods(http.MethodGet).
-		Handler(controller.GetRepo(static, github, cache))
+		Handler(controller.GetRepo(static, github, cache, version))
 
 	// generic metrics
 	requestCounter := promauto.NewCounterVec(prometheus.CounterOpts{

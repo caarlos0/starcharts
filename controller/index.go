@@ -9,9 +9,9 @@ import (
 	"github.com/caarlos0/httperr"
 )
 
-func Index(fsys fs.FS) http.Handler {
+func Index(fsys fs.FS, version string) http.Handler {
 	return httperr.NewF(func(w http.ResponseWriter, r *http.Request) error {
-		return executeTemplate(fsys, w, nil)
+		return executeTemplate(fsys, w, map[string]string{"Version": version})
 	})
 }
 
