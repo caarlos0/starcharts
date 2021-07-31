@@ -94,7 +94,7 @@ div.code {
 	border-top: 1px solid #eee;
 }
 
-div.main>form>input[type=text] { 
+div.main>form>input[type=text] {
 	width: 100%;
 	padding: 12px 20px;
 	margin: 8px 0;
@@ -107,7 +107,7 @@ div.main>form>input[type=text] {
 	color: #555;
 }
 
-div.main>form>input[type=submit] { 
+div.main>form>input[type=submit] {
 	width: 100%;
 	background-color: #3F3D56;
 	color: white;
@@ -119,4 +119,11 @@ div.main>form>input[type=submit] {
 	font-family: inherit;
     font-size: 1rem;
     font-weight: 450;
+}
+
+p.error {
+	color: #e76060;
+	font-weight: bold;
+	margin-top: 1em;
+	margin-bottom: 1em;
 }

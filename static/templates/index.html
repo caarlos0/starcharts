@@ -65,9 +65,11 @@
 	{{ end }}
 	{{ else }}
 	<div class="main">
+		{{ with .Error }}<p class="error">{{ . }}</p>{{ end }}
 		<form method="POST">
 			<label for="repo">Repository:</label><br>
-			<input type="text" id="repository" name="repository" placeholder="caarlos0/starcharts"><br><br>
+			<input type="text" id="repository" name="repository" value="caarlos0/starcharts" placeholder="caarlos0/starcharts"
+				autofocus="true"><br>
 			<input type="submit" value="Submit">
 		</form>
 	</div>

@@ -1,14 +1,13 @@
 package controller
 
 import (
-	"errors"
 	"fmt"
-	"html/template"
 	"io/fs"
 	"net/http"
 	"time"
 
 	"github.com/apex/log"
+	"github.com/caarlos0/httperr"
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/caarlos0/starcharts/internal/github"
 	"github.com/gorilla/mux"
@@ -17,8 +16,8 @@ import (
 )
 
 // GetRepo shows the given repo chart.
-func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis) http.Handler {
+	return httperr.NewF(func(w http.ResponseWriter, r *http.Request) error {
 		name := fmt.Sprintf(
 			"%s/%s",
 			mux.Vars(r)["owner"],
@@ -26,15 +25,12 @@ func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis) http.Handler
 		)
 		details, err := github.RepoDetails(r.Context(), name)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+			return executeTemplate(fsys, w, map[string]error{
+				"Error": err,
+			})
 		}
-		err = template.Must(template.ParseFS(fsys, "static/templates/index.html")).
-			Execute(w, details)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
+		return executeTemplate(fsys, w, details)
+	})
 }
 
 // IntValueFormatter is a ValueFormatter for int.
@@ -46,8 +42,8 @@ func IntValueFormatter(v interface{}) string {
 //
 // nolint: funlen
 // TODO: refactor.
-func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
+	return httperr.NewF(func(w http.ResponseWriter, r *http.Request) error {
 		name := fmt.Sprintf(
 			"%s/%s",
 			mux.Vars(r)["owner"],
@@ -57,8 +53,7 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 		defer log.Trace("collect_stars").Stop(nil)
 		repo, err := gh.RepoDetails(r.Context(), name)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+			return httperr.Wrap(err, http.StatusBadRequest)
 		}
 
 		w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
@@ -67,14 +62,10 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 		w.Header().Add("expires", time.Now().Format(time.RFC1123))
 
 		stargazers, err := gh.Stargazers(r.Context(), repo)
-		if errors.Is(err, github.ErrTooManyStars) {
-			_, _ = w.Write([]byte(errSvg(err)))
-			return
-		}
 		if err != nil {
 			log.WithError(err).Error("failed to get stars")
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			return
+			_, err = w.Write([]byte(errSvg(err)))
+			return err
 		}
 		series := chart.TimeSeries{
 			Style: chart.Style{
@@ -133,8 +124,10 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.HandlerFunc {
 		defer log.Trace("chart").Stop(&err)
 		if err := graph.Render(chart.SVG, w); err != nil {
 			log.WithError(err).Error("failed to render graph")
+			return err
 		}
-	}
+		return nil
+	})
 }
 
 func errSvg(err error) string {

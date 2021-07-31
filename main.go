@@ -40,7 +40,7 @@ func main() {
 	r := mux.NewRouter()
 	r.Path("/").
 		Methods(http.MethodGet).
-		HandlerFunc(controller.Index(static))
+		Handler(controller.Index(static))
 	r.Path("/").
 		Methods(http.MethodPost).
 		HandlerFunc(controller.HandleForm(static))
@@ -49,10 +49,10 @@ func main() {
 		Handler(http.FileServer(http.FS(static)))
 	r.Path("/{owner}/{repo}.svg").
 		Methods(http.MethodGet).
-		HandlerFunc(controller.GetRepoChart(github, cache))
+		Handler(controller.GetRepoChart(github, cache))
 	r.Path("/{owner}/{repo}").
 		Methods(http.MethodGet).
-		HandlerFunc(controller.GetRepo(static, github, cache))
+		Handler(controller.GetRepo(static, github, cache))
 
 	// generic metrics
 	requestCounter := promauto.NewCounterVec(prometheus.CounterOpts{
@@ -80,7 +80,7 @@ func main() {
 				),
 			),
 		),
-		Addr:         "0.0.0.0:" + config.Port,
+		Addr:         "127.0.0.1:" + config.Port,
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,
 	}
