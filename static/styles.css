@@ -108,11 +108,19 @@ div.main>form>input[type=text] {
 	border-radius: 4px;
 	box-sizing: border-box;
 	font-family: inherit;
-    font-size: 1rem;
+	font-size: 1rem;
 	color: #555;
 }
 
-div.main>form>input[type=submit] {
+
+p.error {
+	color: #e76060;
+	font-weight: bold;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+.btn {
 	width: 100%;
 	background-color: #3F3D56;
 	color: white;
@@ -122,13 +130,10 @@ div.main>form>input[type=submit] {
 	border-radius: 4px;
 	cursor: pointer;
 	font-family: inherit;
-    font-size: 1rem;
-    font-weight: 450;
+	font-size: 1rem;
+	font-weight: 450;
 }
 
-p.error {
-	color: #e76060;
-	font-weight: bold;
-	margin-top: 1em;
-	margin-bottom: 1em;
+.btn.copy-btn {
+	margin-top: -20px;
 }
