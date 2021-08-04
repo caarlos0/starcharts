@@ -14,7 +14,8 @@
 	<meta name="description" content="StarCharts">
 	<meta name="author" content="https://github/caarlos0">
 	<link rel="stylesheet" href="/static/styles.css?v={{ .Version }}">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/styles/base16/dracula.min.css"
+	<link rel="stylesheet"
+		href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/styles/base16/dracula.min.css"
 		integrity="sha512-oDvVpANXrKQ6R5B25VO6DooEQWA7jUXleyD6oUWHChC0fjv8wAANSX7lKXtp5D6HbZ7EUxd0wjMibtpCQ+aCDw=="
 		crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
@@ -28,7 +29,7 @@
 	{{ with .Details }}
 	<div class="main">
 		<p>
-			{{ if .StargazersCount }}
+			{{ if gt .StargazersCount 0 }}
 			<b>Awesome!</b>
 			{{ else }}
 			<b>Hang in there!</b>
@@ -38,7 +39,7 @@
 			and now has <b>{{ .StargazersCount }}</b> stars.
 		</p>
 	</div>
-	{{ if .StargazersCount }}
+	{{ if gt .StargazersCount 0 }}
 	<div class="chart">
 		<p>
 			<img src="/{{ .FullName }}.svg"
@@ -50,7 +51,7 @@
 			You can include the chart on your repository's
 			<code>README.md</code>
 			as follows:
-<pre>
+		<pre>
 <code class="markdown" id="code">
 ## Stargazers over time
 
@@ -70,11 +71,13 @@
 	{{ end }}
 	{{ else }}
 	<div class="main">
-		{{ with .Error }}<p class="error">{{ . }}</p>{{ end }}
+		{{ with .Error }}
+		<p class="error">{{ . }}</p>
+		{{ end }}
 		<form method="POST">
 			<label for="repo">Repository:</label><br>
-			<input type="text" id="repository" name="repository" value="caarlos0/starcharts" placeholder="caarlos0/starcharts"
-				autofocus="true"><br>
+			<input type="text" id="repository" name="repository" value="caarlos0/starcharts"
+				placeholder="caarlos0/starcharts" autofocus="true"><br>
 			<input type="submit" value="Submit" class="btn">
 		</form>
 	</div>
@@ -95,7 +98,7 @@
 	<script>
 		new ClipboardJS('.copy-btn');
 		hljs.initHighlightingOnLoad();
-		timeago().render(document.querySelectorAll('time'));
+		timeago.render(document.querySelectorAll('time'));
 	</script>
 </body>
 
