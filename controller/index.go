@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/caarlos0/httperr"
 )
@@ -17,7 +18,8 @@ func Index(fsys fs.FS, version string) http.Handler {
 
 func HandleForm(fsys fs.FS) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/"+r.FormValue("repository"), http.StatusSeeOther)
+		repo := strings.TrimPrefix(r.FormValue("repository"), "https://github.com/")
+		http.Redirect(w, r, repo, http.StatusSeeOther)
 	}
 }
 
