@@ -37,9 +37,10 @@ hr {
 	padding: 0;
 }
 
-code {
+pre code#code {
 	text-align: left;
 	font-size: 1.3em;
+	overflow-x: hidden;
 }
 
 div {
@@ -88,10 +89,14 @@ div.title>span.subtitle {
 	color: #555;
 }
 
-div.main {
-	width: 80%;
-	max-width: 800px;
+div.main,
+div.chart,
+div.code,
+div.footer {
+	width: 90%;
+	max-width: 1000px;
 	min-width: 300px;
+	text-align: center;
 }
 
 div.main p {
@@ -105,7 +110,7 @@ div.code {
 }
 
 div.main>form>input[type=text] {
-	width: 100%;
+	width: 80%;
 	padding: 12px 20px;
 	margin: 8px 0;
 	display: inline-block;
@@ -115,6 +120,10 @@ div.main>form>input[type=text] {
 	font-family: inherit;
 	font-size: 1rem;
 	color: #555;
+}
+
+div.main>form>.btn{
+	width: 80%;
 }
 
 
