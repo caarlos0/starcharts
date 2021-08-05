@@ -56,6 +56,7 @@
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/{{ .FullName }}.svg)](https://starchart.cc/{{ .FullName }})
+
 </code>
 <button class="btn copy-btn" data-clipboard-target="#code">Copy</button>
 </pre>
@@ -85,9 +86,6 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/timeago.js/4.0.2/timeago.min.js"
 		integrity="sha512-SVDh1zH5N9ChofSlNAK43lcNS7lWze6DTVx1JCXH1Tmno+0/1jMpdbR8YDgDUfcUrPp1xyE53G42GFrcM0CMVg=="
 		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/markdown.min.js"
-		integrity="sha512-ADxHovZZYEPiuBlIAejqh6IxCe+Vi7CIYVYpKyXtvain1hzK6DpYlQhoxwo0YBHv11Oj8N3jBqRCoOA8I8lXiw=="
-		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js"
 		integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ=="
 		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -97,8 +95,9 @@
 	<script defer data-domain="starchart.cc" src="https://plausible.io/js/plausible.js"></script>
 	<script>
 		new ClipboardJS('.copy-btn');
-		hljs.initHighlightingOnLoad();
-		timeago.render(document.querySelectorAll('time'));
+		hljs.highlightAll();
+		document.querySelectorAll('time').forEach(t => timeago.render(t));
+		document.querySelectorAll('input#repository').forEach(i => i.select());
 	</script>
 </body>
 
