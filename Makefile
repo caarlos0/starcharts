@@ -7,7 +7,7 @@ export GO111MODULE := on
 
 # Install all the build and lint dependencies
 setup:
-	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh
 	curl -sfL https://git.io/misspell | sh
 	go mod tidy
 .PHONY: setup
