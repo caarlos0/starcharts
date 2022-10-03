@@ -92,8 +92,8 @@ func exercise(t *testing.T, rr RoundRobiner, n int) (int64, int64, int64, int64)
 	var a, b, c, d int64
 	var wg sync.WaitGroup
 
-	wg.Add(100)
-	for i := 0; i < 100; i++ {
+	wg.Add(n)
+	for i := 0; i < n; i++ {
 		go func() {
 			pick, err := rr.Pick()
 			is.True(pick != nil) // pick should not be nil
