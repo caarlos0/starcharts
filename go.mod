@@ -15,7 +15,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/gorilla/mux v1.8.0
-	github.com/matryer/is v1.4.0
+	github.com/matryer/is v1.4.1
 	github.com/onsi/ginkgo v1.7.0 // indirect
 	github.com/prometheus/client_golang v1.14.0
 	github.com/vmihailenco/msgpack v4.0.2+incompatible // indirect
