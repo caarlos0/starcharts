@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/apex/log"
@@ -34,7 +34,7 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 		return repo, err
 	}
 
-	bts, err := ioutil.ReadAll(resp.Body)
+	bts, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return repo, err
 	}
