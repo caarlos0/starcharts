@@ -21,7 +21,7 @@ require (
 	github.com/vmihailenco/msgpack v4.0.2+incompatible // indirect
 	github.com/wcharczuk/go-chart v2.0.1+incompatible
 	github.com/yuin/gopher-lua v0.0.0-20190514113301-1cd887cd7036 // indirect
-	golang.org/x/image v0.0.0-20200618115811-c13761719519 // indirect
+	golang.org/x/image v0.5.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sync v0.1.0
 	gopkg.in/h2non/gock.v1 v1.1.2
