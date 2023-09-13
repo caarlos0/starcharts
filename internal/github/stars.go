@@ -27,19 +27,19 @@ type Stargazer struct {
 
 // Stargazers returns all the stargazers of a given repo.
 func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Stargazer, err error) {
-	sem := make(chan bool, 4)
-
 	if gh.totalPages(repo) > 400 {
 		return stars, ErrTooManyStars
 	}
 
-	var g errgroup.Group
-	var lock sync.Mutex
+	var (
+		wg   errgroup.Group
+		lock sync.Mutex
+	)
+
+	wg.SetLimit(4)
 	for page := 1; page <= gh.lastPage(repo); page++ {
-		sem <- true
 		page := page
-		g.Go(func() error {
-			defer func() { <-sem }()
+		wg.Go(func() error {
 			result, err := gh.getStargazersPage(ctx, repo, page)
 			if errors.Is(err, errNoMorePages) {
 				return nil
@@ -53,7 +53,8 @@ func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Star
 			return nil
 		})
 	}
-	err = g.Wait()
+	err = wg.Wait()
+
 	sort.Slice(stars, func(i, j int) bool {
 		return stars[i].StarredAt.Before(stars[j].StarredAt)
 	})
