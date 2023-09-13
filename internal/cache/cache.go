@@ -39,7 +39,7 @@ var cacheDeletes = prometheus.NewCounter(
 
 // nolint: gochecknoinits
 func init() {
-	prometheus.MustRegister(cacheGets, cachePuts)
+	prometheus.MustRegister(cacheGets, cachePuts, cacheDeletes)
 }
 
 // Redis cache.
