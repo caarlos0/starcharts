@@ -10,7 +10,7 @@ require (
 	github.com/caarlos0/httperr v1.4.0
 	github.com/go-redis/cache v6.4.0+incompatible
 	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/mux v1.8.1
 	github.com/matryer/is v1.4.1
 	github.com/prometheus/client_golang v1.17.0
 	github.com/wcharczuk/go-chart v2.0.1+incompatible
