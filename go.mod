@@ -14,7 +14,7 @@ require (
 	github.com/matryer/is v1.4.1
 	github.com/prometheus/client_golang v1.17.0
 	github.com/wcharczuk/go-chart v2.0.1+incompatible
-	golang.org/x/sync v0.4.0
+	golang.org/x/sync v0.5.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
 )
