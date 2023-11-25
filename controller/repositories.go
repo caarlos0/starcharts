@@ -82,9 +82,10 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 				StrokeWidth: 2,
 			},
 		}
+
 		for i, star := range stargazers {
 			series.XValues = append(series.XValues, star.StarredAt)
-			series.YValues = append(series.YValues, float64(i))
+			series.YValues = append(series.YValues, float64(i+1))
 		}
 		if len(series.XValues) < 2 {
 			log.Info("not enough results, adding some fake ones")
