@@ -2,6 +2,8 @@ package main
 
 import (
 	"embed"
+	"github.com/caarlos0/starcharts/internal/chart"
+	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -43,6 +45,14 @@ func main() {
 	r.Path("/").
 		Methods(http.MethodGet).
 		Handler(controller.Index(static, version))
+	r.Path("/demo").
+		Methods(http.MethodGet).
+		Handler(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			c := chart.Chart{}
+
+			writer.Header().Set("Content-Type", "image/svg+xml")
+			c.Render(writer)
+		}))
 	r.Path("/").
 		Methods(http.MethodPost).
 		HandlerFunc(controller.HandleForm(static))
