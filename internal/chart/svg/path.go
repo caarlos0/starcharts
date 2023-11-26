@@ -2,7 +2,9 @@ package svg
 
 import (
 	"fmt"
+	"io"
 	"math"
+	"strings"
 )
 
 type PathBuilder struct {
@@ -10,31 +12,44 @@ type PathBuilder struct {
 	path []string
 }
 
-// MoveTo implements the interface method.
-func (vr *PathBuilder) MoveTo(x, y int) {
-	vr.path = append(vr.path, fmt.Sprintf("M %d %d", x, y))
+func (t *PathBuilder) Attr(key, value string) *PathBuilder {
+	t.attributes[key] = value
+	return t
 }
 
-// LineTo implements the interface method.
-func (vr *PathBuilder) LineTo(x, y int) {
-	vr.path = append(vr.path, fmt.Sprintf("L %d %d", x, y))
+func (t *PathBuilder) Content(content string) *PathBuilder {
+	t.content.WriteString(content)
+
+	return t
 }
 
-func (vr *PathBuilder) ArcTo(cx, cy int, rx, ry, startAngle, delta float64) {
+func (pb *PathBuilder) MoveTo(x, y int) *PathBuilder {
+	pb.path = append(pb.path, fmt.Sprintf("M %d %d", x, y))
+
+	return pb
+}
+
+func (pb *PathBuilder) LineTo(x, y int) *PathBuilder {
+	pb.path = append(pb.path, fmt.Sprintf("L %d %d", x, y))
+
+	return pb
+}
+
+func (pb *PathBuilder) ArcTo(cx, cy int, rx, ry, startAngle, delta float64) *PathBuilder {
 	startAngle = RadianAdd(startAngle, _pi2)
 	endAngle := RadianAdd(startAngle, delta)
 
-	startx := cx + int(rx*math.Sin(startAngle))
-	starty := cy - int(ry*math.Cos(startAngle))
+	startX := cx + int(rx*math.Sin(startAngle))
+	startY := cy - int(ry*math.Cos(startAngle))
 
-	if len(vr.path) > 0 {
-		vr.path = append(vr.path, fmt.Sprintf("L %d %d", startx, starty))
+	if len(pb.path) > 0 {
+		pb.path = append(pb.path, fmt.Sprintf("L %d %d", startX, startY))
 	} else {
-		vr.path = append(vr.path, fmt.Sprintf("M %d %d", startx, starty))
+		pb.path = append(pb.path, fmt.Sprintf("M %d %d", startX, startY))
 	}
 
-	endx := cx + int(rx*math.Sin(endAngle))
-	endy := cy - int(ry*math.Cos(endAngle))
+	endX := cx + int(rx*math.Sin(endAngle))
+	endY := cy - int(ry*math.Cos(endAngle))
 
 	dd := RadiansToDegrees(delta)
 
@@ -43,7 +58,15 @@ func (vr *PathBuilder) ArcTo(cx, cy int, rx, ry, startAngle, delta float64) {
 		largeArcFlag = 1
 	}
 
-	vr.path = append(vr.path, fmt.Sprintf("A %d %d %0.2f %d 1 %d %d", int(rx), int(ry), dd, largeArcFlag, endx, endy))
+	pb.path = append(pb.path, fmt.Sprintf("A %d %d %0.2f %d 1 %d %d", int(rx), int(ry), dd, largeArcFlag, endX, endY))
+
+	return pb
+}
+
+func (pb *PathBuilder) WriteTo(io io.Writer) (n int, err error) {
+	pb.attributes["d"] = strings.Join(pb.path, " ")
+
+	return pb.TagBuilder.WriteTo(io)
 }
 
 func Path() *PathBuilder {
@@ -54,4 +77,10 @@ func Path() *PathBuilder {
 		},
 		path: []string{},
 	}
+}
+
+func (pb *PathBuilder) String() string {
+	builder := &strings.Builder{}
+	pb.WriteTo(builder)
+	return builder.String()
 }

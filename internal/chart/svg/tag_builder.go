@@ -31,6 +31,12 @@ func (t *TagBuilder) Content(content string) *TagBuilder {
 	return t
 }
 
+func (t *TagBuilder) ContentFunc(contentFunc func() string) *TagBuilder {
+	t.content.WriteString(contentFunc())
+
+	return t
+}
+
 func (t *TagBuilder) String() string {
 	builder := strings.Builder{}
 
