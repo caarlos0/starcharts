@@ -2,6 +2,8 @@ package controller
 
 import (
 	"fmt"
+	"github.com/caarlos0/starcharts/internal/chart/svg"
+	"io"
 	"io/fs"
 	"net/http"
 	"time"
@@ -9,10 +11,9 @@ import (
 	"github.com/apex/log"
 	"github.com/caarlos0/httperr"
 	"github.com/caarlos0/starcharts/internal/cache"
+	"github.com/caarlos0/starcharts/internal/chart"
 	"github.com/caarlos0/starcharts/internal/github"
 	"github.com/gorilla/mux"
-	chart "github.com/wcharczuk/go-chart"
-	"github.com/wcharczuk/go-chart/drawing"
 )
 
 // GetRepo shows the given repo chart.
@@ -70,18 +71,7 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 			_, err = w.Write([]byte(errSvg(err)))
 			return err
 		}
-		series := chart.TimeSeries{
-			Style: chart.Style{
-				Show: true,
-				StrokeColor: drawing.Color{
-					R: 129,
-					G: 199,
-					B: 239,
-					A: 255,
-				},
-				StrokeWidth: 2,
-			},
-		}
+		series := chart.Series{}
 		for i, star := range stargazers {
 			series.XValues = append(series.XValues, star.StarredAt)
 			series.YValues = append(series.YValues, float64(i))
@@ -93,48 +83,27 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 		}
 
 		graph := chart.Chart{
-			XAxis: chart.XAxis{
-				Name:      "Time",
-				NameStyle: chart.StyleShow(),
-				Style: chart.Style{
-					Show:        true,
-					StrokeWidth: 2,
-					StrokeColor: drawing.Color{
-						R: 85,
-						G: 85,
-						B: 85,
-						A: 255,
-					},
-				},
-			},
-			YAxis: chart.YAxis{
-				Name:      "Stargazers",
-				NameStyle: chart.StyleShow(),
-				Style: chart.Style{
-					Show:        true,
-					StrokeWidth: 2,
-					StrokeColor: drawing.Color{
-						R: 85,
-						G: 85,
-						B: 85,
-						A: 255,
-					},
-				},
-				ValueFormatter: IntValueFormatter,
-			},
-			Series: []chart.Series{series},
+			XAxis:  chart.XAxis{Name: "Time"},
+			YAxis:  chart.YAxis{Name: "Stargazers"},
+			Series: series,
 		}
 		defer log.Trace("chart").Stop(&err)
-		if err := graph.Render(chart.SVG, w); err != nil {
-			log.WithError(err).Error("failed to render graph")
-			return err
-		}
+		graph.Render(w)
 		return nil
 	})
 }
 
 func errSvg(err error) string {
-	return fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="50">
-	<text xmlns="http://www.w3.org/2000/svg" y="20" x="100" fill="red">%s</text>
- </svg>`, err.Error())
+	return svg.SVG().
+		Attr("width", svg.Px(1024)).
+		Attr("height", svg.Px(50)).
+		ContentFunc(func(writer io.Writer) {
+			svg.Text().
+				Attr("fill", "red").
+				Attr("x", svg.Px(100)).
+				Attr("y", svg.Px(20)).
+				Content(err.Error()).
+				Render(writer)
+		}).
+		String()
 }
