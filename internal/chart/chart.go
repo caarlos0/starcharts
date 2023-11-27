@@ -11,8 +11,3 @@ type Chart struct {
 	Width  int
 	Height int
 }
-
-const (
-	DefaultChartHeight = 400
-	DefaultChartWidth  = 1024
-)

@@ -55,7 +55,7 @@ func (xa XAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 
 		svg.Path().
 			MoveTo(tx, canvasBox.Bottom).
-			LineTo(tx, canvasBox.Bottom+DefaultVerticalTickHeight).
+			LineTo(tx, canvasBox.Bottom+VerticalTickHeight).
 			Render(w)
 
 		tb := measureText(t.Label, AxisFontSize, nil)

@@ -69,7 +69,7 @@ func (ya YAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 
 		svg.Path().
 			MoveTo(lx, ly).
-			LineTo(lx+DefaultHorizontalTickWidth, ly).
+			LineTo(lx+HorizontalTickWidth, ly).
 			Render(w)
 
 		svg.Text().

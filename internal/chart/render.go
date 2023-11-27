@@ -1,9 +1,10 @@
 package chart
 
 import (
-	"github.com/caarlos0/starcharts/internal/chart/svg"
 	"io"
 	"math"
+
+	"github.com/caarlos0/starcharts/internal/chart/svg"
 )
 
 func (c *Chart) Render(w io.Writer) {
@@ -28,13 +29,7 @@ func (c *Chart) Render(w io.Writer) {
 		Attr("height", svg.Px(c.Height)).
 		Content(svg.Style().
 			Attr("type", "text/css").
-			Content(`
-					path {
-						stroke: red;
-						stroke-width: 2;
-						fill: none;
-					}
-				`).
+			Content(chartCss).
 			String(),
 		).
 		ContentFunc(func(w io.Writer) {

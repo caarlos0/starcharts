@@ -7,13 +7,19 @@ var BoxPadding = Box{
 	Bottom: 5,
 }
 
-const DefaultTickCountSanityCheck = 1024
-const DPI = 92.0
-const AxisFontSize = 10.0
-const MinimumTickHorizontalSpacing = 20
-const MinimumTickVerticalSpacing = 20
-const YAxisMargin = 10
-const XAxisMargin = 10
+const (
+	DPI = 92.0
 
-const DefaultVerticalTickHeight = XAxisMargin >> 1
-const DefaultHorizontalTickWidth = YAxisMargin >> 1
+	DefaultTickCountSanityCheck = 1024
+
+	AxisFontSize = 10.0
+
+	MinimumTickHorizontalSpacing = 20
+	MinimumTickVerticalSpacing   = 20
+
+	YAxisMargin = 10
+	XAxisMargin = 10
+
+	VerticalTickHeight  = XAxisMargin >> 1
+	HorizontalTickWidth = YAxisMargin >> 1
+)
