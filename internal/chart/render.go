@@ -3,15 +3,22 @@ package chart
 import (
 	"github.com/caarlos0/starcharts/internal/chart/svg"
 	"io"
+	"math"
 )
 
 func (c *Chart) Render(w io.Writer) {
 
-	font, err := GetDefaultFont()
-	if err != nil {
-		panic(err)
-	}
-	println(font)
+	xRange, yRange := c.getRanges()
+
+	canvas := c.Box()
+
+	xRange.Domain = canvas.Width()
+	yRange.Domain = canvas.Height()
+
+	xTicks := GenerateTicks(xRange, false, timeValueFormatter)
+	yTicks := GenerateTicks(yRange, true, intValueFormatter)
+
+	println(len(xTicks), len(yTicks))
 
 	path := svg.Path().
 		MoveTo(38, 351).
@@ -52,4 +59,39 @@ func (c *Chart) Render(w io.Writer) {
 		Content(path.String())
 
 	svgElement.WriteTo(w)
+}
+
+func (c *Chart) getRanges() (*Range, *Range) {
+	var minX, maxX = math.MaxFloat64, -math.MaxFloat64
+	var minY, maxY = math.MaxFloat64, -math.MaxFloat64
+
+	seriesLength := c.Series.Len()
+	for index := 0; index < seriesLength; index++ {
+		vX, vY := c.Series.GetValues(index)
+
+		minX = min(minX, vX)
+		maxX = max(maxX, vX)
+
+		minY = min(minY, vY)
+		maxY = max(maxY, vY)
+	}
+
+	yRange := &Range{Min: minY, Max: maxY}
+
+	delta := yRange.GetDelta()
+	roundTo := getRoundToForDelta(delta)
+
+	yRange.Min = roundDown(yRange.Min, roundTo)
+	yRange.Max = roundUp(yRange.Max, roundTo)
+
+	return &Range{Min: minX, Max: maxX}, yRange
+}
+
+func (c *Chart) Box() Box {
+	return Box{
+		Top:    BoxPadding.Top,
+		Left:   BoxPadding.Left,
+		Right:  c.Width - BoxPadding.Right,
+		Bottom: c.Height - BoxPadding.Bottom,
+	}
 }

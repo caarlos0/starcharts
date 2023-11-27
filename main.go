@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"github.com/caarlos0/starcharts/internal/chart"
 	"math/rand"
 	"net/http"
 	"os"
@@ -14,6 +13,7 @@ import (
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/controller"
 	"github.com/caarlos0/starcharts/internal/cache"
+	"github.com/caarlos0/starcharts/internal/chart"
 	"github.com/caarlos0/starcharts/internal/github"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
@@ -48,7 +48,20 @@ func main() {
 	r.Path("/demo").
 		Methods(http.MethodGet).
 		Handler(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			c := chart.Chart{}
+
+			series := chart.Series{}
+			for i := 0; i < 100; i++ {
+				series.XValues = append(series.XValues, time.Now().Add(time.Hour*24*time.Duration(i)))
+				series.YValues = append(series.YValues, float64(i)+float64(i/4)*rand.Float64())
+			}
+
+			c := chart.Chart{
+				Width:  1024,
+				Height: 400,
+				XAxis:  "Time",
+				YAxis:  "Stargazers",
+				Series: series,
+			}
 
 			writer.Header().Set("Content-Type", "image/svg+xml")
 			c.Render(writer)

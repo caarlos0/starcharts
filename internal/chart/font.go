@@ -6,22 +6,23 @@ import (
 )
 
 var (
-	_defaultFontLock sync.Mutex
-	_defaultFont     *truetype.Font
+	fontLock sync.Mutex
+	fontDef  *truetype.Font
 )
 
-// GetDefaultFont returns the default font (Roboto-Medium).
-func GetDefaultFont() (*truetype.Font, error) {
-	if _defaultFont == nil {
-		_defaultFontLock.Lock()
-		defer _defaultFontLock.Unlock()
-		if _defaultFont == nil {
-			font, err := truetype.Parse(Roboto)
+func GetFont() *truetype.Font {
+	if fontDef == nil {
+		fontLock.Lock()
+		defer fontLock.Unlock()
+		if fontDef == nil {
+			loadedFont, err := truetype.Parse(Roboto)
 			if err != nil {
-				return nil, err
+				panic(err)
 			}
-			_defaultFont = font
+
+			fontDef = loadedFont
 		}
 	}
-	return _defaultFont, nil
+
+	return fontDef
 }
