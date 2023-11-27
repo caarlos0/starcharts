@@ -16,8 +16,8 @@ func (t *TagBuilder) Write(p []byte) (n int, err error) {
 	return t.content.Write(p)
 }
 
-func (t *TagBuilder) WriteTo(io io.Writer) (n int, err error) {
-	return fmt.Fprintf(io, "<%s %s>%s</%s>", t.tag, t.attrString(), t.content.String(), t.tag)
+func (t *TagBuilder) Render(io io.Writer) {
+	fmt.Fprintf(io, "<%s %s>%s</%s>", t.tag, t.attrString(), t.content.String(), t.tag)
 }
 
 func (t *TagBuilder) Attr(key, value string) *TagBuilder {
@@ -31,8 +31,8 @@ func (t *TagBuilder) Content(content string) *TagBuilder {
 	return t
 }
 
-func (t *TagBuilder) ContentFunc(contentFunc func() string) *TagBuilder {
-	t.content.WriteString(contentFunc())
+func (t *TagBuilder) ContentFunc(contentFunc func(writer io.Writer)) *TagBuilder {
+	contentFunc(&t.content)
 
 	return t
 }
@@ -40,7 +40,7 @@ func (t *TagBuilder) ContentFunc(contentFunc func() string) *TagBuilder {
 func (t *TagBuilder) String() string {
 	builder := strings.Builder{}
 
-	t.WriteTo(&builder)
+	t.Render(&builder)
 
 	return builder.String()
 }

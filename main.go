@@ -58,8 +58,8 @@ func main() {
 			c := chart.Chart{
 				Width:  1024,
 				Height: 400,
-				XAxis:  "Time",
-				YAxis:  "Stargazers",
+				XAxis:  chart.XAxis{Name: "Time"},
+				YAxis:  chart.YAxis{Name: "Stargazers"},
 				Series: series,
 			}
 

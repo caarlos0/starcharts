@@ -63,10 +63,10 @@ func (pb *PathBuilder) ArcTo(cx, cy int, rx, ry, startAngle, delta float64) *Pat
 	return pb
 }
 
-func (pb *PathBuilder) WriteTo(io io.Writer) (n int, err error) {
+func (pb *PathBuilder) Render(io io.Writer) {
 	pb.attributes["d"] = strings.Join(pb.path, " ")
 
-	return pb.TagBuilder.WriteTo(io)
+	pb.TagBuilder.Render(io)
 }
 
 func Path() *PathBuilder {
@@ -81,6 +81,6 @@ func Path() *PathBuilder {
 
 func (pb *PathBuilder) String() string {
 	builder := &strings.Builder{}
-	pb.WriteTo(builder)
+	pb.Render(builder)
 	return builder.String()
 }

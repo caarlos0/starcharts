@@ -33,8 +33,8 @@ func (b Box) Grow(other Box) Box {
 	return Box{
 		Top:    min(b.Top, other.Top),
 		Left:   min(b.Left, other.Left),
-		Right:  min(b.Right, other.Right),
-		Bottom: min(b.Bottom, other.Bottom),
+		Right:  max(b.Right, other.Right),
+		Bottom: max(b.Bottom, other.Bottom),
 	}
 }
 
