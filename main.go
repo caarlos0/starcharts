@@ -64,6 +64,7 @@ func main() {
 			}
 
 			writer.Header().Set("Content-Type", "image/svg+xml")
+			writer.Header().Set("Cors-Allowed-Origin", "*")
 			c.Render(writer)
 		}))
 	r.Path("/").

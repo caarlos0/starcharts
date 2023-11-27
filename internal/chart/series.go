@@ -42,7 +42,9 @@ func (ts Series) Render(w io.Writer, canvasBox Box, xrange, yrange *Range) {
 	var vx, vy float64
 	var x, y int
 
-	path := svg.Path().MoveTo(x0, y0)
+	path := svg.Path().
+		Attr("class", "series").
+		MoveTo(x0, y0)
 
 	for i := 1; i < ts.Len(); i++ {
 		vx, vy = ts.GetValues(i)
