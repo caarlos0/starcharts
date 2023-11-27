@@ -43,9 +43,7 @@ func (ya YAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 
 func (ya YAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 
-	sw := 2
-
-	lx := canvasBox.Right + sw
+	lx := canvasBox.Right
 	tx := lx + YAxisMargin
 
 	svg.Path().
@@ -82,7 +80,7 @@ func (ya YAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 	}
 
 	tb := measureText(ya.Name, AxisFontSize, nil)
-	tx = canvasBox.Right + sw + YAxisMargin + maxTextWidth + YAxisMargin
+	tx = canvasBox.Right + YAxisMargin + maxTextWidth + YAxisMargin
 	ty := canvasBox.Top + (canvasBox.Height()>>1 - tb.Height()>>1)
 
 	svg.Text().
