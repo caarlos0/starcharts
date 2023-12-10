@@ -8,7 +8,8 @@ import (
 )
 
 type YAxis struct {
-	Name string
+	Name        string
+	StrokeWidth float64
 }
 
 func (ya YAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
@@ -18,7 +19,6 @@ func (ya YAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 	maxTextHeight := 0
 	for _, t := range ticks {
 		ly := canvas.Bottom - ra.Translate(t.Value)
-
 
 		tb := measureText(t.Label, AxisFontSize, nil)
 		maxTextHeight = max(tb.Height(), maxTextHeight)
@@ -46,8 +46,9 @@ func (ya YAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 	tx := lx + YAxisMargin
 
 	svg.Path().
+		Attr("stroke-width", svg.Point(max(MinStrokeWidth, ya.StrokeWidth))).
 		MoveTo(lx, canvasBox.Bottom).
-		LineTo(lx, canvasBox.Top).
+		LineToF(float64(lx), float64(canvasBox.Top)-ya.StrokeWidth/2).
 		Render(w)
 
 	var maxTextWidth int
@@ -67,6 +68,7 @@ func (ya YAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 		finalTextY = ly + tb.Height()>>1
 
 		svg.Path().
+			Attr("stroke-width", svg.Point(max(MinStrokeWidth, ya.StrokeWidth))).
 			MoveTo(lx, ly).
 			LineTo(lx+HorizontalTickWidth, ly).
 			Render(w)

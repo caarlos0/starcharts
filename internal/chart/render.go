@@ -33,9 +33,9 @@ func (c *Chart) Render(w io.Writer) {
 			String(),
 		).
 		ContentFunc(func(w io.Writer) {
+			c.Series.Render(w, plot, xRange, yRange)
 			c.YAxis.Render(w, plot, yRange, yTicks)
 			c.XAxis.Render(w, plot, xRange, xTicks)
-			c.Series.Render(w, plot, xRange, yRange)
 		})
 
 	svgElement.Render(w)

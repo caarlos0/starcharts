@@ -2,10 +2,14 @@ package svg
 
 import "fmt"
 
-func Px(value int) string {
-	return fmt.Sprintf("%dpx", value)
+type Number interface {
+	int | float64
 }
 
-func Point(value int) string {
-	return fmt.Sprintf("%d", value)
+func Px[T Number](value T) string {
+	return fmt.Sprintf("%vpx", value)
+}
+
+func Point[T Number](value T) string {
+	return fmt.Sprintf("%v", value)
 }

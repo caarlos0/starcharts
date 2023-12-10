@@ -71,7 +71,9 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 			_, err = w.Write([]byte(errSvg(err)))
 			return err
 		}
-		series := chart.Series{}
+		series := chart.Series{
+			StrokeWidth: 2,
+		}
 		for i, star := range stargazers {
 			series.XValues = append(series.XValues, star.StarredAt)
 			series.YValues = append(series.YValues, float64(i))
@@ -85,8 +87,14 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 		graph := chart.Chart{
 			Width:  1024,
 			Height: 400,
-			XAxis:  chart.XAxis{Name: "Time"},
-			YAxis:  chart.YAxis{Name: "Stargazers"},
+			XAxis: chart.XAxis{
+				Name:        "Time",
+				StrokeWidth: 2,
+			},
+			YAxis: chart.YAxis{
+				Name:        "Stargazers",
+				StrokeWidth: 2,
+			},
 			Series: series,
 		}
 		defer log.Trace("chart").Stop(&err)

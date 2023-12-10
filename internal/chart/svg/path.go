@@ -29,8 +29,20 @@ func (pb *PathBuilder) MoveTo(x, y int) *PathBuilder {
 	return pb
 }
 
+func (pb *PathBuilder) MoveToF(x, y float64) *PathBuilder {
+	pb.path = append(pb.path, fmt.Sprintf("M %f %f", x, y))
+
+	return pb
+}
+
 func (pb *PathBuilder) LineTo(x, y int) *PathBuilder {
 	pb.path = append(pb.path, fmt.Sprintf("L %d %d", x, y))
+
+	return pb
+}
+
+func (pb *PathBuilder) LineToF(x, y float64) *PathBuilder {
+	pb.path = append(pb.path, fmt.Sprintf("L %f %f", x, y))
 
 	return pb
 }

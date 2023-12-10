@@ -1,7 +1,7 @@
 package chart
 
 const chartCss = `
-path { stroke-width: 2; fill: none; stroke: rgb(51,51,51); }
+path { fill: none; stroke: rgb(51,51,51); }
 path.series { stroke: rgb(129,199,239); }
 
 text {

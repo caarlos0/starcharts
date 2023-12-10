@@ -7,7 +7,8 @@ import (
 )
 
 type XAxis struct {
-	Name string
+	Name        string
+	StrokeWidth float64
 }
 
 func (xa XAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
@@ -41,7 +42,8 @@ func (xa XAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 
 func (xa XAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 	svg.Path().
-		MoveTo(canvasBox.Left, canvasBox.Bottom).
+		Attr("stroke-width", svg.Point(max(MinStrokeWidth, xa.StrokeWidth))).
+		MoveToF(float64(canvasBox.Left)-xa.StrokeWidth/2, float64(canvasBox.Bottom)).
 		LineTo(canvasBox.Right, canvasBox.Bottom).
 		Render(w)
 
@@ -54,6 +56,7 @@ func (xa XAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 		tx = canvasBox.Left + lx
 
 		svg.Path().
+			Attr("stroke-width", svg.Point(max(MinStrokeWidth, xa.StrokeWidth))).
 			MoveTo(tx, canvasBox.Bottom).
 			LineTo(tx, canvasBox.Bottom+VerticalTickHeight).
 			Render(w)

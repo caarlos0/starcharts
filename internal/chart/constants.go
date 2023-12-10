@@ -22,4 +22,6 @@ const (
 
 	VerticalTickHeight  = XAxisMargin >> 1
 	HorizontalTickWidth = YAxisMargin >> 1
+
+	MinStrokeWidth = 1.0
 )
