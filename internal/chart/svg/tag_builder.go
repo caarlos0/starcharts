@@ -17,7 +17,17 @@ func (t *TagBuilder) Write(p []byte) (n int, err error) {
 }
 
 func (t *TagBuilder) Render(io io.Writer) {
-	fmt.Fprintf(io, "<%s %s>%s</%s>", t.tag, t.attrString(), t.content.String(), t.tag)
+	if t.content.Len() == 0 {
+		_, err := fmt.Fprintf(io, "<%s %s />", t.tag, t.attrString())
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	_, err := fmt.Fprintf(io, "<%s %s>%s</%s>", t.tag, t.attrString(), t.content.String(), t.tag)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (t *TagBuilder) Attr(key, value string) *TagBuilder {
@@ -27,7 +37,6 @@ func (t *TagBuilder) Attr(key, value string) *TagBuilder {
 
 func (t *TagBuilder) Content(content string) *TagBuilder {
 	t.content.WriteString(content)
-
 	return t
 }
 

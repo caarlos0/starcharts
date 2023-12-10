@@ -14,35 +14,34 @@ type YAxis struct {
 func (ya YAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 	tx := canvas.Right + YAxisMargin
 
-	minx, maxx, miny, maxy := math.MaxInt32, 0, math.MaxInt32, 0
-	var maxTextHeight int
+	minX, maxX, minY, maxY := math.MaxInt32, 0, math.MaxInt32, 0
+	maxTextHeight := 0
 	for _, t := range ticks {
-		v := t.Value
-		ly := canvas.Bottom - ra.Translate(v)
+		ly := canvas.Bottom - ra.Translate(t.Value)
+
 
 		tb := measureText(t.Label, AxisFontSize, nil)
-		tbh2 := tb.Height() >> 1
 		maxTextHeight = max(tb.Height(), maxTextHeight)
 
-		minx = canvas.Right
-		maxx = max(maxx, tx+tb.Width())
+		minX = canvas.Right
+		maxX = max(maxX, tx+tb.Width())
 
-		miny = min(miny, ly-tbh2)
-		maxy = max(maxy, ly+tbh2)
+		tbh2 := tb.Height() >> 1
+		minY = min(minY, ly-tbh2)
+		maxY = max(maxY, ly+tbh2)
 	}
 
-	maxx += YAxisMargin + maxTextHeight
+	maxX += YAxisMargin + maxTextHeight
 
 	return Box{
-		Top:    miny,
-		Left:   minx,
-		Right:  maxx,
-		Bottom: maxy,
+		Top:    minY,
+		Left:   minX,
+		Right:  maxX,
+		Bottom: maxY,
 	}
 }
 
 func (ya YAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
-
 	lx := canvasBox.Right
 	tx := lx + YAxisMargin
 
@@ -87,6 +86,10 @@ func (ya YAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 		Content(ya.Name).
 		Attr("x", svg.Point(tx)).
 		Attr("y", svg.Point(ty)).
-		Attr("transform", fmt.Sprintf("rotate(%0.2f,%d,%d)", radiansToDegrees(degreesToRadians(90)), tx, ty)).
+		Attr("transform", rotate(90, tx, ty)).
 		Render(w)
+}
+
+func rotate(ang float32, x int, y int) string {
+	return fmt.Sprintf("rotate(%0.2f,%d,%d)", ang, x, y)
 }

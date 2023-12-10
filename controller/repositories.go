@@ -83,6 +83,8 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 		}
 
 		graph := chart.Chart{
+			Width:  1024,
+			Height: 400,
 			XAxis:  chart.XAxis{Name: "Time"},
 			YAxis:  chart.YAxis{Name: "Stargazers"},
 			Series: series,

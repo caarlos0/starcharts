@@ -12,15 +12,15 @@ type PathBuilder struct {
 	path []string
 }
 
-func (t *PathBuilder) Attr(key, value string) *PathBuilder {
-	t.attributes[key] = value
-	return t
+func (pb *PathBuilder) Attr(key, value string) *PathBuilder {
+	pb.attributes[key] = value
+	return pb
 }
 
-func (t *PathBuilder) Content(content string) *PathBuilder {
-	t.content.WriteString(content)
+func (pb *PathBuilder) Content(content string) *PathBuilder {
+	pb.content.WriteString(content)
 
-	return t
+	return pb
 }
 
 func (pb *PathBuilder) MoveTo(x, y int) *PathBuilder {
@@ -51,21 +51,20 @@ func (pb *PathBuilder) ArcTo(cx, cy int, rx, ry, startAngle, delta float64) *Pat
 	endX := cx + int(rx*math.Sin(endAngle))
 	endY := cy - int(ry*math.Cos(endAngle))
 
-	dd := RadiansToDegrees(delta)
+	degrees := RadiansToDegrees(delta)
 
 	largeArcFlag := 0
-	if delta > _pi {
+	if delta > math.Pi {
 		largeArcFlag = 1
 	}
 
-	pb.path = append(pb.path, fmt.Sprintf("A %d %d %0.2f %d 1 %d %d", int(rx), int(ry), dd, largeArcFlag, endX, endY))
+	pb.path = append(pb.path, fmt.Sprintf("A %d %d %0.2f %d 1 %d %d", int(rx), int(ry), degrees, largeArcFlag, endX, endY))
 
 	return pb
 }
 
 func (pb *PathBuilder) Render(io io.Writer) {
 	pb.attributes["d"] = strings.Join(pb.path, " ")
-
 	pb.TagBuilder.Render(io)
 }
 

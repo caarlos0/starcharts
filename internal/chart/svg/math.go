@@ -2,10 +2,11 @@ package svg
 
 import "math"
 
-const _2pi = 2 * math.Pi
-const _pi2 = math.Pi / 2.0
-const _r2d = 180.0 / math.Pi
-const _pi = math.Pi
+const (
+	_2pi = 2 * math.Pi
+	_pi2 = math.Pi / 2
+	_r2d = 180 / math.Pi
+)
 
 func RadianAdd(base, delta float64) float64 {
 	value := base + delta

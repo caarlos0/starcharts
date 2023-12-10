@@ -48,11 +48,11 @@ func mean[T Number](values ...T) T {
 	return sum(values...) / T(len(values))
 }
 
-func sum[T Number](values ...T) T {
-	var total T
+func sum[T Number](values ...T) (total T) {
 	for _, v := range values {
 		total += v
 	}
+
 	return total
 }
 
