@@ -24,15 +24,24 @@ func (c *Chart) Render(w io.Writer) {
 	xRange.Domain = plot.Width()
 	yRange.Domain = plot.Height()
 
+	background := svg.Rect().
+		Attr("x", svg.Point(0)).
+		Attr("y", svg.Point(0)).
+		Attr("width", svg.Px(c.Width)).
+		Attr("height", svg.Px(c.Height)).
+		Attr("class", "background").
+		Attr("rx", "8")
+
+	style := svg.Style().
+		Attr("type", "text/css").
+		Content(chartCss)
+
 	svgElement := svg.SVG().
 		Attr("width", svg.Px(c.Width)).
 		Attr("height", svg.Px(c.Height)).
-		Content(svg.Style().
-			Attr("type", "text/css").
-			Content(chartCss).
-			String(),
-		).
 		ContentFunc(func(w io.Writer) {
+			style.Render(w)
+			background.Render(w)
 			c.Series.Render(w, plot, xRange, yRange)
 			c.YAxis.Render(w, plot, yRange, yTicks)
 			c.XAxis.Render(w, plot, xRange, xTicks)

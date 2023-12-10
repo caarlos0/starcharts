@@ -3,7 +3,7 @@ package svg
 import "fmt"
 
 type Number interface {
-	int | float64
+	int | int64 | float32 | float64
 }
 
 func Px[T Number](value T) string {

@@ -44,7 +44,7 @@ func (ts Series) Render(w io.Writer, canvasBox Box, xrange, yrange *Range) {
 	var x, y int
 
 	path := svg.Path().
-		Attr("stroke-width", svg.Point(max(MinStrokeWidth, ts.StrokeWidth))).
+		Attr("stroke-width", normaliseStrokeWidth(ts.StrokeWidth)).
 		Attr("class", "series").
 		MoveTo(x0, y0)
 

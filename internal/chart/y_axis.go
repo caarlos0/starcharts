@@ -1,7 +1,6 @@
 package chart
 
 import (
-	"fmt"
 	"github.com/caarlos0/starcharts/internal/chart/svg"
 	"io"
 	"math"
@@ -20,7 +19,7 @@ func (ya YAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 	for _, t := range ticks {
 		ly := canvas.Bottom - ra.Translate(t.Value)
 
-		tb := measureText(t.Label, AxisFontSize, nil)
+		tb := measureText(t.Label, AxisFontSize)
 		maxTextHeight = max(tb.Height(), maxTextHeight)
 
 		minX = canvas.Right
@@ -45,42 +44,40 @@ func (ya YAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 	lx := canvasBox.Right
 	tx := lx + YAxisMargin
 
+	strokeWidth := normaliseStrokeWidth(ya.StrokeWidth)
+
 	svg.Path().
-		Attr("stroke-width", svg.Point(max(MinStrokeWidth, ya.StrokeWidth))).
+		Attr("stroke-width", strokeWidth).
 		MoveTo(lx, canvasBox.Bottom).
 		LineToF(float64(lx), float64(canvasBox.Top)-ya.StrokeWidth/2).
 		Render(w)
 
 	var maxTextWidth int
-	var finalTextX, finalTextY int
+	var finalTextY int
 	for _, t := range ticks {
-		v := t.Value
-		ly := canvasBox.Bottom - ra.Translate(v)
-
-		tb := measureText(t.Label, AxisFontSize, nil)
+		ly := canvasBox.Bottom - ra.Translate(t.Value)
+		tb := measureText(t.Label, AxisFontSize)
 
 		if tb.Width() > maxTextWidth {
 			maxTextWidth = tb.Width()
 		}
 
-		finalTextX = tx
-
 		finalTextY = ly + tb.Height()>>1
 
 		svg.Path().
-			Attr("stroke-width", svg.Point(max(MinStrokeWidth, ya.StrokeWidth))).
+			Attr("stroke-width", strokeWidth).
 			MoveTo(lx, ly).
 			LineTo(lx+HorizontalTickWidth, ly).
 			Render(w)
 
 		svg.Text().
 			Content(t.Label).
-			Attr("x", svg.Point(finalTextX)).
+			Attr("x", svg.Point(tx)).
 			Attr("y", svg.Point(finalTextY)).
 			Render(w)
 	}
 
-	tb := measureText(ya.Name, AxisFontSize, nil)
+	tb := measureText(ya.Name, AxisFontSize)
 	tx = canvasBox.Right + YAxisMargin + maxTextWidth + YAxisMargin
 	ty := canvasBox.Top + (canvasBox.Height()>>1 - tb.Height()>>1)
 
@@ -90,8 +87,4 @@ func (ya YAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 		Attr("y", svg.Point(ty)).
 		Attr("transform", rotate(90, tx, ty)).
 		Render(w)
-}
-
-func rotate(ang float32, x int, y int) string {
-	return fmt.Sprintf("rotate(%0.2f,%d,%d)", ang, x, y)
 }

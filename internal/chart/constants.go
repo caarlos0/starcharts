@@ -1,10 +1,10 @@
 package chart
 
 var BoxPadding = Box{
-	Top:    5,
-	Left:   5,
-	Right:  5,
-	Bottom: 5,
+	Top:    10,
+	Left:   25,
+	Right:  25,
+	Bottom: 10,
 }
 
 const (

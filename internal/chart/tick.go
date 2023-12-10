@@ -26,8 +26,7 @@ func GenerateTicks(rng *Range, isVertical bool, formatter ValueFormatter) []Tick
 		{Value: rng.Min, Label: formatter(rng.Min)},
 	}
 
-	minLabel := formatter(rng.Min)
-	labelBox := measureText(minLabel, AxisFontSize, nil)
+	labelBox := measureText(formatter(rng.Min), AxisFontSize)
 
 	var tickSize float64
 	if isVertical {
@@ -53,10 +52,8 @@ func GenerateTicks(rng *Range, isVertical bool, formatter ValueFormatter) []Tick
 		})
 	}
 
-	ticks = append(ticks, Tick{
+	return append(ticks, Tick{
 		Value: rng.Max,
 		Label: formatter(rng.Max),
 	})
-
-	return ticks
 }

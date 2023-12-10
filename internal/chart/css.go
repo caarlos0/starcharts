@@ -3,6 +3,7 @@ package chart
 const chartCss = `
 path { fill: none; stroke: rgb(51,51,51); }
 path.series { stroke: rgb(129,199,239); }
+rect.background { fill: rgb(255,255,255); stroke: none; }
 
 text {
 	stroke-width: 0;
@@ -16,5 +17,6 @@ text {
 	path { stroke: rgb(230, 237, 243); }
 	path.series { stroke: rgb(47, 129, 247); }
 	text { fill: rgb(230, 237, 243); }
+	rect.background { fill: rgb(0,0,0);
 }
 `

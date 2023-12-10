@@ -17,7 +17,7 @@ func (xa XAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 	var left, right, bottom = math.MaxInt32, 0, 0
 	for _, t := range ticks {
 		v := t.Value
-		tb := measureText(t.Label, AxisFontSize, nil)
+		tb := measureText(t.Label, AxisFontSize)
 
 		tx = canvas.Left + ra.Translate(v)
 		ty = canvas.Bottom + XAxisMargin + tb.Height()
@@ -29,7 +29,7 @@ func (xa XAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 		bottom = max(bottom, ty)
 	}
 
-	tb := measureText(xa.Name, AxisFontSize, nil)
+	tb := measureText(xa.Name, AxisFontSize)
 	bottom += XAxisMargin + tb.Height()
 
 	return Box{
@@ -41,8 +41,10 @@ func (xa XAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 }
 
 func (xa XAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
+	strokeWidth := normaliseStrokeWidth(xa.StrokeWidth)
+
 	svg.Path().
-		Attr("stroke-width", svg.Point(max(MinStrokeWidth, xa.StrokeWidth))).
+		Attr("stroke-width", strokeWidth).
 		MoveToF(float64(canvasBox.Left)-xa.StrokeWidth/2, float64(canvasBox.Bottom)).
 		LineTo(canvasBox.Right, canvasBox.Bottom).
 		Render(w)
@@ -56,12 +58,12 @@ func (xa XAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 		tx = canvasBox.Left + lx
 
 		svg.Path().
-			Attr("stroke-width", svg.Point(max(MinStrokeWidth, xa.StrokeWidth))).
+			Attr("stroke-width", strokeWidth).
 			MoveTo(tx, canvasBox.Bottom).
 			LineTo(tx, canvasBox.Bottom+VerticalTickHeight).
 			Render(w)
 
-		tb := measureText(t.Label, AxisFontSize, nil)
+		tb := measureText(t.Label, AxisFontSize)
 
 		tx = tx - tb.Width()>>1
 		ty = canvasBox.Bottom + XAxisMargin + tb.Height()
@@ -75,7 +77,7 @@ func (xa XAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
 		maxTextHeight = max(maxTextHeight, tb.Height())
 	}
 
-	tb := measureText(xa.Name, AxisFontSize, nil)
+	tb := measureText(xa.Name, AxisFontSize)
 	tx = canvasBox.Right - (canvasBox.Width()>>1 + tb.Width()>>1)
 	ty = canvasBox.Bottom + XAxisMargin + maxTextHeight + XAxisMargin + tb.Height()
 
