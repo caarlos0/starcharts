@@ -50,7 +50,7 @@ func (c *Chart) Render(w io.Writer) {
 	svgElement.Render(w)
 }
 
-func (c *Chart) getRanges(canvas Box) (*Range, *Range) {
+func (c *Chart) getRanges(canvas *Box) (*Range, *Range) {
 	var minX, maxX = math.MaxFloat64, -math.MaxFloat64
 	var minY, maxY = math.MaxFloat64, -math.MaxFloat64
 
@@ -83,8 +83,8 @@ func (c *Chart) getRanges(canvas Box) (*Range, *Range) {
 	return xRange, yRange
 }
 
-func (c *Chart) Box() Box {
-	return Box{
+func (c *Chart) Box() *Box {
+	return &Box{
 		Top:    BoxPadding.Top,
 		Left:   BoxPadding.Left,
 		Right:  c.Width - BoxPadding.Right,

@@ -11,7 +11,7 @@ type YAxis struct {
 	StrokeWidth float64
 }
 
-func (ya YAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
+func (ya *YAxis) Measure(canvas *Box, ra *Range, ticks []Tick) *Box {
 	tx := canvas.Right + YAxisMargin
 
 	minX, maxX, minY, maxY := math.MaxInt32, 0, math.MaxInt32, 0
@@ -32,7 +32,7 @@ func (ya YAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 
 	maxX += YAxisMargin + maxTextHeight
 
-	return Box{
+	return &Box{
 		Top:    minY,
 		Left:   minX,
 		Right:  maxX,
@@ -40,7 +40,7 @@ func (ya YAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 	}
 }
 
-func (ya YAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
+func (ya *YAxis) Render(w io.Writer, canvasBox *Box, ra *Range, ticks []Tick) {
 	lx := canvasBox.Right
 	tx := lx + YAxisMargin
 

@@ -17,6 +17,6 @@ text {
 	path { stroke: rgb(230, 237, 243); }
 	path.series { stroke: rgb(47, 129, 247); }
 	text { fill: rgb(230, 237, 243); }
-	rect.background { fill: rgb(0,0,0);
+	rect.background { fill: rgb(0,0,0); }
 }
 `

@@ -11,7 +11,7 @@ type XAxis struct {
 	StrokeWidth float64
 }
 
-func (xa XAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
+func (xa *XAxis) Measure(canvas *Box, ra *Range, ticks []Tick) *Box {
 	var ltx, rtx int
 	var tx, ty int
 	var left, right, bottom = math.MaxInt32, 0, 0
@@ -32,7 +32,7 @@ func (xa XAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 	tb := measureText(xa.Name, AxisFontSize)
 	bottom += XAxisMargin + tb.Height()
 
-	return Box{
+	return &Box{
 		Top:    canvas.Bottom,
 		Left:   left,
 		Right:  right,
@@ -40,7 +40,7 @@ func (xa XAxis) Measure(canvas Box, ra *Range, ticks []Tick) Box {
 	}
 }
 
-func (xa XAxis) Render(w io.Writer, canvasBox Box, ra *Range, ticks []Tick) {
+func (xa *XAxis) Render(w io.Writer, canvasBox *Box, ra *Range, ticks []Tick) {
 	strokeWidth := normaliseStrokeWidth(xa.StrokeWidth)
 
 	svg.Path().

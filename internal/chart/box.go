@@ -7,21 +7,21 @@ type Box struct {
 	Bottom int
 }
 
-func (b Box) Width() int {
+func (b *Box) Width() int {
 	return abs(b.Right - b.Left)
 }
 
-func (b Box) Height() int {
+func (b *Box) Height() int {
 	return abs(b.Bottom - b.Top)
 }
 
-func (b Box) Center() (x, y int) {
+func (b *Box) Center() (x, y int) {
 	w2, h2 := b.Width()>>1, b.Height()>>1
 	return b.Left + w2, b.Top + h2
 }
 
-func (b Box) Clone() Box {
-	return Box{
+func (b *Box) Clone() *Box {
+	return &Box{
 		Top:    b.Top,
 		Left:   b.Left,
 		Right:  b.Right,
@@ -29,8 +29,8 @@ func (b Box) Clone() Box {
 	}
 }
 
-func (b Box) Grow(other Box) Box {
-	return Box{
+func (b *Box) Grow(other *Box) *Box {
+	return &Box{
 		Top:    min(b.Top, other.Top),
 		Left:   min(b.Left, other.Left),
 		Right:  max(b.Right, other.Right),
@@ -38,8 +38,8 @@ func (b Box) Grow(other Box) Box {
 	}
 }
 
-func (b Box) Corners() BoxCorners {
-	return BoxCorners{
+func (b *Box) Corners() *BoxCorners {
+	return &BoxCorners{
 		TopLeft:     Point{b.Left, b.Top},
 		TopRight:    Point{b.Right, b.Top},
 		BottomRight: Point{b.Right, b.Bottom},
@@ -47,7 +47,7 @@ func (b Box) Corners() BoxCorners {
 	}
 }
 
-func (b Box) OuterConstrain(bounds, other Box) Box {
+func (b *Box) OuterConstrain(bounds, other *Box) *Box {
 	newBox := b.Clone()
 	if other.Top < bounds.Top {
 		delta := bounds.Top - other.Top
@@ -75,8 +75,8 @@ type BoxCorners struct {
 	TopLeft, TopRight, BottomRight, BottomLeft Point
 }
 
-func (bc BoxCorners) Box() Box {
-	return Box{
+func (bc *BoxCorners) Box() *Box {
+	return &Box{
 		Top:    min(bc.TopLeft.Y, bc.TopRight.Y),
 		Left:   min(bc.TopLeft.X, bc.BottomLeft.X),
 		Right:  max(bc.TopRight.X, bc.BottomRight.X),
@@ -84,7 +84,7 @@ func (bc BoxCorners) Box() Box {
 	}
 }
 
-func (bc BoxCorners) Center() (x, y int) {
+func (bc *BoxCorners) Center() (x, y int) {
 	left := mean(bc.TopLeft.X, bc.BottomLeft.X)
 	right := mean(bc.TopRight.X, bc.BottomRight.X)
 	x = ((right - left) >> 1) + left
@@ -96,7 +96,7 @@ func (bc BoxCorners) Center() (x, y int) {
 	return
 }
 
-func (bc BoxCorners) Rotate(thetaDegrees float64) BoxCorners {
+func (bc *BoxCorners) Rotate(thetaDegrees float64) *BoxCorners {
 	cx, cy := bc.Center()
 
 	thetaRadians := degreesToRadians(thetaDegrees)
@@ -106,7 +106,7 @@ func (bc BoxCorners) Rotate(thetaDegrees float64) BoxCorners {
 	brx, bry := rotateCoordinate(cx, cy, bc.BottomRight.X, bc.BottomRight.Y, thetaRadians)
 	blx, bly := rotateCoordinate(cx, cy, bc.BottomLeft.X, bc.BottomLeft.Y, thetaRadians)
 
-	return BoxCorners{
+	return &BoxCorners{
 		TopLeft:     Point{tlx, tly},
 		TopRight:    Point{trx, try},
 		BottomRight: Point{brx, bry},
