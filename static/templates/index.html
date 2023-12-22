@@ -40,6 +40,14 @@
 		</p>
 	</div>
 	{{ if gt .StargazersCount 0 }}
+	<div>
+		<div class="button-group">
+            <button>Adoptive</button>
+            <button>Light</button>
+            <button>Dark</button>
+            <button>Custom</button>
+		</div>
+	</div>
 	<div class="chart">
 		<p>
 			<img src="/{{ .FullName }}.svg"
@@ -58,7 +66,7 @@
 [![Stargazers over time](https://starchart.cc/{{ .FullName }}.svg)](https://starchart.cc/{{ .FullName }})
 
 </code>
-<button class="btn copy-btn" data-clipboard-target="#code">Copy</button>
+<button class="copy-btn full-width" data-clipboard-target="#code">Copy</button>
 </pre>
 		</p>
 	</div>
@@ -79,7 +87,7 @@
 			<label for="repository">Repository:</label><br>
 			<input type="text" id="repository" name="repository" value="caarlos0/starcharts"
 				placeholder="caarlos0/starcharts" autofocus="autofocus"><br>
-			<input type="submit" value="Submit" class="btn">
+            <button type="submit" class="full-width">Submit</button>
 		</form>
 	</div>
 	{{ end }}

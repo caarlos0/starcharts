@@ -1,23 +1,64 @@
 @import url('https://rsms.me/inter/inter.css');
 
 :root {
+    --featured-color: #3F3D56;
+    --accent-feature-color: #6b63ff;
+
     --background-color: #FFF;
+    --text-color: #000;
+    --input-background-color: #FFF;
     --error-color: #e76060;
-    --link-color: #555;
+
+
+    --link-color: #3F3D56;
     --button-background-color: #3F3D56;
+    --button-hover-background-color: #6b63ff;
     --border-color: #ccc;
     --border-top: #eee;
     --title-color: #333;
-    --link-hover-color: #222;
+    --link-hover-color: #6b63ff;
 }
 
-html {
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #101010;
+        --text-color: #dedede;
+        --button-background-color: #3F3D56;
+        --button-hover-background-color: #6b63ff;
+        --error-color: #ff6b6b;
+
+
+
+
+
+        --input-background-color: #1e1e1e;
+
+        --link-color: #d7d7d7;
+        --border-color: #555;
+        --border-top: #333;
+        --title-color: #d7d7d7;
+        --link-hover-color: #fff;
+    }
+}
+
+/* Global styles */
+
+html, body {
     font-family: 'Inter', sans-serif;
     background: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+* {
+    transition: background 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
 @supports (font-variation-settings: normal) {
-    html {
+    html, body {
         font-family: 'Inter var', sans-serif;
     }
 }
@@ -29,8 +70,9 @@ body {
     align-items: center;
     flex-direction: column;
     padding: 40px 0;
-    background: var(--background-color);
 }
+
+/* Element styles */
 
 a,
 a:visited {
@@ -41,6 +83,9 @@ a:hover {
     color: var(--link-hover-color);
 }
 
+
+
+
 hr {
     margin: 50px 0;
     display: block;
@@ -50,24 +95,76 @@ hr {
     padding: 0;
 }
 
-pre code#code {
+pre code {
     text-align: left;
     font-size: 1.3em;
     overflow-x: hidden;
-}
-
-div {
-    flex-direction: row;
-    flex: 1;
-    flex-wrap: wrap;
-    max-width: 100%;
-    font-size: 1em;
+    border-radius: 4px 4px 0 0;
 }
 
 img {
     max-width: 100%;
     max-height: 100%;
 }
+
+
+input {
+    outline: none;
+    width: 80%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--link-color);
+    background-color: var(--input-background-color);
+}
+
+input:hover {
+    border-color: var(--featured-color) !important;
+}
+input:focus {
+    border-color: var(--button-hover-background-color) !important;
+}
+
+button {
+
+    background-color: var(--button-background-color);
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 450;
+}
+
+button:hover {
+    background-color: var(--button-hover-background-color);
+}
+
+.button-group {
+    display: flex;
+    flex-direction: row;
+}
+.button-group button {
+    border-radius: 0;
+    margin: 0;
+}
+.button-group button:first-child {
+    border-radius: 4px 0 0 4px;
+}
+.button-group button:last-child {
+    border-radius: 0 4px 4px 0;
+}
+
+
+/* Page styles */
 
 a.title {
     display: block;
@@ -123,23 +220,6 @@ div.code {
     border-top: 1px solid var(--border-top);
 }
 
-div.main > form > input[type=text] {
-    width: 80%;
-    padding: 12px 20px;
-    margin: 8px 0;
-    display: inline-block;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-family: inherit;
-    font-size: 1rem;
-    color: var(--link-color);
-}
-
-div.main > form > .btn {
-    width: 80%;
-}
-
 
 p.error {
     color: var(--error-color);
@@ -148,20 +228,15 @@ p.error {
     margin-bottom: 1em;
 }
 
-.btn {
+.full-width {
     width: 100%;
-    background-color: var(--button-background-color);
-    color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 450;
 }
 
-.btn.copy-btn {
+button.copy-btn {
     margin-top: -20px;
+}
+
+
+div.main > form > button {
+    width: 80%;
 }
