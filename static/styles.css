@@ -144,6 +144,7 @@ button {
     font-weight: 450;
 }
 
+button.active,
 button:hover {
     background-color: var(--button-hover-background-color);
 }

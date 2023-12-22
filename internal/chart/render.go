@@ -12,8 +12,8 @@ func (c *Chart) Render(w io.Writer) {
 
 	xRange, yRange := c.getRanges(canvas)
 
-	xTicks := GenerateTicks(xRange, false, timeValueFormatter)
-	yTicks := GenerateTicks(yRange, true, intValueFormatter)
+	xTicks := generateTicks(xRange, false, timeValueFormatter)
+	yTicks := generateTicks(yRange, true, intValueFormatter)
 
 	axesOuterBox := canvas.Clone().
 		Grow(c.XAxis.Measure(canvas, xRange, xTicks)).
@@ -32,9 +32,14 @@ func (c *Chart) Render(w io.Writer) {
 		Attr("class", "background").
 		Attr("rx", "8")
 
+	cssStyles := c.Styles
+	if cssStyles == "" {
+		cssStyles = LightStyles
+	}
+
 	style := svg.Style().
 		Attr("type", "text/css").
-		Content(chartCss)
+		Content(cssStyles)
 
 	svgElement := svg.SVG().
 		Attr("width", svg.Px(c.Width)).

@@ -42,16 +42,19 @@
 	{{ if gt .StargazersCount 0 }}
 	<div>
 		<div class="button-group">
-            <button>Adoptive</button>
-            <button>Light</button>
-            <button>Dark</button>
-            <button>Custom</button>
+            <button data-variant="adoptive" class="active">Adoptive</button>
+            <button data-variant="light">Light</button>
+            <button data-variant="dark">Dark</button>
+            <button data-variant="custom">Custom</button>
 		</div>
+
 	</div>
 	<div class="chart">
 		<p>
-			<img src="/{{ .FullName }}.svg"
-				alt="Please try again in a few minutes. This might not work for very famous repository.">
+			<img src="/{{ .FullName }}.svg?variant=adoptive"
+				 id="chart"
+				 data-src="/{{ .FullName }}.svg"
+				 alt="Please try again in a few minutes. This might not work for very famous repository.">
 		</p>
 	</div>
 	<div class="code">
@@ -101,12 +104,7 @@
 		integrity="sha512-sIqUEnRn31BgngPmHt2JenzleDDsXwYO+iyvQ46Mw6RL+udAUZj2n/u/PGY80NxRxynO7R9xIGx5LEzw4INWJQ=="
 		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	<script defer data-domain="starchart.cc" src="https://plausible.io/js/plausible.js"></script>
-	<script>
-		new ClipboardJS('.copy-btn');
-		hljs.highlightAll();
-		document.querySelectorAll('time').forEach(t => timeago.render(t));
-		document.querySelectorAll('input#repository').forEach(i => i.select());
-	</script>
+	<script src="/static/scripts.js"></script>
 </body>
 
 </html>

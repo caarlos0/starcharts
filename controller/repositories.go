@@ -37,9 +37,10 @@ func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis, version stri
 	})
 }
 
-// IntValueFormatter is a ValueFormatter for int.
-func IntValueFormatter(v interface{}) string {
-	return fmt.Sprintf("%.0f", v)
+var stylesMap = map[string]string{
+	"light":    chart.LightStyles,
+	"dark":     chart.DarkStyles,
+	"adoptive": chart.AdoptiveStyles,
 }
 
 // GetRepoChart returns the SVG chart for the given repository.
@@ -48,11 +49,8 @@ func IntValueFormatter(v interface{}) string {
 // TODO: refactor.
 func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 	return httperr.NewF(func(w http.ResponseWriter, r *http.Request) error {
-		name := fmt.Sprintf(
-			"%s/%s",
-			mux.Vars(r)["owner"],
-			mux.Vars(r)["repo"],
-		)
+		vars := mux.Vars(r)
+		name := fmt.Sprintf("%s/%s", vars["owner"], vars["repo"])
 		log := log.WithField("repo", name)
 		defer log.Trace("collect_stars").Stop(nil)
 		repo, err := gh.RepoDetails(r.Context(), name)
@@ -60,10 +58,9 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 			return httperr.Wrap(err, http.StatusBadRequest)
 		}
 
-		w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
-		w.Header().Add("cache-control", "public, max-age=86400")
-		w.Header().Add("date", time.Now().Format(time.RFC1123))
-		w.Header().Add("expires", time.Now().Format(time.RFC1123))
+		params := r.URL.Query()
+
+		styles := stylesMap[params.Get("variant")]
 
 		stargazers, err := gh.Stargazers(r.Context(), repo)
 		if err != nil {
@@ -87,6 +84,7 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 		graph := chart.Chart{
 			Width:  1024,
 			Height: 400,
+			Styles: styles,
 			XAxis: chart.XAxis{
 				Name:        "Time",
 				StrokeWidth: 2,
@@ -98,6 +96,13 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 			Series: series,
 		}
 		defer log.Trace("chart").Stop(&err)
+
+		header := w.Header()
+		header.Add("content-type", "image/svg+xml;charset=utf-8")
+		header.Add("cache-control", "public, max-age=86400")
+		header.Add("date", time.Now().Format(time.RFC1123))
+		header.Add("expires", time.Now().Format(time.RFC1123))
+
 		graph.Render(w)
 		return nil
 	})

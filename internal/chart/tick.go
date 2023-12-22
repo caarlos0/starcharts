@@ -21,7 +21,7 @@ func (t Ticks) String() string {
 	return strings.Join(values, ", ")
 }
 
-func GenerateTicks(rng *Range, isVertical bool, formatter ValueFormatter) []Tick {
+func generateTicks(rng *Range, isVertical bool, formatter ValueFormatter) []Tick {
 	ticks := []Tick{
 		{Value: rng.Min, Label: formatter(rng.Min)},
 	}
