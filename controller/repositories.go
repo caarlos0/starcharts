@@ -16,6 +16,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	CHART_WIDTH  = 1024
+	CHART_HEIGHT = 400
+)
+
 // GetRepo shows the given repo chart.
 func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis, version string) http.Handler {
 	return httperr.NewF(func(w http.ResponseWriter, r *http.Request) error {
@@ -40,7 +45,7 @@ func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis, version stri
 var stylesMap = map[string]string{
 	"light":    chart.LightStyles,
 	"dark":     chart.DarkStyles,
-	"adoptive": chart.AdoptiveStyles,
+	"adaptive": chart.AdaptiveStyles,
 }
 
 // GetRepoChart returns the SVG chart for the given repository.
@@ -60,16 +65,21 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 
 		params := r.URL.Query()
 
-		styles := stylesMap[params.Get("variant")]
-
 		stargazers, err := gh.Stargazers(r.Context(), repo)
 		if err != nil {
 			log.WithError(err).Error("failed to get stars")
 			_, err = w.Write([]byte(errSvg(err)))
 			return err
 		}
+
+		lineColor, err := extractColor(r, "line")
+		if err != nil {
+			return err
+		}
+
 		series := chart.Series{
 			StrokeWidth: 2,
+			Color:       lineColor,
 		}
 		for i, star := range stargazers {
 			series.XValues = append(series.XValues, star.StarredAt)
@@ -81,16 +91,29 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 			series.YValues = append(series.YValues, 1)
 		}
 
+		backgroundColor, err := extractColor(r, "background")
+		if err != nil {
+			return err
+		}
+
+		axisColor, err := extractColor(r, "axis")
+		if err != nil {
+			return err
+		}
+
 		graph := chart.Chart{
-			Width:  1024,
-			Height: 400,
-			Styles: styles,
+			Width:      CHART_WIDTH,
+			Height:     CHART_HEIGHT,
+			Styles:     stylesMap[params.Get("variant")],
+			Background: backgroundColor,
 			XAxis: chart.XAxis{
 				Name:        "Time",
+				Color:       axisColor,
 				StrokeWidth: 2,
 			},
 			YAxis: chart.YAxis{
 				Name:        "Stargazers",
+				Color:       axisColor,
 				StrokeWidth: 2,
 			},
 			Series: series,
@@ -110,13 +133,13 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 
 func errSvg(err error) string {
 	return svg.SVG().
-		Attr("width", svg.Px(1024)).
-		Attr("height", svg.Px(50)).
+		Attr("width", svg.Px(CHART_WIDTH)).
+		Attr("height", svg.Px(CHART_HEIGHT)).
 		ContentFunc(func(writer io.Writer) {
 			svg.Text().
 				Attr("fill", "red").
-				Attr("x", svg.Px(100)).
-				Attr("y", svg.Px(20)).
+				Attr("x", svg.Px(CHART_WIDTH/2)).
+				Attr("y", svg.Px(CHART_HEIGHT/2)).
 				Content(err.Error()).
 				Render(writer)
 		}).

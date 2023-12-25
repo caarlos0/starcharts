@@ -7,7 +7,9 @@ type Chart struct {
 	YAxis YAxis
 
 	Series Series
-	Styles string
+
+	Background string
+	Styles     string
 
 	Width  int
 	Height int

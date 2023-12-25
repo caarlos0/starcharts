@@ -10,6 +10,7 @@ type Series struct {
 	XValues     []time.Time
 	YValues     []float64
 	StrokeWidth float64
+	Color       string
 }
 
 func (ts *Series) Len() int {
@@ -45,6 +46,7 @@ func (ts *Series) Render(w io.Writer, canvasBox *Box, xrange, yrange *Range) {
 
 	path := svg.Path().
 		Attr("stroke-width", normaliseStrokeWidth(ts.StrokeWidth)).
+		Attr("style", styles("stroke", ts.Color)).
 		Attr("class", "series").
 		MoveTo(x0, y0)
 

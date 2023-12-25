@@ -31,6 +31,10 @@ func (t *TagBuilder) Render(io io.Writer) {
 }
 
 func (t *TagBuilder) Attr(key, value string) *TagBuilder {
+	if value == "" {
+		delete(t.attributes, key)
+		return t
+	}
 	t.attributes[key] = value
 	return t
 }

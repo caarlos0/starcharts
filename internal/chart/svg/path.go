@@ -13,7 +13,12 @@ type PathBuilder struct {
 }
 
 func (pb *PathBuilder) Attr(key, value string) *PathBuilder {
+	if value == "" {
+		delete(pb.attributes, key)
+		return pb
+	}
 	pb.attributes[key] = value
+
 	return pb
 }
 

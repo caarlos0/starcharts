@@ -30,6 +30,7 @@ func (c *Chart) Render(w io.Writer) {
 		Attr("width", svg.Px(c.Width)).
 		Attr("height", svg.Px(c.Height)).
 		Attr("class", "background").
+		Attr("style", styles("fill", c.Background)).
 		Attr("rx", "8")
 
 	cssStyles := c.Styles

@@ -9,6 +9,7 @@ import (
 type XAxis struct {
 	Name        string
 	StrokeWidth float64
+	Color       string
 }
 
 func (xa *XAxis) Measure(canvas *Box, ra *Range, ticks []Tick) *Box {
@@ -42,9 +43,12 @@ func (xa *XAxis) Measure(canvas *Box, ra *Range, ticks []Tick) *Box {
 
 func (xa *XAxis) Render(w io.Writer, canvasBox *Box, ra *Range, ticks []Tick) {
 	strokeWidth := normaliseStrokeWidth(xa.StrokeWidth)
+	strokeStyle := styles("stroke", xa.Color)
+	fillStyle := styles("fill", xa.Color)
 
 	svg.Path().
 		Attr("stroke-width", strokeWidth).
+		Attr("style", strokeStyle).
 		MoveToF(float64(canvasBox.Left)-xa.StrokeWidth/2, float64(canvasBox.Bottom)).
 		LineTo(canvasBox.Right, canvasBox.Bottom).
 		Render(w)
@@ -59,6 +63,7 @@ func (xa *XAxis) Render(w io.Writer, canvasBox *Box, ra *Range, ticks []Tick) {
 
 		svg.Path().
 			Attr("stroke-width", strokeWidth).
+			Attr("style", strokeStyle).
 			MoveTo(tx, canvasBox.Bottom).
 			LineTo(tx, canvasBox.Bottom+VerticalTickHeight).
 			Render(w)
@@ -70,6 +75,7 @@ func (xa *XAxis) Render(w io.Writer, canvasBox *Box, ra *Range, ticks []Tick) {
 
 		svg.Text().
 			Content(t.Label).
+			Attr("style", fillStyle).
 			Attr("x", svg.Point(tx)).
 			Attr("y", svg.Point(ty)).
 			Render(w)
@@ -83,6 +89,7 @@ func (xa *XAxis) Render(w io.Writer, canvasBox *Box, ra *Range, ticks []Tick) {
 
 	svg.Text().
 		Content(xa.Name).
+		Attr("style", fillStyle).
 		Attr("x", svg.Point(tx)).
 		Attr("y", svg.Point(ty)).
 		Render(w)

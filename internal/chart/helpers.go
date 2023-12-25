@@ -42,3 +42,11 @@ func rotate(ang float32, x int, y int) string {
 func normaliseStrokeWidth(strokeWidth float64) string {
 	return svg.Point(max(MinStrokeWidth, strokeWidth))
 }
+
+func styles(property, value string) string {
+	if len(value) == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf("%s: %s;", property, value)
+}

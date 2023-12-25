@@ -33,7 +33,7 @@ text { fill: rgb(230, 237, 243); }
 rect.background { fill: rgb(0,0,0); }
 `
 
-const AdoptiveStyles = `
+const AdaptiveStyles = `
 path { fill: none; stroke: rgb(51,51,51); }
 path.series { stroke: #6b63ff; }
 rect.background { fill: none; stroke: none; }

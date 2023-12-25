@@ -9,6 +9,7 @@ import (
 type YAxis struct {
 	Name        string
 	StrokeWidth float64
+	Color       string
 }
 
 func (ya *YAxis) Measure(canvas *Box, ra *Range, ticks []Tick) *Box {
@@ -43,11 +44,14 @@ func (ya *YAxis) Measure(canvas *Box, ra *Range, ticks []Tick) *Box {
 func (ya *YAxis) Render(w io.Writer, canvasBox *Box, ra *Range, ticks []Tick) {
 	lx := canvasBox.Right
 	tx := lx + YAxisMargin
+	strokeStyle := styles("stroke", ya.Color)
+	fillStyle := styles("fill", ya.Color)
 
 	strokeWidth := normaliseStrokeWidth(ya.StrokeWidth)
 
 	svg.Path().
 		Attr("stroke-width", strokeWidth).
+		Attr("style", strokeStyle).
 		MoveTo(lx, canvasBox.Bottom).
 		LineToF(float64(lx), float64(canvasBox.Top)-ya.StrokeWidth/2).
 		Render(w)
@@ -66,12 +70,14 @@ func (ya *YAxis) Render(w io.Writer, canvasBox *Box, ra *Range, ticks []Tick) {
 
 		svg.Path().
 			Attr("stroke-width", strokeWidth).
+			Attr("style", strokeStyle).
 			MoveTo(lx, ly).
 			LineTo(lx+HorizontalTickWidth, ly).
 			Render(w)
 
 		svg.Text().
 			Content(t.Label).
+			Attr("style", fillStyle).
 			Attr("x", svg.Point(tx)).
 			Attr("y", svg.Point(finalTextY)).
 			Render(w)
@@ -85,6 +91,7 @@ func (ya *YAxis) Render(w io.Writer, canvasBox *Box, ra *Range, ticks []Tick) {
 		Content(ya.Name).
 		Attr("x", svg.Point(tx)).
 		Attr("y", svg.Point(ty)).
+		Attr("style", fillStyle).
 		Attr("transform", rotate(90, tx, ty)).
 		Render(w)
 }
