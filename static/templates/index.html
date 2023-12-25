@@ -18,6 +18,8 @@
 		href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/styles/base16/dracula.min.css"
 		integrity="sha512-oDvVpANXrKQ6R5B25VO6DooEQWA7jUXleyD6oUWHChC0fjv8wAANSX7lKXtp5D6HbZ7EUxd0wjMibtpCQ+aCDw=="
 		crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.css"/>
+    <script src="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.js"></script>
 </head>
 
 <body>
@@ -42,40 +44,41 @@
 	{{ if gt .StargazersCount 0 }}
 	<div>
 		<div class="button-group">
-            <button data-variant="adoptive" class="active">Adoptive</button>
+            <button data-variant="adaptive" class="active">Adaptive</button>
             <button data-variant="light">Light</button>
             <button data-variant="dark">Dark</button>
             <button data-variant="custom">Custom</button>
 		</div>
-
+        <div class="customisation">
+            <label for="background">Background Color</label>
+            <input id="background" name="background" type="text" value="#FFFFFF" data-coloris>
+            <label for="axis">Axis Color</label>
+            <input id="axis" name="axis" type="text" value="#333333" data-coloris>
+            <label for="line">Line Color</label>
+            <input id="line" name="line" type="text" value="#6b63ff" data-coloris>
+        </div>
 	</div>
 	<div class="chart">
-		<p>
-			<img src="/{{ .FullName }}.svg?variant=adoptive"
-				 id="chart"
-				 data-src="/{{ .FullName }}.svg"
-				 alt="Please try again in a few minutes. This might not work for very famous repository.">
-		</p>
+        <img src="/{{ .FullName }}.svg?variant=adaptive"
+             id="chart"
+             data-src="/{{ .FullName }}.svg"
+             alt="Please try again in a few minutes. This might not work for very famous repository.">
 	</div>
 	<div class="code">
-		<p>
-			You can include the chart on your repository's
-			<code>README.md</code>
-			as follows:
+
+        You can include the chart on your repository's
+        <code>README.md</code>
+        as follows:
 		<pre>
-<code class="markdown" id="code">
+            <code class="markdown" id="code">
 ## Stargazers over time
-
 [![Stargazers over time](https://starchart.cc/{{ .FullName }}.svg)](https://starchart.cc/{{ .FullName }})
-
-</code>
-<button class="copy-btn full-width" data-clipboard-target="#code">Copy</button>
-</pre>
-		</p>
+            </code>
+        </pre>
+        <button class="copy-btn full-width" data-clipboard-target="#code">Copy</button>
 	</div>
 	<div class="footer">
-		<a
-			href="https://www.digitalocean.com/?refcode=7e8e9efb2f77&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge">
+		<a href="https://www.digitalocean.com/?refcode=7e8e9efb2f77&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge">
 			<img src="https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg"
 				alt="DigitalOcean Referral Badge" width="150px" />
 		</a>

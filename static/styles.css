@@ -28,9 +28,6 @@
         --error-color: #ff6b6b;
 
 
-
-
-
         --input-background-color: #1e1e1e;
 
         --link-color: #d7d7d7;
@@ -54,7 +51,9 @@ html, body {
 }
 
 * {
-    transition: background 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    transition: background 0.2s ease-in-out,
+    color 0.2s ease-in-out,
+    border-color 0.2s ease-in-out;
 }
 
 @supports (font-variation-settings: normal) {
@@ -64,11 +63,9 @@ html, body {
 }
 
 body {
-    max-width: 100%;
     display: flex;
-    justify-content: center;
-    align-items: center;
     flex-direction: column;
+    align-items: center;
     padding: 40px 0;
 }
 
@@ -82,9 +79,6 @@ a:visited {
 a:hover {
     color: var(--link-hover-color);
 }
-
-
-
 
 hr {
     margin: 50px 0;
@@ -110,7 +104,6 @@ img {
 
 input {
     outline: none;
-    width: 80%;
     padding: 12px 20px;
     margin: 8px 0;
     display: inline-block;
@@ -126,6 +119,7 @@ input {
 input:hover {
     border-color: var(--featured-color) !important;
 }
+
 input:focus {
     border-color: var(--button-hover-background-color) !important;
 }
@@ -153,13 +147,16 @@ button:hover {
     display: flex;
     flex-direction: row;
 }
+
 .button-group button {
     border-radius: 0;
     margin: 0;
 }
+
 .button-group button:first-child {
     border-radius: 4px 0 0 4px;
 }
+
 .button-group button:last-child {
     border-radius: 0 4px 4px 0;
 }
@@ -211,9 +208,9 @@ div.footer {
     text-align: center;
 }
 
-div.main p {
-    text-align: center;
-}
+/*div.main p {*/
+/*    text-align: center;*/
+/*}*/
 
 div.main,
 div.code {
@@ -240,4 +237,43 @@ button.copy-btn {
 
 div.main > form > button {
     width: 80%;
+}
+
+.customisation {
+    transition: height 0.2s ease-in-out, padding 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    padding: 0 8px;
+    height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.customisation .clr-field {
+    width: 100%;
+    position: relative;
+}
+
+.customisation .clr-field input {
+    width: 100%;
+}
+
+.customisation .clr-field button {
+    position: absolute;
+    margin: 0 8px 0 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    transition: none;
+}
+
+.customisation.opened {
+    height: 250px;
+    padding: 8px;
+    opacity: 1;
+}
+
+.clr-picker * {
+    transition: none;
 }
