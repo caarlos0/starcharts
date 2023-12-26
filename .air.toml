@@ -1,0 +1,10 @@
+root = "."
+
+[build]
+include_ext = ["go", "css", "svg", "html", "js", "gohtml"]
+stop_on_error = false
+rerun_delay = 0
+
+[misc]
+# Delete tmp directory on exit
+clean_on_exit = true
