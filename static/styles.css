@@ -50,7 +50,7 @@ html, body {
     box-sizing: border-box;
 }
 
-* {
+*:not(.clr-picker *) {
     transition: background 0.2s ease-in-out,
     color 0.2s ease-in-out,
     border-color 0.2s ease-in-out;
@@ -66,7 +66,6 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 0;
 }
 
 /* Element styles */
@@ -114,6 +113,9 @@ input {
     font-size: 1rem;
     color: var(--link-color);
     background-color: var(--input-background-color);
+}
+input::selection{
+    background-color: var(--accent-feature-color);
 }
 
 input:hover {
@@ -169,7 +171,6 @@ a.title {
     padding-bottom: 40px;
     text-align: center;
     max-width: 500px;
-    margin: 5px 0;
     line-height: 2.2em;
 }
 
@@ -276,4 +277,15 @@ div.main > form > button {
 
 .clr-picker * {
     transition: none;
+}
+
+
+/* Index page styles */
+body.index {
+    height: 90%;
+    justify-content: center;
+}
+body.index form button,
+body.index form input {
+    width: 80%;
 }

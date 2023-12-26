@@ -45,7 +45,7 @@ func main() {
 		Handler(controller.Index(static, version))
 	r.Path("/").
 		Methods(http.MethodPost).
-		HandlerFunc(controller.HandleForm(static))
+		HandlerFunc(controller.HandleForm())
 	r.PathPrefix("/static/").
 		Methods(http.MethodGet).
 		Handler(http.FileServer(http.FS(static)))

@@ -7,7 +7,7 @@
     #star { fill:#6c63ff }
     #chart-line {
       stroke-linejoin:round;
-      stroke-width:34px;
+      stroke-width:70px;
       fill:none;
       clip-path:url(#clip-0);
       stroke:#fff

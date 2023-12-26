@@ -3,9 +3,11 @@ package controller
 import (
 	"fmt"
 	"github.com/caarlos0/starcharts/internal/chart/svg"
+	"html/template"
 	"io"
 	"io/fs"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/apex/log"
@@ -23,6 +25,16 @@ const (
 
 // GetRepo shows the given repo chart.
 func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis, version string) http.Handler {
+	repositoryTemplate, err := template.ParseFS(fsys, "static/templates/base.gohtml", "static/templates/repository.gohtml")
+	if err != nil {
+		panic(err)
+	}
+
+	errorTemplate, err := template.ParseFS(fsys, "static/templates/base.gohtml", "static/templates/error.gohtml")
+	if err != nil {
+		panic(err)
+	}
+
 	return httperr.NewF(func(w http.ResponseWriter, r *http.Request) error {
 		name := fmt.Sprintf(
 			"%s/%s",
@@ -31,11 +43,12 @@ func GetRepo(fsys fs.FS, github *github.GitHub, cache *cache.Redis, version stri
 		)
 		details, err := github.RepoDetails(r.Context(), name)
 		if err != nil {
-			return executeTemplate(fsys, w, map[string]error{
+			return errorTemplate.Execute(w, map[string]error{
 				"Error": err,
 			})
 		}
-		return executeTemplate(fsys, w, map[string]interface{}{
+
+		return repositoryTemplate.Execute(w, map[string]interface{}{
 			"Version": version,
 			"Details": details,
 		})
@@ -54,16 +67,27 @@ var stylesMap = map[string]string{
 // TODO: refactor.
 func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 	return httperr.NewF(func(w http.ResponseWriter, r *http.Request) error {
-		vars := mux.Vars(r)
-		name := fmt.Sprintf("%s/%s", vars["owner"], vars["repo"])
+		params, err := extractParams(r)
+		if err != nil {
+			return err
+		}
+		cacheKey := chartKey(params)
+
+		name := fmt.Sprintf("%s/%s", params.Owner, params.Repo)
 		log := log.WithField("repo", name)
+
+		cachedChart := ""
+		if err = cache.Get(cacheKey, cachedChart); err == nil {
+			_, err := fmt.Fprint(w, cachedChart)
+
+			return err
+		}
+
 		defer log.Trace("collect_stars").Stop(nil)
 		repo, err := gh.RepoDetails(r.Context(), name)
 		if err != nil {
 			return httperr.Wrap(err, http.StatusBadRequest)
 		}
-
-		params := r.URL.Query()
 
 		stargazers, err := gh.Stargazers(r.Context(), repo)
 		if err != nil {
@@ -72,14 +96,9 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 			return err
 		}
 
-		lineColor, err := extractColor(r, "line")
-		if err != nil {
-			return err
-		}
-
 		series := chart.Series{
 			StrokeWidth: 2,
-			Color:       lineColor,
+			Color:       params.Line,
 		}
 		for i, star := range stargazers {
 			series.XValues = append(series.XValues, star.StarredAt)
@@ -91,29 +110,19 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 			series.YValues = append(series.YValues, 1)
 		}
 
-		backgroundColor, err := extractColor(r, "background")
-		if err != nil {
-			return err
-		}
-
-		axisColor, err := extractColor(r, "axis")
-		if err != nil {
-			return err
-		}
-
-		graph := chart.Chart{
+		graph := &chart.Chart{
 			Width:      CHART_WIDTH,
 			Height:     CHART_HEIGHT,
-			Styles:     stylesMap[params.Get("variant")],
-			Background: backgroundColor,
+			Styles:     stylesMap[params.Variant],
+			Background: params.Background,
 			XAxis: chart.XAxis{
 				Name:        "Time",
-				Color:       axisColor,
+				Color:       params.Axis,
 				StrokeWidth: 2,
 			},
 			YAxis: chart.YAxis{
 				Name:        "Stargazers",
-				Color:       axisColor,
+				Color:       params.Axis,
 				StrokeWidth: 2,
 			},
 			Series: series,
@@ -126,9 +135,64 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 		header.Add("date", time.Now().Format(time.RFC1123))
 		header.Add("expires", time.Now().Format(time.RFC1123))
 
-		graph.Render(w)
+		cacheBuffer := strings.Builder{}
+		graph.Render(io.MultiWriter(w, &cacheBuffer))
+		err = cache.Put(cacheKey, cacheBuffer.String())
+		if err != nil {
+			log.WithError(err).Error("failed to cache chart")
+		}
+
 		return nil
 	})
+}
+
+type Params struct {
+	Owner      string
+	Repo       string
+	Line       string
+	Background string
+	Axis       string
+	Variant    string
+}
+
+func extractParams(r *http.Request) (*Params, error) {
+	backgroundColor, err := extractColor(r, "background")
+	if err != nil {
+		return nil, err
+	}
+
+	axisColor, err := extractColor(r, "axis")
+	if err != nil {
+		return nil, err
+	}
+
+	lineColor, err := extractColor(r, "line")
+	if err != nil {
+		return nil, err
+	}
+
+	vars := mux.Vars(r)
+
+	return &Params{
+		Owner:      vars["owner"],
+		Repo:       vars["repo"],
+		Background: backgroundColor,
+		Axis:       axisColor,
+		Line:       lineColor,
+		Variant:    r.URL.Query().Get("variant"),
+	}, nil
+}
+
+func chartKey(params *Params) string {
+	return fmt.Sprintf(
+		"%s_%s_%s_%s_%s_%s",
+		params.Owner,
+		params.Repo,
+		params.Variant,
+		params.Line,
+		params.Background,
+		params.Axis,
+	)
 }
 
 func errSvg(err error) string {

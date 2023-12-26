@@ -10,13 +10,22 @@ import (
 	"github.com/caarlos0/httperr"
 )
 
-func Index(fsys fs.FS, version string) http.Handler {
+func Index(filesystem fs.FS, version string) http.Handler {
+	patterns := []string{
+		"static/templates/base.gohtml",
+		"static/templates/index.gohtml",
+	}
+	indexTemplate, err := template.ParseFS(filesystem, patterns...)
+	if err != nil {
+		panic(err)
+	}
+
 	return httperr.NewF(func(w http.ResponseWriter, r *http.Request) error {
-		return executeTemplate(fsys, w, map[string]string{"Version": version})
+		return indexTemplate.Execute(w, map[string]string{"Version": version})
 	})
 }
 
-func HandleForm(fsys fs.FS) http.HandlerFunc {
+func HandleForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		repo := strings.TrimPrefix(r.FormValue("repository"), "https://github.com/")
 		http.Redirect(w, r, repo, http.StatusSeeOther)
