@@ -18,12 +18,12 @@ const (
 
 // GetRepo shows the given repo chart.
 func GetRepo(fsys fs.FS, gh *github.GitHub, cache *cache.Redis, version string) http.Handler {
-	repositoryTemplate, err := template.ParseFS(fsys, "static/templates/base.gohtml", "static/templates/repository.gohtml")
+	repositoryTemplate, err := template.ParseFS(fsys, base, repository)
 	if err != nil {
 		panic(err)
 	}
 
-	intexTemplate, err := template.ParseFS(fsys, "static/templates/base.gohtml", "static/templates/index.gohtml")
+	indexTemplate, err := template.ParseFS(fsys, base, index)
 	if err != nil {
 		panic(err)
 	}
@@ -36,7 +36,7 @@ func GetRepo(fsys fs.FS, gh *github.GitHub, cache *cache.Redis, version string) 
 		)
 		details, err := gh.RepoDetails(r.Context(), name)
 		if err != nil {
-			return intexTemplate.Execute(w, map[string]error{
+			return indexTemplate.Execute(w, map[string]error{
 				"Error": err,
 			})
 		}

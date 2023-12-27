@@ -8,6 +8,12 @@ import (
 	"time"
 )
 
+const (
+	base       = "static/templates/base.gohtml"
+	repository = "static/templates/repository.gohtml"
+	index      = "static/templates/index.gohtml"
+)
+
 var colorExpression = regexp.MustCompile("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3}|[a-fA-F0-9]{8})$")
 
 func extractColor(r *http.Request, name string) (string, error) {

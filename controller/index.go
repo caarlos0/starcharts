@@ -2,7 +2,6 @@ package controller
 
 import (
 	"html/template"
-	"io"
 	"io/fs"
 	"net/http"
 	"strings"
@@ -11,11 +10,7 @@ import (
 )
 
 func Index(filesystem fs.FS, version string) http.Handler {
-	patterns := []string{
-		"static/templates/base.gohtml",
-		"static/templates/index.gohtml",
-	}
-	indexTemplate, err := template.ParseFS(filesystem, patterns...)
+	indexTemplate, err := template.ParseFS(filesystem, base, index)
 	if err != nil {
 		panic(err)
 	}
@@ -30,9 +25,4 @@ func HandleForm() http.HandlerFunc {
 		repo := strings.TrimPrefix(r.FormValue("repository"), "https://github.com/")
 		http.Redirect(w, r, repo, http.StatusSeeOther)
 	}
-}
-
-func executeTemplate(fsys fs.FS, w io.Writer, data interface{}) error {
-	return template.Must(template.ParseFS(fsys, "static/templates/index.html")).
-		Execute(w, data)
 }
