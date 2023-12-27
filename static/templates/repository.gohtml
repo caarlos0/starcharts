@@ -1,73 +1,80 @@
-{{define "title"}}Test Page{{end}}
+{{define "title"}}Star Charts | {{ .Details.FullName }} {{end}}
+
 {{define "head"}}
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/styles/base16/dracula.min.css"
           integrity="sha512-oDvVpANXrKQ6R5B25VO6DooEQWA7jUXleyD6oUWHChC0fjv8wAANSX7lKXtp5D6HbZ7EUxd0wjMibtpCQ+aCDw=="
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.css"/>
 {{end}}
 
 {{define "main"}}
-    {{template "logo" .}}
-    {{ with .Details }}
-        <div class="main">
-            <p>
-                {{ if gt .StargazersCount 0 }}
-                    <b>Awesome!</b>
-                {{ else }}
-                    <b>Hang in there!</b>
-                {{ end }}
-                <a href="https://github.com/{{ .FullName }}">{{ .FullName }}</a>
-                was created
-                <time datetime="{{ .CreatedAt }}"></time>
-                and now has <b>{{ .StargazersCount }}</b> stars.
-            </p>
-        </div>
+    <div class="container">
+        {{template "logo" .}}
+        <hr/>
+        {{ with .Details }}
+            <div class="main">
+                <p>
+                    {{ if gt .StargazersCount 0 }}
+                        <b>Awesome!</b>
+                    {{ else }}
+                        <b>Hang in there!</b>
+                    {{ end }}
+                    <a href="https://github.com/{{ .FullName }}">{{ .FullName }}</a>
+                    was created
+                    <time datetime="{{ .CreatedAt }}"></time>
+                    and now has <b>{{ .StargazersCount }}</b> stars.
+                </p>
+            </div>
 
-        {{ if gt .StargazersCount 0 }}
-            <div>
-                <div class="button-group">
-                    <button data-variant="adaptive" class="active">Adaptive</button>
-                    <button data-variant="light">Light</button>
-                    <button data-variant="dark">Dark</button>
-                    <button data-variant="custom">Custom</button>
+            {{ if gt .StargazersCount 0 }}
+                <div class="chart-review">
+                    <div class="chart-selection">
+                        <div class="button-group">
+                            <button data-variant="adaptive" class="active">Adaptive</button>
+                            <button data-variant="light">Light</button>
+                            <button data-variant="dark">Dark</button>
+                            <button data-variant="custom">Custom</button>
+                        </div>
+                        <div class="customisation">
+                            <label for="background">Background Color</label>
+                            <input id="background" name="background" type="text" value="#FFFFFF" data-coloris>
+                            <label for="axis">Axis Color</label>
+                            <input id="axis" name="axis" type="text" value="#333333" data-coloris>
+                            <label for="line">Line Color</label>
+                            <input id="line" name="line" type="text" value="#6b63ff" data-coloris>
+                        </div>
+                    </div>
+                    <div class="chart">
+                        <img src="/{{ .FullName }}.svg?variant=adaptive"
+                             id="chart"
+                             data-src="/{{ .FullName }}.svg"
+                             alt="Please try again in a few minutes. This might not work for very famous repository.">
+                    </div>
                 </div>
-                <div class="customisation">
-                    <label for="background">Background Color</label>
-                    <input id="background" name="background" type="text" value="#FFFFFF" data-coloris>
-                    <label for="axis">Axis Color</label>
-                    <input id="axis" name="axis" type="text" value="#333333" data-coloris>
-                    <label for="line">Line Color</label>
-                    <input id="line" name="line" type="text" value="#6b63ff" data-coloris>
+                <noscript id="code-template">## Stargazers over time
+[![Stargazers over time]($URL)](https://starchart.cc/{{ .FullName }})</noscript>
+                <p>
+                    You can include the chart on your repository's
+                    <code>README.md</code>
+                    as follows:
+                </p>
+                <div class="code-block">
+                    <pre class="markdown" id="code">
+                        <code></code>
+                    </pre>
+                    <button class="copy-btn full-width" data-clipboard-target="#code">Copy</button>
                 </div>
-            </div>
-            <div class="chart">
-                <img src="/{{ .FullName }}.svg?variant=adaptive"
-                     id="chart"
-                     data-src="/{{ .FullName }}.svg"
-                     alt="Please try again in a few minutes. This might not work for very famous repository.">
-            </div>
-            <div class="code">
+            {{ end }}
 
-                You can include the chart on your repository's
-                <code>README.md</code>
-                as follows:
-                <pre>
-            <code class="markdown" id="code">
-## Stargazers over time
-[![Stargazers over time](https://starchart.cc/{{ .FullName }}.svg)](https://starchart.cc/{{ .FullName }})
-            </code>
-        </pre>
-                <button class="copy-btn full-width" data-clipboard-target="#code">Copy</button>
-            </div>
             <div class="footer">
                 <a href="https://www.digitalocean.com/?refcode=7e8e9efb2f77&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge">
                     <img src="https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg"
                          alt="DigitalOcean Referral Badge" width="150px"/>
                 </a>
             </div>
-        {{ end }}
-    {{end}}
+        {{end}}
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/timeago.js/4.0.2/timeago.min.js"
             integrity="sha512-SVDh1zH5N9ChofSlNAK43lcNS7lWze6DTVx1JCXH1Tmno+0/1jMpdbR8YDgDUfcUrPp1xyE53G42GFrcM0CMVg=="

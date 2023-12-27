@@ -1,6 +1,21 @@
 (function () {
-    new ClipboardJS('.copy-btn');
-    hljs.highlightAll();
+    const clipboard = new ClipboardJS('.copy-btn');
+    let prevValue = null;
+    let timeoutRef = null;
+
+    clipboard.on('success', function (e) {
+        e.clearSelection();
+
+        if (timeoutRef) clearTimeout(timeoutRef);
+        if (!prevValue) prevValue = e.trigger.innerText;
+
+        e.trigger.innerText = 'Copied!';
+        timeoutRef = setTimeout(function () {
+            e.trigger.innerText = prevValue;
+            prevValue = null;
+            timeoutRef = null;
+        }, 1000);
+    });
 
     Coloris({
         theme: 'pill',
@@ -13,53 +28,84 @@
         closeLabel: 'Apply',
         swatches: [
             '#FFFFFF',
-            '#333333',
+            '#101010',
             '#6b63ff',
+            '#e76060',
+            '#2f81f7',
+            '#333333',
         ],
     });
 
-    document.querySelectorAll('time').forEach(t => timeago.render(t));
-    document.querySelectorAll('input#repository').forEach(i => i.select());
+    document.querySelectorAll('time').forEach(function (t) {
+        return timeago.render(t);
+    });
 
-    const chart = document.querySelector('#chart');
-    const url = new URL(chart.dataset.src, document.location.origin);
-    const customisation = document.querySelector('.customisation');
+    document.querySelectorAll('input#repository').forEach(function (i) {
+        return i.select();
+    });
 
-    const chartColorInputs = Array.from(document.querySelectorAll('[data-coloris]'));
-    const refreshChart = () => {
-        url.searchParams.size = 0;
-        chartColorInputs.forEach(color => url.searchParams.set(color.name, color.value))
-        chart.src = url.toString();
+    const colorInputElements = Array.from(document.querySelectorAll('[data-coloris]'));
+    colorInputElements.forEach(function (input) {
+        const prevValue = localStorage.getItem(input.name);
+        if (prevValue) input.value = prevValue;
+    });
+
+
+    const codeElement = document.querySelector('.code-block code');
+    const codeTemplateElement = document.querySelector('#code-template');
+    const chartElement = document.querySelector('#chart');
+
+    const chartUrl = chartElement.dataset.src;
+    const codeTemplate = codeTemplateElement.innerText;
+
+    function refreshState(variant) {
+        const url = new URL(chartUrl, document.location.origin);
+        if (variant === 'custom') {
+            colorInputElements.forEach(function (color) {
+                return url.searchParams.set(color.name, color.value);
+            });
+        } else {
+            url.searchParams.set('variant', variant);
+        }
+
+        chartElement.src = url.toString();
+        codeElement.innerHTML = codeTemplate.replace('$URL', url.toString());
+        hljs.highlightAll();
     }
-    chartColorInputs.forEach(element => {
-        element.addEventListener('change', () => {
-            refreshChart();
+
+    colorInputElements.forEach(function (element) {
+        element.addEventListener('change', function () {
+            localStorage.setItem(element.name, element.value);
+            refreshState('custom');
         });
     });
 
-    const groups = document.querySelectorAll('.button-group');
-    groups.forEach(group => {
-        const buttons = group.querySelectorAll('button');
-        buttons.forEach(button => {
-            button.addEventListener('click', () => {
-                buttons.forEach(b => b.classList.remove('active'));
+    const groupElements = document.querySelectorAll('.button-group');
+    groupElements.forEach(function (group) {
+        const buttonElements = group.querySelectorAll('button');
+        buttonElements.forEach(function (button) {
+            button.addEventListener('click', function () {
+                buttonElements.forEach(function (b) {
+                    b.classList.remove('active');
+                });
                 button.classList.add('active');
             });
         });
     });
 
 
-    const code = document.querySelector('code');
-    document.querySelectorAll('.button-group button').forEach(group => {
-        group.addEventListener('click', () => {
+    const customisationElement = document.querySelector('.customisation');
+    document.querySelectorAll('.button-group button').forEach(function (group) {
+        group.addEventListener('click', function () {
             if (group.dataset.variant === 'custom') {
-                customisation.classList.add('opened');
-                refreshChart();
+                customisationElement.classList.add('opened');
+                refreshState(group.dataset.variant);
             } else {
-                customisation.classList.remove('opened');
-                const variant = group.dataset.variant;
-                chart.src = `${chart.dataset.src}?variant=${variant}`;
+                customisationElement.classList.remove('opened');
+                refreshState(group.dataset.variant);
             }
         });
     });
+
+    refreshState('adaptive');
 })();

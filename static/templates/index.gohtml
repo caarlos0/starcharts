@@ -1,17 +1,20 @@
 {{define "title"}}Star Charts{{end}}
-{{define "body-class"}}index{{end}}
+
 {{define "main"}}
-    {{template "logo" .}}
-    <div class="main">
-        {{ with .Error }}
-            <p class="error">{{ . }}</p>
-        {{ end }}
-        <form method="POST">
-            <label for="repository">Repository:</label><br>
-            <input type="text" id="repository" name="repository" value="caarlos0/starcharts"
-                   placeholder="caarlos0/starcharts" autofocus="autofocus"><br>
-            <button type="submit" class="full-width">Submit</button>
-        </form>
+    <div class="container index">
+        {{template "logo" .}}
+        <hr />
+        <div class="main">
+            {{ with .Error }}
+                <p class="error">{{ . }}</p>
+            {{ end }}
+            <form method="POST">
+                <label for="repository">Repository:</label><br>
+                <input type="text" id="repository" name="repository" value="caarlos0/starcharts"
+                       placeholder="caarlos0/starcharts" autofocus="autofocus"><br>
+                <button type="submit" class="full-width">Submit</button>
+            </form>
+        </div>
     </div>
     <script type="text/javascript">
         const repository = document.querySelector('input#repository');
