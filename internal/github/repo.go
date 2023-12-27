@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,6 +17,8 @@ type Repository struct {
 	StargazersCount int    `json:"stargazers_count"`
 	CreatedAt       string `json:"created_at"`
 }
+
+var ErrorNotFound = errors.New("Repository not found")
 
 // RepoDetails gets the given repository details.
 func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, error) {
@@ -73,6 +76,8 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 		}
 
 		return repo, nil
+	case http.StatusNotFound:
+		return repo, ErrorNotFound
 	default:
 		return repo, fmt.Errorf("%w: %v", ErrGitHubAPI, string(bts))
 	}

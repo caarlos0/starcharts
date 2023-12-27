@@ -2,13 +2,21 @@
 
 {{define "main"}}
     <div class="container index">
-        {{template "logo" .}}
+        {{ with .Error }}
+            <a class="title" href="/">
+                <img src="/static/error.svg" alt="Stars">
+                <span class="title">starcharts</span>
+                <span class="subtitle">Plot your repository stars over time.</span>
+            </a>
+        {{ else }}
+            {{template "logo" .}}
+        {{ end }}
         <hr />
         <div class="main">
             {{ with .Error }}
                 <p class="error">{{ . }}</p>
             {{ end }}
-            <form method="POST">
+            <form method="POST" action="/">
                 <label for="repository">Repository:</label><br>
                 <input type="text" id="repository" name="repository" value="caarlos0/starcharts"
                        placeholder="caarlos0/starcharts" autofocus="autofocus"><br>

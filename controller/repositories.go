@@ -23,7 +23,7 @@ func GetRepo(fsys fs.FS, gh *github.GitHub, cache *cache.Redis, version string) 
 		panic(err)
 	}
 
-	errorTemplate, err := template.ParseFS(fsys, "static/templates/base.gohtml", "static/templates/error.gohtml")
+	intexTemplate, err := template.ParseFS(fsys, "static/templates/base.gohtml", "static/templates/index.gohtml")
 	if err != nil {
 		panic(err)
 	}
@@ -36,7 +36,7 @@ func GetRepo(fsys fs.FS, gh *github.GitHub, cache *cache.Redis, version string) 
 		)
 		details, err := gh.RepoDetails(r.Context(), name)
 		if err != nil {
-			return errorTemplate.Execute(w, map[string]error{
+			return intexTemplate.Execute(w, map[string]error{
 				"Error": err,
 			})
 		}
