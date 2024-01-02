@@ -2,16 +2,17 @@ package controller
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/apex/log"
 	"github.com/caarlos0/httperr"
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/caarlos0/starcharts/internal/chart"
 	"github.com/caarlos0/starcharts/internal/chart/svg"
 	"github.com/caarlos0/starcharts/internal/github"
-	"io"
-	"net/http"
-	"strings"
-	"time"
 )
 
 var stylesMap = map[string]string{
@@ -64,7 +65,7 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 		}
 		for i, star := range stargazers {
 			series.XValues = append(series.XValues, star.StarredAt)
-			series.YValues = append(series.YValues, float64(i))
+			series.YValues = append(series.YValues, float64(i+1))
 		}
 		if len(series.XValues) < 2 {
 			log.Info("not enough results, adding some fake ones")
