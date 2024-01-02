@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="theme-color" content="#000000"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/static/favicon.svg"/>
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/static/favicon.svg"/>
+    <link rel="icon" type="image/png" href="/static/favicon.png" sizes="32x32"/>
+    <link rel="icon" type="image/png" href="/static/favicon.png" sizes="16x16"/>
+    <link rel="icon" type="image/svg" href="/static/favicon.svg" sizes="32x32"/>
+    <link rel="icon" type="image/svg" href="/static/favicon.svg" sizes="16x16"/>
+    <title>{{block "title" .}} {{end}}</title>
+    <meta name="description" content="StarCharts"/>
+    <meta name="author" content="https://github/caarlos0"/>
+    <link rel="stylesheet" href="/static/styles.css?v={{ .Version }}">
+    {{block "head" .}} {{end}}
+</head>
+<body>
+{{template "main" .}}
+<script defer data-domain="starchart.cc" src="https://plausible.io/js/plausible.js"></script>
+</body>
+</html>
+
+{{ define "logo" }}
+    <a class="title" href="/">
+        <img src="/static/stars.svg" alt="Stars">
+        <span class="title">starcharts</span>
+        <span class="subtitle">Plot your repository stars over time.</span>
+    </a>
+{{ end }}

@@ -1,0 +1,43 @@
+{{define "title"}}Star Charts{{end}}
+
+{{define "main"}}
+    <div class="container index">
+        {{ with .Error }}
+            <a class="title" href="/">
+                <img src="/static/error.svg" alt="Stars">
+                <span class="title">starcharts</span>
+                <span class="subtitle">Plot your repository stars over time.</span>
+            </a>
+        {{ else }}
+            {{template "logo" .}}
+        {{ end }}
+        <hr />
+        <div class="main">
+            {{ with .Error }}
+                <p class="error">{{ . }}</p>
+            {{ end }}
+            <form method="POST" action="/">
+                <label for="repository">Repository:</label><br>
+                <input type="text" id="repository" name="repository" value="caarlos0/starcharts"
+                       placeholder="caarlos0/starcharts" autofocus="autofocus"><br>
+                <button type="submit" class="full-width">Submit</button>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        const repository = document.querySelector('input#repository');
+        if (!repository) {
+            throw new Error('repo input not found');
+        }
+
+        const lastRepoKey = 'last-repo';
+        if (localStorage && localStorage.getItem(lastRepoKey)) {
+            repository.value = localStorage.getItem(lastRepoKey);
+        }
+
+        repository.select();
+        document.querySelector('form').addEventListener('submit', () => {
+            localStorage && localStorage.setItem(lastRepoKey, repository.value);
+        });
+    </script>
+{{end}}

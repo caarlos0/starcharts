@@ -2,3 +2,6 @@ vendor
 bin
 coverage.txt
 dist
+.idea
+.DS_Store
+tmp

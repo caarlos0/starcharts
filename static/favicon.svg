@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512">
+  <defs>
+    <path id="reuse-0" d="m507.141 87.444 75.465 158.149 173.728 22.9-127.088 120.642 31.905 172.302-154.01-83.588-154.01 83.588 31.905-172.302-127.088-120.642 173.728-22.9Z" />
+  </defs>
+  <style>
+    #star { fill:#6c63ff }
+    #chart-line {
+      stroke-linejoin:round;
+      stroke-width:70px;
+      fill:none;
+      clip-path:url(#clip-0);
+      stroke:#fff
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #star { fill:#fff }
+      #chart-line { stroke:#6c63ff }
+    }
+  </style>
+  <defs>
+    <clipPath id="clip-0">
+      <use xlink:href="#reuse-0" transform="rotate(125.99998 410.72625677 239.8437207)"/>
+    </clipPath>
+  </defs>
+  <use id="star" xlink:href="#reuse-0" transform="rotate(125.999988 410.72617037 239.84371139) scale(.99999986)"/>
+  <path id="chart-line" d="m42.648 506.211 155.413-310.789 105.033 178.09L429.626-3.07" />
+</svg>

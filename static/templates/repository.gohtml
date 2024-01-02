@@ -1,0 +1,91 @@
+{{define "title"}}Star Charts | {{ .Details.FullName }} {{end}}
+
+{{define "head"}}
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/styles/base16/dracula.min.css"
+          integrity="sha512-oDvVpANXrKQ6R5B25VO6DooEQWA7jUXleyD6oUWHChC0fjv8wAANSX7lKXtp5D6HbZ7EUxd0wjMibtpCQ+aCDw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.css"/>
+{{end}}
+
+{{define "main"}}
+    <div class="container">
+        {{template "logo" .}}
+        <hr/>
+        {{ with .Details }}
+            <div class="main">
+                <p>
+                    {{ if gt .StargazersCount 0 }}
+                        <b>Awesome!</b>
+                    {{ else }}
+                        <b>Hang in there!</b>
+                    {{ end }}
+                    <a href="https://github.com/{{ .FullName }}">{{ .FullName }}</a>
+                    was created
+                    <time datetime="{{ .CreatedAt }}"></time>
+                    and now has <b>{{ .StargazersCount }}</b> stars.
+                </p>
+            </div>
+
+            {{ if gt .StargazersCount 0 }}
+                <div class="chart-review">
+                    <div class="chart-selection">
+                        <div class="button-group">
+                            <button data-variant="adaptive" class="active">Adaptive</button>
+                            <button data-variant="light">Light</button>
+                            <button data-variant="dark">Dark</button>
+                            <button data-variant="custom">Custom</button>
+                        </div>
+                        <div class="customisation">
+                            <label for="background">Background Color</label>
+                            <input id="background" name="background" type="text" value="#FFFFFF" data-coloris>
+                            <label for="axis">Axis Color</label>
+                            <input id="axis" name="axis" type="text" value="#333333" data-coloris>
+                            <label for="line">Line Color</label>
+                            <input id="line" name="line" type="text" value="#6b63ff" data-coloris>
+                        </div>
+                    </div>
+                    <div class="chart">
+                        <img src="/{{ .FullName }}.svg?variant=adaptive"
+                             id="chart"
+                             data-src="/{{ .FullName }}.svg"
+                             alt="Please try again in a few minutes. This might not work for very famous repository.">
+                    </div>
+                </div>
+                <noscript id="code-template">## Stargazers over time
+[![Stargazers over time]($URL)](https://starchart.cc/{{ .FullName }})</noscript>
+                <p>
+                    You can include the chart on your repository's
+                    <code>README.md</code>
+                    as follows:
+                </p>
+                <div class="code-block">
+                    <pre class="markdown" id="code">
+                        <code></code>
+                    </pre>
+                    <button class="copy-btn full-width" data-clipboard-target="#code">Copy</button>
+                </div>
+            {{ end }}
+
+            <div class="footer">
+                <a href="https://www.digitalocean.com/?refcode=7e8e9efb2f77&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge">
+                    <img src="https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg"
+                         alt="DigitalOcean Referral Badge" width="150px"/>
+                </a>
+            </div>
+        {{end}}
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/timeago.js/4.0.2/timeago.min.js"
+            integrity="sha512-SVDh1zH5N9ChofSlNAK43lcNS7lWze6DTVx1JCXH1Tmno+0/1jMpdbR8YDgDUfcUrPp1xyE53G42GFrcM0CMVg=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js"
+            integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"
+            integrity="sha512-sIqUEnRn31BgngPmHt2JenzleDDsXwYO+iyvQ46Mw6RL+udAUZj2n/u/PGY80NxRxynO7R9xIGx5LEzw4INWJQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mdbassit/Coloris@latest/dist/coloris.min.js"
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="/static/scripts.js"></script>
+{{end}}

@@ -1,153 +1,346 @@
 @import url('https://rsms.me/inter/inter.css');
 
-html {
-	font-family: 'Inter', sans-serif;
+:root {
+    --featured-color: #3F3D56;
+    --accent-feature-color: #6b63ff;
+
+    --background-color: #FFF;
+    --text-color: #000;
+    --input-background-color: #FFF;
+    --link-color: var(--featured-color);
+    --link-hover-color: var(--accent-feature-color);
+    --button-background-color: var(--featured-color);
+    --button-hover-background-color: var(--accent-feature-color);
+    --border-color: #ccc;
+    --separator-color: #eee;
+    --error-color: #e76060;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #101010;
+        --text-color: #dedede;
+        --input-background-color: #1e1e1e;
+        --link-color: #d7d7d7;
+        --link-hover-color: var(--accent-feature-color);
+        --button-background-color: var(--featured-color);
+        --button-hover-background-color: var(--accent-feature-color);
+        --border-color: #555;
+        --separator-color: #333;
+    }
+}
+
+/* Global styles */
+
+html, body {
+    font-family: 'Inter', sans-serif;
+    background: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+::selection {
+    background-color: var(--accent-feature-color);
+    color: white;
+}
+
+*:not(.clr-picker):not(.clr-picker *) {
+    transition: background 0.2s ease-in-out,
+                color 0.2s ease-in-out,
+                border-color 0.2s ease-in-out;
 }
 
 @supports (font-variation-settings: normal) {
-	html {
-		font-family: 'Inter var', sans-serif;
-	}
+    html, body {
+        font-family: 'Inter var', sans-serif;
+    }
 }
 
 body {
-	max-width: 100%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
-	padding: 40px 0;
+    display: block;
+    padding: 70px 0 30px;
+    height: auto;
+}
+
+body > div.container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    width: 90%;
+    max-width: 1000px;
+    min-width: 300px;
+    margin: 0 auto;
+}
+
+/* Element styles */
+
+p {
+    margin: 0;
+    padding: 0;
+    text-align: center;
 }
 
 a,
 a:visited {
-	color: #555;
+    color: var(--link-color);
 }
 
 a:hover {
-	color: #222;
+    color: var(--link-hover-color);
 }
 
 hr {
-	margin: 50px 0;
-	display: block;
-	height: 1px;
-	border: 0;
-	border-top: 1px solid #eee;
-	padding: 0;
+    width: 100%;
+    background: var(--separator-color);
+    height: 1px;
+    border: none;
+    margin: 0;
+    padding: 0;
 }
 
-pre code#code {
-	text-align: left;
-	font-size: 1.3em;
-	overflow-x: hidden;
+pre code {
+    text-align: left;
+    font-size: 1.3em;
+    overflow-x: hidden;
+    border-radius: 4px 4px 0 0;
 }
 
-div {
-	flex-direction: row;
-	flex: 1;
-	flex-wrap: wrap;
-	max-width: 100%;
-	font-size: 1em;
+label {
+    user-select: none;
 }
 
 img {
-	max-width: 100%;
-	max-height: 100%;
+    width: 100%;
 }
 
-div.title {
-	padding-bottom: 40px;
-	text-align: center;
-	max-width: 500px;
-	margin: 5px 0;
-	line-height: 2.2em;
+input {
+    outline: none;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--link-color);
+    background-color: var(--input-background-color);
 }
 
-div.title img {
-	margin-bottom: 2em;
-	max-width: 70%;
+input:hover {
+    border-color: var(--featured-color) !important;
 }
 
-div.title>span {
-	display: block;
+input:focus {
+    border-color: var(--button-hover-background-color) !important;
 }
 
-div.title>span.title {
-	letter-spacing: 5px;
-	text-transform: uppercase;
-	font-weight: 700;
-	font-size: 16px;
+button {
+    background-color: var(--button-background-color);
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 450;
 }
 
-div.title>span.title>a {
-	text-decoration: none;
-	color: #333;
+button.active,
+button:hover {
+    background-color: var(--button-hover-background-color);
 }
 
-div.title>span.subtitle {
-	color: #555;
+.button-group {
+    display: flex;
+    flex-direction: row;
 }
 
-div.main,
-div.chart,
-div.code,
-div.footer {
-	width: 90%;
-	max-width: 1000px;
-	min-width: 300px;
-	text-align: center;
+.button-group button {
+    border-radius: 0;
+    margin: 0;
 }
 
-div.main p {
-	text-align: center;
+.button-group button:first-child {
+    border-radius: 4px 0 0 4px;
 }
 
-div.main,
-div.code {
-	padding-top: 30px;
-	border-top: 1px solid #eee;
+.button-group button:last-child {
+    border-radius: 0 4px 4px 0;
 }
 
-div.main>form>input[type=text] {
-	width: 80%;
-	padding: 12px 20px;
-	margin: 8px 0;
-	display: inline-block;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	box-sizing: border-box;
-	font-family: inherit;
-	font-size: 1rem;
-	color: #555;
+.clr-picker {
+    border-radius: 4px !important;
 }
 
-div.main>form>.btn{
-	width: 80%;
+.clr-picker input.clr-color {
+    border-radius: inherit !important;
+    margin: 10px auto !important;
+    height: 42px !important;
+    color: var(--link-color) !important;
+    background-color: var(--input-background-color) !important;
+    font-size: 1rem !important;
 }
 
+.clr-picker button.clr-close {
+    border-radius: inherit !important;
+    background: var(--button-background-color) !important;
+    height: 42px !important;
+    width: 100% !important;
+    margin: 0 15px 15px !important;
+    font-size: 1rem !important;
+}
+
+.clr-picker button.clr-close:hover {
+    background: var(--button-hover-background-color) !important;
+    transition: background-color 0.2s ease-in-out !important;
+    transition-delay: 0ms !important;
+}
+
+.clr-picker.clr-dark {
+    background-color: var(--background-color);
+    box-shadow: 0 0 5px rgba(0, 0, 0, .05), 0 5px 20px rgba(255, 255, 255, .1);
+}
+
+.clr-picker .clr-preview,
+.clr-picker .clr-preview:before,
+.clr-picker .clr-preview:after,
+.clr-picker .clr-swatches button {
+    border-radius: 4px !important;
+}
+
+div.clr-field {
+    width: 100%;
+    position: relative;
+}
+
+div.clr-field input[type="text"] {
+    width: 100%;
+}
+
+div.clr-field button[type="button"] {
+    position: absolute;
+    margin: 0 8px 0 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    transition: none;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .5) !important;
+}
+
+/* Page styles */
+
+a.title {
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    line-height: 2.2em;
+    user-select: none;
+    text-decoration: none;
+    align-items: center;
+    margin: 0 auto;
+}
+
+a.title img {
+    margin-bottom: 2em;
+    max-width: 70%;
+}
+
+a.title > span.title {
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+a.title > span.subtitle {
+    color: var(--link-color);
+}
+
+div.code-block,
+div.footer,
+div.main {
+    width: 100%;
+    text-align: center;
+}
+
+.code-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.code-block pre {
+    display: flex;
+    flex-direction: column;
+    border-radius: 4px 4px 0 0 !important;
+    margin: 0;
+}
+
+.code-block button {
+    margin: 0;
+    border-radius: 0 0 4px 4px;
+}
+
+div.footer img {
+    max-width: 150px;
+}
 
 p.error {
-	color: #e76060;
-	font-weight: bold;
-	margin-top: 1em;
-	margin-bottom: 1em;
+    color: var(--error-color);
+    font-weight: bold;
+    margin-top: 1em;
+    margin-bottom: 1em;
 }
 
-.btn {
-	width: 100%;
-	background-color: #3F3D56;
-	color: white;
-	padding: 14px 20px;
-	margin: 8px 0;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	font-family: inherit;
-	font-size: 1rem;
-	font-weight: 450;
+.full-width {
+    width: 100%;
 }
 
-.btn.copy-btn {
-	margin-top: -20px;
+
+/* Repository page styles */
+body.repository > .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+}
+
+.chart-selection {
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: fit-content;
+}
+
+.chart-selection div.customisation {
+    transition: height 0.2s ease-in-out,
+    padding 0.2s ease-in-out,
+    opacity 0.2s ease-in-out;
+    padding: 0 8px;
+    height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    opacity: 0;
+    width: 100%;
+}
+
+.chart-selection div.customisation.opened {
+    height: 250px;
+    padding: 8px;
+    opacity: 1;
+}
+
+/* Index page styles */
+.container.index form button,
+.container.index form input {
+    width: 80%;
 }
