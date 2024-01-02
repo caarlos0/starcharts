@@ -1,9 +1,10 @@
 package chart
 
 import (
-	"github.com/caarlos0/starcharts/internal/chart/svg"
 	"io"
 	"time"
+
+	"github.com/caarlos0/starcharts/internal/chart/svg"
 )
 
 type Series struct {
@@ -16,6 +17,7 @@ type Series struct {
 func (ts *Series) Len() int {
 	return len(ts.XValues)
 }
+
 func (ts *Series) GetValues(index int) (x, y float64) {
 	x = toFloat64(ts.XValues[index])
 	y = ts.YValues[index]

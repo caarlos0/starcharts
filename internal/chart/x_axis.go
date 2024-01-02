@@ -1,9 +1,10 @@
 package chart
 
 import (
-	"github.com/caarlos0/starcharts/internal/chart/svg"
 	"io"
 	"math"
+
+	"github.com/caarlos0/starcharts/internal/chart/svg"
 )
 
 type XAxis struct {
@@ -15,7 +16,7 @@ type XAxis struct {
 func (xa *XAxis) Measure(canvas *Box, ra *Range, ticks []Tick) *Box {
 	var ltx, rtx int
 	var tx, ty int
-	var left, right, bottom = math.MaxInt32, 0, 0
+	left, right, bottom := math.MaxInt32, 0, 0
 	for _, t := range ticks {
 		v := t.Value
 		tb := measureText(t.Label, AxisFontSize)

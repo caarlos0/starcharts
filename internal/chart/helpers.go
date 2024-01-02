@@ -2,10 +2,11 @@ package chart
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/caarlos0/starcharts/internal/chart/svg"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font"
-	"time"
 )
 
 func measureText(body string, size float64) Box {

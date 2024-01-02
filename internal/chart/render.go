@@ -57,8 +57,8 @@ func (c *Chart) Render(w io.Writer) {
 }
 
 func (c *Chart) getRanges(canvas *Box) (*Range, *Range) {
-	var minX, maxX = math.MaxFloat64, -math.MaxFloat64
-	var minY, maxY = math.MaxFloat64, -math.MaxFloat64
+	minX, maxX := math.MaxFloat64, -math.MaxFloat64
+	minY, maxY := math.MaxFloat64, -math.MaxFloat64
 
 	seriesLength := c.Series.Len()
 	for index := 0; index < seriesLength; index++ {

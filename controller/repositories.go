@@ -2,13 +2,14 @@ package controller
 
 import (
 	"fmt"
+	"html/template"
+	"io/fs"
+	"net/http"
+
 	"github.com/caarlos0/httperr"
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/caarlos0/starcharts/internal/github"
 	"github.com/gorilla/mux"
-	"html/template"
-	"io/fs"
-	"net/http"
 )
 
 const (

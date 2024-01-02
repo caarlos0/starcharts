@@ -2,8 +2,9 @@ package chart
 
 import (
 	_ "embed"
-	"github.com/golang/freetype/truetype"
 	"sync"
+
+	"github.com/golang/freetype/truetype"
 )
 
 var (

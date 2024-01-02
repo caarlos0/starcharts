@@ -1,9 +1,10 @@
 package chart
 
 import (
-	"github.com/caarlos0/starcharts/internal/chart/svg"
 	"io"
 	"math"
+
+	"github.com/caarlos0/starcharts/internal/chart/svg"
 )
 
 type YAxis struct {

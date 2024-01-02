@@ -2,10 +2,11 @@ package controller
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"net/http"
 	"regexp"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 const (
