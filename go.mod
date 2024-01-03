@@ -14,7 +14,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/matryer/is v1.4.1
 	github.com/prometheus/client_golang v1.18.0
-	golang.org/x/image v0.10.0
+	golang.org/x/image v0.14.0
 	golang.org/x/sync v0.5.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
