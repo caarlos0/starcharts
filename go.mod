@@ -13,7 +13,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/gorilla/mux v1.8.1
 	github.com/matryer/is v1.4.1
-	github.com/prometheus/client_golang v1.19.0
+	github.com/prometheus/client_golang v1.19.1
 	golang.org/x/image v0.17.0
 	golang.org/x/sync v0.7.0
 	gopkg.in/h2non/gock.v1 v1.1.2
