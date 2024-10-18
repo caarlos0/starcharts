@@ -8,16 +8,18 @@ import (
 )
 
 // nolint: gochecknoglobals
+// 缓存获取gets_total
 var cacheGets = prometheus.NewCounter(
 	prometheus.CounterOpts{
 		Namespace: "starcharts",
-		Subsystem: "cache",
+		Subsystem: "cache", // 子系统
 		Name:      "gets_total",
 		Help:      "Total number of successful cache gets",
 	},
 )
 
 // nolint: gochecknoglobals
+// 缓存puts_total
 var cachePuts = prometheus.NewCounter(
 	prometheus.CounterOpts{
 		Namespace: "starcharts",
@@ -28,6 +30,7 @@ var cachePuts = prometheus.NewCounter(
 )
 
 // nolint: gochecknoglobals
+// 缓存删除deletes_total
 var cacheDeletes = prometheus.NewCounter(
 	prometheus.CounterOpts{
 		Namespace: "starcharts",
@@ -38,35 +41,40 @@ var cacheDeletes = prometheus.NewCounter(
 )
 
 // nolint: gochecknoinits
+// 初始化函数
 func init() {
+	// MustRegister用 DefaultRegisterer 对提供的收集器进行注册
 	prometheus.MustRegister(cacheGets, cachePuts, cacheDeletes)
 }
 
 // Redis cache.
+// redis缓存实例（包含客户端，redis缓存）
 type Redis struct {
-	redis *redis.Client
-	codec *rediscache.Codec
+	redis *redis.Client     // redis客户端配置
+	codec *rediscache.Codec // redis缓存配置
 }
 
 // New redis cache.
+// 新建redis缓存
 func New(redis *redis.Client) *Redis {
 	codec := &rediscache.Codec{
 		Redis: redis,
 		Marshal: func(v interface{}) ([]byte, error) {
 			return msgpack.Marshal(v)
-		},
+		}, // 序列化
 		Unmarshal: func(b []byte, v interface{}) error {
 			return msgpack.Unmarshal(b, v)
-		},
+		}, // 反序列化
 	}
 
 	return &Redis{
-		redis: redis,
-		codec: codec,
+		redis: redis, // 客户端配置赋值
+		codec: codec, // redis缓存配置
 	}
 }
 
 // Close connections.
+// func (c *baseClient) Close() error
 func (c *Redis) Close() error {
 	return c.redis.Close()
 }
@@ -76,7 +84,8 @@ func (c *Redis) Get(key string, result interface{}) error {
 	if err := c.codec.Get(key, result); err != nil {
 		return err
 	}
-	cacheGets.Inc()
+	// atomic.AddUint64(&c.valInt, 1)
+	cacheGets.Inc() // 缓存查询新增
 	return nil
 }
 

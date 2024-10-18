@@ -15,8 +15,10 @@ const (
 	index      = "static/templates/index.gohtml"
 )
 
+// 必须编译的正则表达式
 var colorExpression = regexp.MustCompile("^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3}|[a-fA-F0-9]{8})$")
 
+// 提取颜色
 func extractColor(r *http.Request, name string) (string, error) {
 	color := r.URL.Query().Get(name)
 	if len(color) == 0 {
@@ -30,6 +32,7 @@ func extractColor(r *http.Request, name string) (string, error) {
 	return "", fmt.Errorf("invalid %s: %s", name, color)
 }
 
+// svg图片的参数
 type params struct {
 	Owner      string
 	Repo       string
@@ -39,8 +42,9 @@ type params struct {
 	Variant    string
 }
 
+// 提取svg图片参数
 func extractSvgChartParams(r *http.Request) (*params, error) {
-	backgroundColor, err := extractColor(r, "background")
+	backgroundColor, err := extractColor(r, "background") // 背景颜色
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +59,7 @@ func extractSvgChartParams(r *http.Request) (*params, error) {
 		return nil, err
 	}
 
-	vars := mux.Vars(r)
+	vars := mux.Vars(r) // Vars返回当前请求的路由变量(如果有)
 
 	return &params{
 		Owner:      vars["owner"],
@@ -67,6 +71,7 @@ func extractSvgChartParams(r *http.Request) (*params, error) {
 	}, nil
 }
 
+// 拼接svg图片响应的响应头信息
 func writeSvgHeaders(w http.ResponseWriter) {
 	header := w.Header()
 	header.Add("content-type", "image/svg+xml;charset=utf-8")
@@ -75,6 +80,7 @@ func writeSvgHeaders(w http.ResponseWriter) {
 	header.Add("expires", time.Now().Format(time.RFC1123))
 }
 
+// 拼接参数得到缓存使用的key值
 func chartKey(params *params) string {
 	return fmt.Sprintf(
 		"%s/%s/[%s][%s][%s][%s]",

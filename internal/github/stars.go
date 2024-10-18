@@ -22,25 +22,26 @@ var (
 
 // Stargazer is a star at a given time.
 type Stargazer struct {
-	StarredAt time.Time `json:"starred_at"`
+	StarredAt time.Time `json:"starred_at"` // 加星的时间
 }
 
 // Stargazers returns all the stargazers of a given repo.
+// 从响应中获取star情况
 func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Stargazer, err error) {
 	if gh.totalPages(repo) > 400 {
 		return stars, ErrTooManyStars
-	}
+	} // 超过400就太多加星的了
 
 	var (
-		wg   errgroup.Group
-		lock sync.Mutex
+		wg   errgroup.Group // 等待组
+		lock sync.Mutex     // 互斥锁
 	)
 
-	wg.SetLimit(4)
+	wg.SetLimit(4) // 等4个
 	for page := 1; page <= gh.lastPage(repo); page++ {
 		page := page
 		wg.Go(func() error {
-			result, err := gh.getStargazersPage(ctx, repo, page)
+			result, err := gh.getStargazersPage(ctx, repo, page) // 获取当前页的星
 			if errors.Is(err, errNoMorePages) {
 				return nil
 			}
@@ -57,7 +58,7 @@ func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Star
 
 	sort.Slice(stars, func(i, j int) bool {
 		return stars[i].StarredAt.Before(stars[j].StarredAt)
-	})
+	}) // 排序
 	return
 }
 
@@ -108,7 +109,7 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 			if err := gh.cache.Delete(etagKey); err != nil {
 				log.WithError(err).Warnf("failed to delete %s from cache", etagKey)
 			}
-			return gh.getStargazersPage(ctx, repo, page)
+			return gh.getStargazersPage(ctx, repo, page) // 重试
 		}
 		return stars, err
 	case http.StatusForbidden:
@@ -147,6 +148,7 @@ func (gh *GitHub) lastPage(repo Repository) int {
 	return gh.totalPages(repo) + 1
 }
 
+// github获取star记录中每页的star结果
 func (gh *GitHub) makeStarPageRequest(ctx context.Context, repo Repository, page int, etag string) (*http.Response, error) {
 	url := fmt.Sprintf(
 		"https://api.github.com/repos/%s/stargazers?page=%d&per_page=%d",

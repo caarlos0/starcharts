@@ -1,6 +1,8 @@
 module github.com/caarlos0/starcharts
 
-go 1.21
+go 1.23
+
+toolchain go1.23.2
 
 require (
 	github.com/alicebob/miniredis v2.5.0+incompatible
@@ -21,7 +23,9 @@ require (
 )
 
 require (
+	github.com/PuerkitoBio/goquery v1.10.0 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20180125190556-5a6b3ba71ee6 // indirect
+	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
@@ -36,8 +40,8 @@ require (
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/vmihailenco/msgpack v4.0.2+incompatible // indirect
 	github.com/yuin/gopher-lua v0.0.0-20190514113301-1cd887cd7036 // indirect
-	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
+	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 )

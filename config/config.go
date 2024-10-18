@@ -16,7 +16,7 @@ type Config struct {
 
 // Get the current Config.
 func Get() (cfg Config) {
-	if err := env.Parse(&cfg); err != nil {
+	if err := env.Parse(&cfg); err != nil { // 解析配置文件
 		log.WithError(err).Fatal("failed to load config")
 	}
 	return
