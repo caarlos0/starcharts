@@ -96,8 +96,8 @@ func exercise(t *testing.T, rr RoundRobiner, n int) (int64, int64, int64, int64)
 	for i := 0; i < n; i++ {
 		go func() {
 			pick, err := rr.Pick()
-			is.True(pick != nil) // pick should not be nil
 			is.NoErr(err)        // no error should be returned
+			is.True(pick != nil) // pick should not be nil
 			switch pick.Key() {
 			case tokenA:
 				atomic.AddInt64(&a, 1)
