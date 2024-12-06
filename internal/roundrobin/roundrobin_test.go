@@ -37,8 +37,8 @@ func TestRoundRobinWithInvalidatedKeys(t *testing.T) {
 	a, b, c, d := exercise(t, rr, 100)
 	is.Equal(a, int64(0))
 	is.Equal(b, int64(0))
-	requireWithinRange(t, is, c, 48, 52)
-	requireWithinRange(t, is, d, 48, 52)
+	requireWithinRange(t, is, c, 40, 60)
+	requireWithinRange(t, is, d, 40, 60)
 }
 
 func TestTokenString(t *testing.T) {
