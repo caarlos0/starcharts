@@ -24,7 +24,7 @@ func TestRoundRobin(t *testing.T) {
 	a, b, c, d := exercise(t, rr, 100)
 
 	for _, n := range []int64{a, b, c, d} {
-		requireWithinRange(t, n, 23, 27)
+		requireWithinRange(t, is, n, 23, 27)
 	}
 	is.Equal(int64(100), a+b+c+d)
 }
@@ -37,8 +37,8 @@ func TestRoundRobinWithInvalidatedKeys(t *testing.T) {
 	a, b, c, d := exercise(t, rr, 100)
 	is.Equal(a, int64(0))
 	is.Equal(b, int64(0))
-	requireWithinRange(t, c, 48, 52)
-	requireWithinRange(t, d, 48, 52)
+	requireWithinRange(t, is, c, 48, 52)
+	requireWithinRange(t, is, d, 48, 52)
 }
 
 func TestTokenString(t *testing.T) {
@@ -78,11 +78,10 @@ func invalidateN(t *testing.T, rr RoundRobiner, n int) {
 	}
 }
 
-func requireWithinRange(t *testing.T, n, min, max int64) {
+func requireWithinRange(t *testing.T, is *is.I, n, low, high int64) {
 	t.Helper()
-	is := is.New(t)
-	is.True(n >= min) // n should be at least min
-	is.True(n <= max) // n should be at most max
+	is.True(n >= low)  // n should be at least min
+	is.True(n <= high) // n should be at most max
 }
 
 func exercise(t *testing.T, rr RoundRobiner, n int) (int64, int64, int64, int64) {
