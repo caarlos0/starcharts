@@ -36,8 +36,8 @@ require (
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/vmihailenco/msgpack v4.0.2+incompatible // indirect
 	github.com/yuin/gopher-lua v0.0.0-20190514113301-1cd887cd7036 // indirect
-	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 )
