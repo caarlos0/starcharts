@@ -15,7 +15,7 @@ require (
 	github.com/matryer/is v1.4.1
 	github.com/prometheus/client_golang v1.20.5
 	golang.org/x/image v0.23.0
-	golang.org/x/sync v0.10.0
+	golang.org/x/sync v0.11.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
 )
