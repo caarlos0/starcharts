@@ -22,11 +22,11 @@ func (t *TagBuilder) Render(io io.Writer) {
 		if err != nil {
 			panic(err)
 		}
-	}
-
-	_, err := fmt.Fprintf(io, "<%s %s>%s</%s>", t.tag, t.attrString(), t.content.String(), t.tag)
-	if err != nil {
-		panic(err)
+	} else {
+		_, err := fmt.Fprintf(io, "<%s %s>%s</%s>", t.tag, t.attrString(), t.content.String(), t.tag)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
