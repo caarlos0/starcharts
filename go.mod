@@ -1,7 +1,7 @@
 module github.com/caarlos0/starcharts
 
 go 1.21
-toolchain go1.23.7
+toolchain go1.24.1
 
 require (
 	github.com/alicebob/miniredis v2.5.0+incompatible
@@ -16,7 +16,7 @@ require (
 	github.com/matryer/is v1.4.1
 	github.com/prometheus/client_golang v1.21.1
 	golang.org/x/image v0.25.0
-	golang.org/x/sync v0.12.0
+	golang.org/x/sync v0.13.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
 )
