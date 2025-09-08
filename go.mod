@@ -1,6 +1,6 @@
 module github.com/caarlos0/starcharts
 
-go 1.23.0
+go 1.24.0
 
 toolchain go1.24.1
 
@@ -17,7 +17,7 @@ require (
 	github.com/matryer/is v1.4.1
 	github.com/prometheus/client_golang v1.23.1
 	golang.org/x/image v0.30.0
-	golang.org/x/sync v0.16.0
+	golang.org/x/sync v0.17.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
 )
