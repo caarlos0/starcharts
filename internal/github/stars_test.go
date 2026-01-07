@@ -53,14 +53,13 @@ func TestStargazers(t *testing.T) {
 		is.NoErr(err) // should not have errored
 	})
 
-	t.Run("get stargazers from cache", func(t *testing.T) {
+	t.Run("get stargazers from api again", func(t *testing.T) {
 		is := is.New(t)
-		is.NoErr(cache.Put(repo.FullName+"_1_etag", "asdasd"))
+		// 新的逻辑总是先请求第一页获取 Link header，所以需要 mock 这个请求
 		gock.New("https://api.github.com").
 			Get("/repos/test/test/stargazers").
-			MatchHeader("If-None-Match", "asdasd").
-			Reply(304).
-			JSON([]Stargazer{})
+			Reply(200).
+			JSON(stargazers)
 		_, err := gt.Stargazers(context.TODO(), repo)
 		is.NoErr(err) // should not have errored
 	})

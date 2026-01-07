@@ -11,6 +11,7 @@ type Config struct {
 	GitHubTokens          []string `env:"GITHUB_TOKENS"`
 	GitHubPageSize        int      `env:"GITHUB_PAGE_SIZE" envDefault:"100"`
 	GitHubMaxRateUsagePct int      `env:"GITHUB_MAX_RATE_LIMIT_USAGE" envDefault:"80"`
+	GitHubMaxSamplePages  int      `env:"GITHUB_MAX_SAMPLE_PAGES" envDefault:"15"`
 	Listen                string   `env:"LISTEN" envDefault:"127.0.0.1:3000"`
 }
 
