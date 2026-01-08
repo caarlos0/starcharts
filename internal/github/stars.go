@@ -20,25 +20,25 @@ import (
 
 var (
 	errNoMorePages = errors.New("no more pages to get")
-	// 用于解析 Link header 中的 last 页码
+	// linkLastPageRegex is used to parse the last page number from the Link header
 	linkLastPageRegex = regexp.MustCompile(`[&?]page=(\d+)[^>]*>;\s*rel="last"`)
 )
 
-// maxConcurrentRequests 是并发请求 GitHub API 的最大数量
+// maxConcurrentRequests is the maximum number of concurrent requests to GitHub API
 const maxConcurrentRequests = 5
 
 // Stargazer is a star at a given time.
 type Stargazer struct {
 	StarredAt time.Time `json:"starred_at"`
-	// Count 表示该 star 的实际位置/计数（用于采样模式）
-	// 如果为 0，表示使用索引+1 作为计数（非采样模式）
+	// Count represents the actual position/count of this star (used in sampling mode).
+	// If 0, use index+1 as count (non-sampling mode).
 	Count int `json:"-"`
 }
 
 // Stargazers returns all the stargazers of a given repo.
-// 如果 star 数量太多，会采用采样方式获取数据点。
+// If star count is too large, it uses sampling mode to fetch data points.
 func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Stargazer, err error) {
-	// 先请求第一页，获取实际可用的最大页数（通过 Link header）
+	// First request the first page to get the actual max page count (via Link header)
 	firstPageStars, lastPage, err := gh.getFirstPageAndLastPage(ctx, repo)
 	if err != nil {
 		return nil, err
@@ -49,16 +49,16 @@ func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Star
 		WithField("starCount", repo.StargazersCount).
 		Debug("got pagination info from API")
 
-	// 如果只有一页或页数小于最大采样页数，获取所有页面
+	// If only one page or page count is less than max sample pages, fetch all pages
 	if lastPage <= gh.maxSamplePages {
 		return gh.getAllStargazersWithFirstPage(ctx, repo, firstPageStars, lastPage)
 	}
 
-	// 否则使用采样方式
+	// Otherwise use sampling mode
 	return gh.getSampledStargazers(ctx, repo, firstPageStars, lastPage)
 }
 
-// getFirstPageAndLastPage 请求第一页并解析 Link header 获取最大页数
+// getFirstPageAndLastPage requests the first page and parses the Link header to get the max page count.
 func (gh *GitHub) getFirstPageAndLastPage(ctx context.Context, repo Repository) ([]Stargazer, int, error) {
 	log := log.WithField("repo", repo.FullName)
 
@@ -89,11 +89,11 @@ func (gh *GitHub) getFirstPageAndLastPage(ctx context.Context, repo Repository) 
 		return nil, 0, err
 	}
 
-	// 解析 Link header 获取最大页数
+	// Parse Link header to get the max page count
 	linkHeader := resp.Header.Get("Link")
 	lastPage := gh.parseLastPageFromLink(linkHeader)
 
-	// 如果没有 Link header 或解析失败，说明只有一页
+	// If no Link header or parsing failed, there is only one page
 	if lastPage == 0 {
 		lastPage = 1
 	}
@@ -103,8 +103,8 @@ func (gh *GitHub) getFirstPageAndLastPage(ctx context.Context, repo Repository) 
 	return stars, lastPage, nil
 }
 
-// parseLastPageFromLink 从 Link header 解析出最大页数
-// Link header 格式: <url>; rel="next", <url>; rel="last"
+// parseLastPageFromLink parses the max page count from the Link header.
+// Link header format: <url>; rel="next", <url>; rel="last"
 func (gh *GitHub) parseLastPageFromLink(linkHeader string) int {
 	if linkHeader == "" {
 		return 0
@@ -123,12 +123,12 @@ func (gh *GitHub) parseLastPageFromLink(linkHeader string) int {
 	return lastPage
 }
 
-// getAllStargazersWithFirstPage 获取所有 stargazers（用于小型项目）
-// firstPageStars 是已经获取的第一页数据
+// getAllStargazersWithFirstPage fetches all stargazers (used for small repositories).
+// firstPageStars is the already fetched first page data.
 func (gh *GitHub) getAllStargazersWithFirstPage(ctx context.Context, repo Repository, firstPageStars []Stargazer, lastPage int) (stars []Stargazer, err error) {
 	stars = append(stars, firstPageStars...)
 
-	// 如果只有一页，直接返回
+	// If only one page, return directly
 	if lastPage <= 1 {
 		return stars, nil
 	}
@@ -139,7 +139,7 @@ func (gh *GitHub) getAllStargazersWithFirstPage(ctx context.Context, repo Reposi
 	)
 
 	wg.SetLimit(maxConcurrentRequests)
-	// 从第 2 页开始获取（第 1 页已经有了）
+	// Start fetching from page 2 (page 1 is already fetched)
 	for page := 2; page <= lastPage; page++ {
 		page := page
 		wg.Go(func() error {
@@ -164,21 +164,21 @@ func (gh *GitHub) getAllStargazersWithFirstPage(ctx context.Context, repo Reposi
 	return
 }
 
-// getSampledStargazers 使用采样方式获取 stargazers（用于大型项目）
-// 参考 star-history 项目的采样逻辑
-// firstPageStars 是已经获取的第一页数据，lastPage 是从 Link header 解析的实际最大页数
+// getSampledStargazers fetches stargazers using sampling mode (used for large repositories).
+// Inspired by star-history project's sampling logic.
+// firstPageStars is the already fetched first page data, lastPage is the actual max page count parsed from Link header.
 func (gh *GitHub) getSampledStargazers(ctx context.Context, repo Repository, firstPageStars []Stargazer, lastPage int) (stars []Stargazer, err error) {
 	log.WithField("repo", repo.FullName).
 		WithField("lastPage", lastPage).
 		Info("using sampling mode for large repo")
 
-	// 计算采样页码，均匀分布在所有页面中
+	// Calculate sample page numbers, evenly distributed across all pages
 	samplePages := gh.calculateSamplePages(lastPage, gh.maxSamplePages)
 
 	type pageResult struct {
 		page      int
 		star      Stargazer
-		starCount int // 该 star 的实际计数位置
+		starCount int // the actual count position of this star
 	}
 
 	var (
@@ -187,7 +187,7 @@ func (gh *GitHub) getSampledStargazers(ctx context.Context, repo Repository, fir
 		results []pageResult
 	)
 
-	// 第一页已经有了，直接添加到结果中
+	// First page is already fetched, add it to results directly
 	if len(firstPageStars) > 0 {
 		results = append(results, pageResult{
 			page:      1,
@@ -198,7 +198,7 @@ func (gh *GitHub) getSampledStargazers(ctx context.Context, repo Repository, fir
 
 	wg.SetLimit(maxConcurrentRequests)
 	for _, page := range samplePages {
-		// 跳过第一页（已经有了）
+		// Skip first page (already fetched)
 		if page == 1 {
 			continue
 		}
@@ -215,9 +215,9 @@ func (gh *GitHub) getSampledStargazers(ctx context.Context, repo Repository, fir
 				return nil
 			}
 
-			// 计算该页第一个 star 的实际位置（基于页码和每页大小）
-			// 第 1 页第 1 个 star 是第 1 颗星
-			// 第 N 页第 1 个 star 是第 (N-1)*pageSize + 1 颗星
+			// Calculate the actual position of the first star on this page (based on page number and page size)
+			// The 1st star on page 1 is star #1
+			// The 1st star on page N is star #(N-1)*pageSize + 1
 			starCount := (page-1)*gh.pageSize + 1
 
 			lock.Lock()
@@ -235,20 +235,20 @@ func (gh *GitHub) getSampledStargazers(ctx context.Context, repo Repository, fir
 		return nil, err
 	}
 
-	// 按页码排序结果
+	// Sort results by page number
 	sort.Slice(results, func(i, j int) bool {
 		return results[i].page < results[j].page
 	})
 
-	// 从每个采样页中提取第一个 star 作为数据点，并设置 Count
+	// Extract the first star from each sampled page as a data point and set Count
 	for _, r := range results {
 		star := r.star
 		star.Count = r.starCount
 		stars = append(stars, star)
 	}
 
-	// 添加最后一个数据点（当前时间和总 star 数）
-	// 这样可以确保图表延伸到当前时间点
+	// Add the last data point (current time and total star count)
+	// This ensures the chart extends to the current time point
 	stars = append(stars, Stargazer{
 		StarredAt: time.Now(),
 		Count:     repo.StargazersCount,
@@ -257,13 +257,13 @@ func (gh *GitHub) getSampledStargazers(ctx context.Context, repo Repository, fir
 	return stars, nil
 }
 
-// calculateSamplePages 计算需要采样的页码
-// 均匀分布在所有页面中，确保包含第一页
+// calculateSamplePages calculates the page numbers to sample.
+// Evenly distributed across all pages, ensuring the first page is included.
 func (gh *GitHub) calculateSamplePages(totalPages, maxSamples int) []int {
 	pages := make([]int, 0, maxSamples)
 
 	for i := 1; i <= maxSamples; i++ {
-		// 计算均匀分布的页码
+		// Calculate evenly distributed page numbers
 		page := int(math.Round(float64(i*totalPages) / float64(maxSamples)))
 		if page < 1 {
 			page = 1
@@ -274,12 +274,12 @@ func (gh *GitHub) calculateSamplePages(totalPages, maxSamples int) []int {
 		pages = append(pages, page)
 	}
 
-	// 确保第一页被包含（对于显示起始时间很重要）
+	// Ensure first page is included (important for displaying start time)
 	if len(pages) > 0 && pages[0] != 1 {
 		pages[0] = 1
 	}
 
-	// 去重（可能在边界情况下有重复）
+	// Deduplicate (may have duplicates in edge cases)
 	seen := make(map[int]bool)
 	uniquePages := make([]int, 0, len(pages))
 	for _, p := range pages {

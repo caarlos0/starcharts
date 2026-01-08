@@ -65,8 +65,8 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 		}
 		for i, star := range stargazers {
 			series.XValues = append(series.XValues, star.StarredAt)
-			// 如果 star.Count > 0，使用采样模式的实际计数
-			// 否则使用索引+1（非采样模式，连续数据）
+			// If star.Count > 0, use the actual count from sampling mode
+			// Otherwise use index+1 (non-sampling mode, continuous data)
 			if star.Count > 0 {
 				series.YValues = append(series.YValues, float64(star.Count))
 			} else {

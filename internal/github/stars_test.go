@@ -55,7 +55,7 @@ func TestStargazers(t *testing.T) {
 
 	t.Run("get stargazers from api again", func(t *testing.T) {
 		is := is.New(t)
-		// 新的逻辑总是先请求第一页获取 Link header，所以需要 mock 这个请求
+		// The new logic always requests the first page to get Link header, so we need to mock this request
 		gock.New("https://api.github.com").
 			Get("/repos/test/test/stargazers").
 			Reply(200).
