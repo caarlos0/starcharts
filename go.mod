@@ -1,8 +1,8 @@
 module github.com/caarlos0/starcharts
 
-go 1.24.0
+go 1.25
 
-toolchain go1.24.1
+toolchain go1.25.0
 
 require (
 	github.com/alicebob/miniredis v2.5.0+incompatible
