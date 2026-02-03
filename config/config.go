@@ -10,6 +10,7 @@ type Config struct {
 	RedisURL              string   `env:"REDIS_URL" envDefault:"redis://localhost:6379"`
 	GitHubTokens          []string `env:"GITHUB_TOKENS"`
 	GitHubPageSize        int      `env:"GITHUB_PAGE_SIZE" envDefault:"100"`
+	GitHubMaxPages        int      `env:"GITHUB_MAX_PAGES" envDefault:"400"`
 	GitHubMaxRateUsagePct int      `env:"GITHUB_MAX_RATE_LIMIT_USAGE" envDefault:"80"`
 	Listen                string   `env:"LISTEN" envDefault:"127.0.0.1:3000"`
 }

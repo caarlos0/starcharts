@@ -16,8 +16,7 @@ import (
 )
 
 var (
-	errNoMorePages  = errors.New("no more pages to get")
-	ErrTooManyStars = errors.New("repo has too many stargazers, github won't allow us to list all stars")
+	errNoMorePages = errors.New("no more pages to get")
 )
 
 // Stargazer is a star at a given time.
@@ -27,17 +26,22 @@ type Stargazer struct {
 
 // Stargazers returns all the stargazers of a given repo.
 func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Stargazer, err error) {
-	if gh.totalPages(repo) > 400 {
-		return stars, ErrTooManyStars
-	}
-
 	var (
 		wg   errgroup.Group
 		lock sync.Mutex
 	)
 
+	// Calculate the start page based on maxPages
+	// If total pages > maxPages, fetch only the last maxPages (most recent stars)
+	// Otherwise, fetch all pages from the beginning
+	startPage := 1
+	totalPages := gh.totalPages(repo)
+	if totalPages > gh.maxPages {
+		startPage = totalPages - gh.maxPages + 1
+	}
+
 	wg.SetLimit(4)
-	for page := 1; page <= gh.lastPage(repo); page++ {
+	for page := startPage; page <= gh.lastPage(repo); page++ {
 		page := page
 		wg.Go(func() error {
 			result, err := gh.getStargazersPage(ctx, repo, page)

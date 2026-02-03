@@ -71,13 +71,9 @@ func TestStargazers_EmptyResponseOnPagination(t *testing.T) {
 
 	gock.New("https://api.github.com").
 		Get("/rate_limit").
+		Persist().
 		Reply(200).
 		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
-
-	gock.New("https://api.github.com").
-		Get("/rate_limit").
-		Reply(200).
-		JSON(rateLimit{rate{Limit: 5000, Remaining: 3999}})
 
 	stargazers := []Stargazer{
 		{StarredAt: time.Now()},
@@ -114,6 +110,8 @@ func TestStargazers_EmptyResponseOnPagination(t *testing.T) {
 	defer cache.Close()
 	gt := New(config, cache)
 	gt.pageSize = 2
+	gt.maxPages = 400
+	gt.maxRateUsagePct = 80
 	gt.tokens = roundrobin.New([]string{"12345"})
 
 	t.Run("get stargazers from api", func(t *testing.T) {
