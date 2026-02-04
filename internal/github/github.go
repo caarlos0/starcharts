@@ -7,10 +7,10 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/caarlos0/starcharts/internal/roundrobin"
+	"github.com/charmbracelet/log"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -24,7 +24,7 @@ var ErrGitHubAPI = errors.New("failed to talk with github api")
 type GitHub struct {
 	tokens          roundrobin.RoundRobiner
 	pageSize        int
-	maxPages        int
+	maxSamplePages  int
 	cache           *cache.Redis
 	maxRateUsagePct int
 }
@@ -69,7 +69,7 @@ func New(config config.Config, cache *cache.Redis) *GitHub {
 	return &GitHub{
 		tokens:          roundrobin.New(config.GitHubTokens),
 		pageSize:        config.GitHubPageSize,
-		maxPages:        config.GitHubMaxPages,
+		maxSamplePages:  config.GitHubMaxSamplePages,
 		cache:           cache,
 		maxRateUsagePct: config.GitHubMaxRateUsagePct,
 	}
@@ -83,12 +83,12 @@ func (gh *GitHub) authorizedDo(req *http.Request, try int) (*http.Response, erro
 	}
 	token, err := gh.tokens.Pick()
 	if err != nil || token == nil {
-		log.WithError(err).Error("couldn't get a valid token")
+		log.Errorf("couldn't get a valid token")
 		return http.DefaultClient.Do(req) // try unauthorized request
 	}
 
 	if err := gh.checkToken(token); err != nil {
-		log.WithError(err).Error("couldn't check rate limit, trying again")
+		log.Errorf("couldn't check rate limit, trying again")
 		return gh.authorizedDo(req, try+1) // try next token
 	}
 
