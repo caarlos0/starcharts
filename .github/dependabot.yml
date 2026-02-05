@@ -3,16 +3,26 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "08:00"
+      interval: "monthly"
     labels:
       - "dependencies"
-      - "automerge"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      go:
+        patterns:
+          - "*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "08:00"
+      interval: "monthly"
     labels:
       - "dependencies"
-      - "automerge"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      actions:
+        patterns:
+          - "*"
