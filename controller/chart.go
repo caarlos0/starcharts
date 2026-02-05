@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/httperr"
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/caarlos0/starcharts/internal/chart"
 	"github.com/caarlos0/starcharts/internal/chart/svg"
 	"github.com/caarlos0/starcharts/internal/github"
+	"github.com/charmbracelet/log"
 )
 
 var stylesMap = map[string]string{
@@ -29,13 +29,13 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 	return httperr.NewF(func(w http.ResponseWriter, r *http.Request) error {
 		params, err := extractSvgChartParams(r)
 		if err != nil {
-			log.WithError(err).Error("failed to extract params")
+			log.Error("failed to extract params")
 			return err
 		}
 
 		cacheKey := chartKey(params)
 		name := fmt.Sprintf("%s/%s", params.Owner, params.Repo)
-		log := log.WithField("repo", name).WithField("variant", params.Variant)
+		log := log.With("repo", name, "variant", params.Variant)
 
 		cachedChart := ""
 		if err = cache.Get(cacheKey, &cachedChart); err == nil {
@@ -45,7 +45,7 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 			return err
 		}
 
-		defer log.Trace("collect_stars").Stop(nil)
+		log.Debug("collect_stars")
 		repo, err := gh.RepoDetails(r.Context(), name)
 		if err != nil {
 			return httperr.Wrap(err, http.StatusBadRequest)
@@ -53,7 +53,7 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 
 		stargazers, err := gh.Stargazers(r.Context(), repo)
 		if err != nil {
-			log.WithError(err).Error("failed to get stars")
+			log.Error("failed to get stars")
 			writeSvgHeaders(w)
 			_, err = w.Write([]byte(errSvg(err)))
 			return err
@@ -96,7 +96,7 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 			},
 			Series: series,
 		}
-		defer log.Trace("chart").Stop(&err)
+		log.Debug("chart")
 
 		writeSvgHeaders(w)
 
@@ -104,7 +104,7 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 		graph.Render(io.MultiWriter(w, cacheBuffer))
 		err = cache.Put(cacheKey, cacheBuffer.String())
 		if err != nil {
-			log.WithError(err).Error("failed to cache chart")
+			log.Error("failed to cache chart", "err", err)
 		}
 
 		return nil

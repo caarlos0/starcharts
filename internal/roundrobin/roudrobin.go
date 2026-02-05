@@ -6,7 +6,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/apex/log"
+	"github.com/charmbracelet/log"
 )
 
 // RoundRobiner can pick a token from a list of tokens.
@@ -16,7 +16,7 @@ type RoundRobiner interface {
 
 // New round robin implementation with the given list of tokens.
 func New(tokens []string) RoundRobiner {
-	log.Debugf("creating round robin with %d tokens", len(tokens))
+	log.Debug("creating round robin", "count", len(tokens))
 	if len(tokens) == 0 {
 		return &noTokensRoundRobin{}
 	}
@@ -43,7 +43,7 @@ func (rr *realRoundRobin) doPick(try int) (*Token, error) {
 	idx := atomic.LoadInt64(&rr.next)
 	atomic.StoreInt64(&rr.next, (idx+1)%int64(len(rr.tokens)))
 	if pick := rr.tokens[idx]; pick.OK() {
-		log.Debugf("picked %s", pick.Key())
+		log.Debug("picked token", "key_suffix", pick.String())
 		return pick, nil
 	}
 	return rr.doPick(try + 1)
@@ -72,6 +72,9 @@ func NewToken(token string) *Token {
 
 // String returns the last 3 chars for the token.
 func (t *Token) String() string {
+	if len(t.token) < 3 {
+		return t.token
+	}
 	return t.token[len(t.token)-3:]
 }
 
@@ -89,7 +92,7 @@ func (t *Token) OK() bool {
 
 // Invalidate invalidates the token.
 func (t *Token) Invalidate() {
-	log.Warnf("invalidated token '...%s'", t)
+	log.Warn("invalidated token", "suffix", t.String())
 	t.lock.Lock()
 	defer t.lock.Unlock()
 	t.valid = false
