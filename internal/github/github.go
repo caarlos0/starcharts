@@ -24,6 +24,7 @@ var ErrGitHubAPI = errors.New("failed to talk with github api")
 type GitHub struct {
 	tokens          roundrobin.RoundRobiner
 	pageSize        int
+	maxSamplePages  int
 	cache           *cache.Redis
 	maxRateUsagePct int
 }
@@ -66,9 +67,10 @@ func init() {
 func New(config config.Config, cache *cache.Redis) *GitHub {
 	tokensCount.Set(float64(len(config.GitHubTokens)))
 	return &GitHub{
-		tokens:   roundrobin.New(config.GitHubTokens),
-		pageSize: config.GitHubPageSize,
-		cache:    cache,
+		tokens:         roundrobin.New(config.GitHubTokens),
+		pageSize:       config.GitHubPageSize,
+		maxSamplePages: config.GitHubMaxSamplePages,
+		cache:          cache,
 	}
 }
 
