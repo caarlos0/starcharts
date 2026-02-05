@@ -1,8 +1,8 @@
 package config
 
 import (
-	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
+	"github.com/charmbracelet/log"
 )
 
 // Config configuration.
@@ -18,7 +18,7 @@ type Config struct {
 // Get the current Config.
 func Get() (cfg Config) {
 	if err := env.Parse(&cfg); err != nil {
-		log.WithError(err).Fatal("failed to load config")
+		log.Fatal("failed to load config", "err", err)
 	}
 	return
 }
