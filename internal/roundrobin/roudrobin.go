@@ -29,7 +29,7 @@ func New(tokens []string) RoundRobiner {
 
 type realRoundRobin struct {
 	tokens []*Token
-	next   int64
+	next   uint64
 }
 
 func (rr *realRoundRobin) Pick() (*Token, error) {
@@ -40,8 +40,8 @@ func (rr *realRoundRobin) doPick(try int) (*Token, error) {
 	if try > len(rr.tokens) {
 		return nil, fmt.Errorf("no valid tokens left")
 	}
-	idx := atomic.LoadInt64(&rr.next)
-	atomic.StoreInt64(&rr.next, (idx+1)%int64(len(rr.tokens)))
+	n := atomic.AddUint64(&rr.next, 1)
+	idx := (n - 1) % uint64(len(rr.tokens))
 	if pick := rr.tokens[idx]; pick.OK() {
 		log.Debug("picked token", "key_suffix", pick.String())
 		return pick, nil
