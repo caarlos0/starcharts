@@ -1,7 +1,8 @@
 package config
 
 import (
-	"github.com/apex/log"
+	"log/slog"
+
 	"github.com/caarlos0/env/v6"
 )
 
@@ -18,7 +19,7 @@ type Config struct {
 // Get the current Config.
 func Get() (cfg Config) {
 	if err := env.Parse(&cfg); err != nil {
-		log.WithError(err).Fatal("failed to load config")
+		slog.Error("failed to load config", "error", err)
 	}
 	return
 }

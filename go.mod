@@ -1,13 +1,9 @@
 module github.com/caarlos0/starcharts
 
-go 1.24.0
-
-toolchain go1.24.1
+go 1.26
 
 require (
 	github.com/alicebob/miniredis v2.5.0+incompatible
-	github.com/apex/httplog v1.0.0
-	github.com/apex/log v1.9.0
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/caarlos0/httperr v1.4.0
 	github.com/go-redis/cache v6.4.0+incompatible
@@ -29,9 +25,10 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/h2non/parth v0.0.0-20190131123155-b4df798d6542 // indirect
+	github.com/kr/text v0.1.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/onsi/ginkgo v1.7.0 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect

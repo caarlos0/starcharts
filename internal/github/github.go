@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/internal/cache"
 	"github.com/caarlos0/starcharts/internal/roundrobin"
@@ -82,12 +82,12 @@ func (gh *GitHub) authorizedDo(req *http.Request, try int) (*http.Response, erro
 	}
 	token, err := gh.tokens.Pick()
 	if err != nil || token == nil {
-		log.WithError(err).Error("couldn't get a valid token")
+		slog.Error("couldn't get a valid token", "err", err)
 		return http.DefaultClient.Do(req) // try unauthorized request
 	}
 
 	if err := gh.checkToken(token); err != nil {
-		log.WithError(err).Error("couldn't check rate limit, trying again")
+		slog.Error("couldn't check rate limit, trying again", "error", err)
 		return gh.authorizedDo(req, try+1) // try next token
 	}
 
@@ -132,7 +132,7 @@ func (gh *GitHub) checkToken(token *roundrobin.Token) error {
 		return err
 	}
 	rate := limit.Rate
-	log.Debugf("%s rate %d/%d", token, rate.Remaining, rate.Limit)
+	slog.Debug(fmt.Sprintf("%s rate %d/%d", token, rate.Remaining, rate.Limit))
 	rateLimiters.WithLabelValues(token.String()).Set(float64(rate.Remaining))
 	if isAboveTargetUsage(rate, gh.maxRateUsagePct) {
 		return fmt.Errorf("token usage is too high: %d/%d", rate.Remaining, rate.Limit)

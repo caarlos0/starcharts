@@ -2,13 +2,11 @@ package main
 
 import (
 	"embed"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/apex/httplog"
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/text"
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/controller"
 	"github.com/caarlos0/starcharts/internal/cache"
@@ -26,13 +24,12 @@ var static embed.FS
 var version = "devel"
 
 func main() {
-	log.SetHandler(text.New(os.Stderr))
-	// log.SetLevel(log.DebugLevel)
 	config := config.Get()
-	ctx := log.WithField("listen", config.Listen)
+	ctx := slog.With("listen", config.Listen)
 	options, err := redis.ParseURL(config.RedisURL)
 	if err != nil {
-		log.WithError(err).Fatal("invalid redis_url")
+		slog.Error("invalid redis_url")
+		os.Exit(1)
 	}
 	redis := redis.NewClient(options)
 	cache := cache.New(redis)
@@ -73,13 +70,11 @@ func main() {
 	r.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
 
 	srv := &http.Server{
-		Handler: httplog.New(
-			promhttp.InstrumentHandlerDuration(
-				responseObserver,
-				promhttp.InstrumentHandlerCounter(
-					requestCounter,
-					r,
-				),
+		Handler: promhttp.InstrumentHandlerDuration(
+			responseObserver,
+			promhttp.InstrumentHandlerCounter(
+				requestCounter,
+				r,
 			),
 		),
 		Addr:         config.Listen,
@@ -87,5 +82,5 @@ func main() {
 		ReadTimeout:  60 * time.Second,
 	}
 	ctx.Info("starting up...")
-	ctx.WithError(srv.ListenAndServe()).Error("failed to start up server")
+	ctx.Error("failed to start up server", "error", srv.ListenAndServe())
 }

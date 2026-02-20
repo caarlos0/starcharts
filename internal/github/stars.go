@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"math"
 	"net/http"
 	"regexp"
@@ -14,7 +15,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/apex/log"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -44,10 +44,12 @@ func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Star
 		return nil, err
 	}
 
-	log.WithField("repo", repo.FullName).
-		WithField("lastPage", lastPage).
-		WithField("starCount", repo.StargazersCount).
-		Debug("got pagination info from API")
+	slog.Debug(
+		"got pagination info from API",
+		"repo", repo.FullName,
+		"lastPage", lastPage,
+		"starCount", repo.StargazersCount,
+	)
 
 	// If only one page or page count is less than max sample pages, fetch all pages
 	if lastPage <= gh.maxSamplePages {
@@ -60,7 +62,7 @@ func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Star
 
 // getFirstPageAndLastPage requests the first page and parses the Link header to get the max page count.
 func (gh *GitHub) getFirstPageAndLastPage(ctx context.Context, repo Repository) ([]Stargazer, int, error) {
-	log := log.WithField("repo", repo.FullName)
+	log := slog.With("repo", repo.FullName)
 
 	resp, err := gh.makeStarPageRequest(ctx, repo, 1, "")
 	if err != nil {
@@ -98,7 +100,7 @@ func (gh *GitHub) getFirstPageAndLastPage(ctx context.Context, repo Repository) 
 		lastPage = 1
 	}
 
-	log.WithField("lastPage", lastPage).Debug("parsed last page from Link header")
+	log.Debug("parsed last page from Link header", "lastPage", lastPage)
 
 	return stars, lastPage, nil
 }
@@ -168,9 +170,11 @@ func (gh *GitHub) getAllStargazersWithFirstPage(ctx context.Context, repo Reposi
 // Inspired by star-history project's sampling logic.
 // firstPageStars is the already fetched first page data, lastPage is the actual max page count parsed from Link header.
 func (gh *GitHub) getSampledStargazers(ctx context.Context, repo Repository, firstPageStars []Stargazer, lastPage int) (stars []Stargazer, err error) {
-	log.WithField("repo", repo.FullName).
-		WithField("lastPage", lastPage).
-		Info("using sampling mode for large repo")
+	slog.Info(
+		"using sampling mode for large repo",
+		"repo", repo.FullName,
+		"lastPage", lastPage,
+	)
 
 	// Calculate sample page numbers, evenly distributed across all pages
 	samplePages := gh.calculateSamplePages(lastPage, gh.maxSamplePages)
@@ -306,8 +310,9 @@ func (gh *GitHub) calculateSamplePages(totalPages, maxSamples int) []int {
 // nolint: funlen
 // TODO: refactor.
 func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page int) ([]Stargazer, error) {
-	log := log.WithField("repo", repo.FullName).WithField("page", page)
-	defer log.Trace("get page").Stop(nil)
+	log := slog.With("repo", repo.FullName, "page", page)
+	start := time.Now()
+	defer slog.Debug("get page", "duration", time.Since(start))
 
 	var stars []Stargazer
 	key := fmt.Sprintf("%s_%d", repo.FullName, page)
@@ -315,7 +320,7 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 
 	var etag string
 	if err := gh.cache.Get(etagKey, &etag); err != nil {
-		log.WithError(err).Warnf("failed to get %s from cache", etagKey)
+		slog.Warn("failed to get from cache", "etag", etagKey, "error", err)
 	}
 
 	resp, err := gh.makeStarPageRequest(ctx, repo, page, etag)
@@ -335,9 +340,9 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 		log.Info("not modified")
 		err := gh.cache.Get(key, &stars)
 		if err != nil {
-			log.WithError(err).Warnf("failed to get %s from cache", key)
+			slog.Warn("failed to get from cache", "key", key, "error", err)
 			if err := gh.cache.Delete(etagKey); err != nil {
-				log.WithError(err).Warnf("failed to delete %s from cache", etagKey)
+				slog.Warn("failed to delete from cache", "etag", etagKey, "error", err)
 			}
 			return gh.getStargazersPage(ctx, repo, page)
 		}
@@ -354,13 +359,13 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 			return stars, errNoMorePages
 		}
 		if err := gh.cache.Put(key, stars); err != nil {
-			log.WithError(err).Warnf("failed to cache %s", key)
+			slog.Warn("failed to cache", "key", key, "error", err)
 		}
 
 		etag = resp.Header.Get("etag")
 		if etag != "" {
 			if err := gh.cache.Put(etagKey, etag); err != nil {
-				log.WithError(err).Warnf("failed to cache %s", etagKey)
+				slog.Warn("failed to cache", "etag", etagKey, "error", err)
 			}
 		}
 

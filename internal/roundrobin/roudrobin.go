@@ -3,10 +3,9 @@ package roundrobin
 
 import (
 	"fmt"
+	"log/slog"
 	"sync"
 	"sync/atomic"
-
-	"github.com/apex/log"
 )
 
 // RoundRobiner can pick a token from a list of tokens.
@@ -16,7 +15,7 @@ type RoundRobiner interface {
 
 // New round robin implementation with the given list of tokens.
 func New(tokens []string) RoundRobiner {
-	log.Debugf("creating round robin with %d tokens", len(tokens))
+	slog.Debug("creating round robin", "tokens", len(tokens))
 	if len(tokens) == 0 {
 		return &noTokensRoundRobin{}
 	}
@@ -43,7 +42,7 @@ func (rr *realRoundRobin) doPick(try int) (*Token, error) {
 	idx := atomic.LoadInt64(&rr.next)
 	atomic.StoreInt64(&rr.next, (idx+1)%int64(len(rr.tokens)))
 	if pick := rr.tokens[idx]; pick.OK() {
-		log.Debugf("picked %s", pick.Key())
+		slog.Debug("picked", "key", pick.Key())
 		return pick, nil
 	}
 	return rr.doPick(try + 1)
@@ -89,7 +88,7 @@ func (t *Token) OK() bool {
 
 // Invalidate invalidates the token.
 func (t *Token) Invalidate() {
-	log.Warnf("invalidated token '...%s'", t)
+	slog.Warn("invalidated", "token", t)
 	t.lock.Lock()
 	defer t.lock.Unlock()
 	t.valid = false

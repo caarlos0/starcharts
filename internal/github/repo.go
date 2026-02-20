@@ -6,9 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
-
-	"github.com/apex/log"
 )
 
 // Repository details.
@@ -23,13 +22,13 @@ var ErrorNotFound = errors.New("Repository not found")
 // RepoDetails gets the given repository details.
 func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, error) {
 	var repo Repository
-	log := log.WithField("repo", name)
+	log := slog.With("repo", name)
 
 	var etag string
 	etagKey := name + "_etag"
 
 	if err := gh.cache.Get(etagKey, &etag); err != nil {
-		log.WithError(err).Warnf("failed to get %s from cache", etagKey)
+		log.Warn("failed to get from cache", "etag", etagKey, "error", err)
 	}
 
 	resp, err := gh.makeRepoRequest(ctx, name, etag)
@@ -49,9 +48,9 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 		effectiveEtags.Inc()
 		err := gh.cache.Get(name, &repo)
 		if err != nil {
-			log.WithError(err).Warnf("failed to get %s from cache", name)
+			log.Warn("failed to get from cache", "name", name, "error", err)
 			if err := gh.cache.Delete(etagKey); err != nil {
-				log.WithError(err).Warnf("failed to delete %s from cache", etagKey)
+				log.Warn("failed to delete from cache", "etag", etagKey, "error", err)
 			}
 			return gh.RepoDetails(ctx, name)
 		}
@@ -65,13 +64,13 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 			return repo, err
 		}
 		if err := gh.cache.Put(name, repo); err != nil {
-			log.WithError(err).Warnf("failed to cache %s", name)
+			log.Warn("failed to cache", "name", name, "error", err)
 		}
 
 		etag = resp.Header.Get("etag")
 		if etag != "" {
 			if err := gh.cache.Put(etagKey, etag); err != nil {
-				log.WithError(err).Warnf("failed to cache %s", etagKey)
+				log.Warn("failed to cache", "etag", etagKey, "error", err)
 			}
 		}
 
