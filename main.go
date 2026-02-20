@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/caarlos0/starcharts/config"
@@ -48,6 +49,9 @@ func main() {
 		Handler(http.FileServer(http.FS(static)))
 	r.Path("/{owner}/{repo}.svg").
 		Methods(http.MethodGet).
+		MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
+			return !strings.Contains(r.Header.Get("Accept"), "text/html")
+		}).
 		Handler(controller.GetRepoChart(github, cache))
 	r.Path("/{owner}/{repo}").
 		Methods(http.MethodGet).
