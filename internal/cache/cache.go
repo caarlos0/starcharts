@@ -52,10 +52,10 @@ type Redis struct {
 func New(redis *redis.Client) *Redis {
 	codec := &rediscache.Codec{
 		Redis: redis,
-		Marshal: func(v interface{}) ([]byte, error) {
+		Marshal: func(v any) ([]byte, error) {
 			return msgpack.Marshal(v)
 		},
-		Unmarshal: func(b []byte, v interface{}) error {
+		Unmarshal: func(b []byte, v any) error {
 			return msgpack.Unmarshal(b, v)
 		},
 	}
@@ -72,7 +72,7 @@ func (c *Redis) Close() error {
 }
 
 // Get from cache by key.
-func (c *Redis) Get(key string, result interface{}) error {
+func (c *Redis) Get(key string, result any) error {
 	if err := c.codec.Get(key, result); err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func (c *Redis) Get(key string, result interface{}) error {
 }
 
 // Put on cache.
-func (c *Redis) Put(key string, obj interface{}) error {
+func (c *Redis) Put(key string, obj any) error {
 	if err := c.codec.Set(&rediscache.Item{
 		Key:    key,
 		Object: obj,

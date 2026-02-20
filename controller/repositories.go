@@ -42,7 +42,7 @@ func GetRepo(fsys fs.FS, gh *github.GitHub, cache *cache.Redis, version string) 
 			})
 		}
 
-		return repositoryTemplate.Execute(w, map[string]interface{}{
+		return repositoryTemplate.Execute(w, map[string]any{
 			"Version": version,
 			"Details": details,
 		})

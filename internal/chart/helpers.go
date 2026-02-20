@@ -23,7 +23,7 @@ func measureText(body string, size float64) Box {
 	}
 }
 
-func timeValueFormatter(v interface{}) string {
+func timeValueFormatter(v any) string {
 	dateFormat := "2006-01-02"
 	if typed, isTyped := v.(float64); isTyped {
 		return time.Unix(0, int64(typed)).Format(dateFormat)
@@ -32,7 +32,7 @@ func timeValueFormatter(v interface{}) string {
 	return ""
 }
 
-func intValueFormatter(v interface{}) string {
+func intValueFormatter(v any) string {
 	return fmt.Sprintf("%.0f", v)
 }
 

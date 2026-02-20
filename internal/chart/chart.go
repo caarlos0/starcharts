@@ -1,6 +1,6 @@
 package chart
 
-type ValueFormatter func(v interface{}) string
+type ValueFormatter func(v any) string
 
 type Chart struct {
 	XAxis XAxis

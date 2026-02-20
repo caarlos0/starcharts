@@ -70,7 +70,7 @@ func TestNoValidTokens(t *testing.T) {
 func invalidateN(t *testing.T, rr RoundRobiner, n int) {
 	t.Helper()
 	is := is.New(t)
-	for i := 0; i < n; i++ {
+	for range n {
 		pick, err := rr.Pick()
 		is.True(pick != nil) // pick should not be nil
 		is.NoErr(err)        // no error should be returned
@@ -92,7 +92,7 @@ func exercise(t *testing.T, rr RoundRobiner, n int) (int64, int64, int64, int64)
 	var wg sync.WaitGroup
 
 	wg.Add(n)
-	for i := 0; i < n; i++ {
+	for range n {
 		go func() {
 			pick, err := rr.Pick()
 			is.NoErr(err)        // no error should be returned

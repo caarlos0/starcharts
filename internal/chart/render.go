@@ -61,7 +61,7 @@ func (c *Chart) getRanges(canvas *Box) (*Range, *Range) {
 	minY, maxY := math.MaxFloat64, -math.MaxFloat64
 
 	seriesLength := c.Series.Len()
-	for index := 0; index < seriesLength; index++ {
+	for index := range seriesLength {
 		vX, vY := c.Series.GetValues(index)
 
 		minX = min(minX, vX)

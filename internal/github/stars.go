@@ -268,10 +268,7 @@ func (gh *GitHub) calculateSamplePages(totalPages, maxSamples int) []int {
 
 	for i := 1; i <= maxSamples; i++ {
 		// Calculate evenly distributed page numbers
-		page := int(math.Round(float64(i*totalPages) / float64(maxSamples)))
-		if page < 1 {
-			page = 1
-		}
+		page := max(int(math.Round(float64(i*totalPages)/float64(maxSamples))), 1)
 		if page > totalPages {
 			page = totalPages
 		}
