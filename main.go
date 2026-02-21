@@ -34,7 +34,7 @@ func main() {
 	}
 	redis := redis.NewClient(options)
 	cache := cache.New(redis)
-	defer cache.Close()
+	defer cache.Close() //nolint:errcheck
 	github := github.New(config, cache)
 
 	r := mux.NewRouter()

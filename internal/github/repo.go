@@ -40,7 +40,7 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 	if err != nil {
 		return repo, err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	switch resp.StatusCode {
 	case http.StatusNotModified:

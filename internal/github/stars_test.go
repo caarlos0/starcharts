@@ -40,7 +40,7 @@ func TestStargazers(t *testing.T) {
 
 	config := config.Get()
 	cache := cache.New(rc)
-	defer cache.Close()
+	t.Cleanup(func() { _ = cache.Close() })
 	gt := New(config, cache)
 
 	t.Run("get stargazers from api", func(t *testing.T) {
@@ -110,7 +110,7 @@ func TestStargazers_EmptyResponseOnPagination(t *testing.T) {
 
 	config := config.Get()
 	cache := cache.New(rc)
-	defer cache.Close()
+	t.Cleanup(func() { _ = cache.Close() })
 	gt := New(config, cache)
 	gt.pageSize = 2
 	gt.tokens = roundrobin.New([]string{"12345"})
@@ -161,7 +161,7 @@ func TestStargazers_APIFailure(t *testing.T) {
 
 	config := config.Get()
 	cache := cache.New(rc)
-	defer cache.Close()
+	t.Cleanup(func() { _ = cache.Close() })
 	gt := New(config, cache)
 
 	t.Run("set error if api return 404", func(t *testing.T) {

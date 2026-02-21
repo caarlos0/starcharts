@@ -46,7 +46,9 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 		}
 
 		start := time.Now()
-		defer log.Debug("collect_stars", "duration", time.Since(start))
+		defer func() {
+			log.Debug("collect_stars", "duration", time.Since(start))
+		}()
 
 		repo, err := gh.RepoDetails(r.Context(), name)
 		if err != nil {
@@ -82,7 +84,9 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 		}
 
 		chartStart := time.Now()
-		defer log.Debug("chart", "duration", time.Since(chartStart))
+		defer func() {
+			log.Debug("chart", "duration", time.Since(chartStart))
+		}()
 		graph := &chart.Chart{
 			Width:      CHART_WIDTH,
 			Height:     CHART_HEIGHT,

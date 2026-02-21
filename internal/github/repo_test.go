@@ -29,7 +29,7 @@ func TestRepoDetails(t *testing.T) {
 
 	config := config.Get()
 	cache := cache.New(rc)
-	defer cache.Close()
+	t.Cleanup(func() { _ = cache.Close() })
 	gt := New(config, cache)
 
 	gock.New("https://api.github.com").
@@ -83,7 +83,7 @@ func TestRepoDetails_APIfailure(t *testing.T) {
 
 	config := config.Get()
 	cache := cache.New(rc)
-	defer cache.Close()
+	t.Cleanup(func() { _ = cache.Close() })
 	gt := New(config, cache)
 
 	t.Run("set error if api return 404", func(t *testing.T) {
@@ -124,7 +124,7 @@ func TestRepoDetails_WithAuthToken(t *testing.T) {
 
 	config := config.Get()
 	cache := cache.New(rc)
-	defer cache.Close()
+	t.Cleanup(func() { _ = cache.Close() })
 	gt := New(config, cache)
 	gt.tokens = roundrobin.New([]string{"12345"})
 

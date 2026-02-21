@@ -110,7 +110,7 @@ func (gh *GitHub) checkToken(token *roundrobin.Token) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		token.Invalidate()

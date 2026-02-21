@@ -68,7 +68,7 @@ func (gh *GitHub) getFirstPageAndLastPage(ctx context.Context, repo Repository) 
 	if err != nil {
 		return nil, 0, err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode == http.StatusForbidden {
 		rateLimits.Inc()
@@ -268,10 +268,7 @@ func (gh *GitHub) calculateSamplePages(totalPages, maxSamples int) []int {
 
 	for i := 1; i <= maxSamples; i++ {
 		// Calculate evenly distributed page numbers
-		page := max(int(math.Round(float64(i*totalPages)/float64(maxSamples))), 1)
-		if page > totalPages {
-			page = totalPages
-		}
+		page := min(max(int(math.Round(float64(i*totalPages)/float64(maxSamples))), 1), totalPages)
 		pages = append(pages, page)
 	}
 
@@ -309,7 +306,9 @@ func (gh *GitHub) calculateSamplePages(totalPages, maxSamples int) []int {
 func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page int) ([]Stargazer, error) {
 	log := slog.With("repo", repo.FullName, "page", page)
 	start := time.Now()
-	defer slog.Debug("get page", "duration", time.Since(start))
+	defer func() {
+		slog.Debug("get page", "duration", time.Since(start))
+	}()
 
 	var stars []Stargazer
 	key := fmt.Sprintf("%s_%d", repo.FullName, page)
@@ -329,7 +328,7 @@ func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page i
 	if err != nil {
 		return stars, err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	switch resp.StatusCode {
 	case http.StatusNotModified:
