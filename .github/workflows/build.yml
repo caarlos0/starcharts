@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-go@v6
@@ -21,7 +21,7 @@ jobs:
           cache: true
       - run: go mod tidy
       - run: go test -v -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt ./... -timeout=2m
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.txt
