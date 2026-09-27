@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -12,17 +11,13 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
-	"sync"
 	"time"
 
 	"golang.org/x/sync/errgroup"
 )
 
-var (
-	errNoMorePages = errors.New("no more pages to get")
-	// linkLastPageRegex is used to parse the last page number from the Link header.
-	linkLastPageRegex = regexp.MustCompile(`[&?]page=(\d+)[^>]*>;\s*rel="last"`)
-)
+// linkLastPageRegex is used to parse the last page number from the Link header.
+var linkLastPageRegex = regexp.MustCompile(`[&?]page=(\d+)[^>]*>;\s*rel="last"`)
 
 const (
 	// maxConcurrentRequests is the maximum number of concurrent requests to GitHub API.
@@ -39,13 +34,11 @@ type Stargazer struct {
 
 // historyWeek is a single week of the repository star history.
 //
-// Week is the unix timestamp of the first day of the week, Days holds the
-// number of stars created on each day of that week, starting on Sunday, and
-// Total is their sum.
+// Week is the unix timestamp of the first day of the week, and Days holds the
+// number of stars created on each day of that week, starting on Sunday.
 type historyWeek struct {
-	Week  int64 `json:"week"`
-	Total int   `json:"total"`
-	Days  []int `json:"days"`
+	Week int64 `json:"week"`
+	Days []int `json:"days"`
 }
 
 // historyPage is a page of the star history, alongside the last page number
@@ -80,35 +73,31 @@ func (gh *GitHub) starHistory(ctx context.Context, repo Repository) ([]historyWe
 		"starCount", repo.StargazersCount,
 	)
 
-	weeks := first.Weeks
 	if first.LastPage <= 1 {
-		return weeks, nil
+		return first.Weeks, nil
 	}
 
-	var (
-		group errgroup.Group
-		lock  sync.Mutex
-	)
+	// pages are collected into their own slot, so no locking is needed and
+	// the result stays in page order.
+	pages := make([][]historyWeek, first.LastPage)
+	pages[0] = first.Weeks
+
+	var group errgroup.Group
 	group.SetLimit(maxConcurrentRequests)
 	for page := 2; page <= first.LastPage; page++ {
 		group.Go(func() error {
 			result, err := gh.getHistoryPage(ctx, repo, page)
-			if errors.Is(err, errNoMorePages) {
-				return nil
-			}
 			if err != nil {
 				return err
 			}
-			lock.Lock()
-			defer lock.Unlock()
-			weeks = append(weeks, result.Weeks...)
+			pages[page-1] = result.Weeks
 			return nil
 		})
 	}
 	if err := group.Wait(); err != nil {
 		return nil, err
 	}
-	return weeks, nil
+	return slices.Concat(pages...), nil
 }
 
 // toStargazers turns the weekly star history into a cumulative daily series.
@@ -116,8 +105,7 @@ func (gh *GitHub) starHistory(ctx context.Context, repo Repository) ([]historyWe
 // Days in which no star was given are left out: the chart interpolates between
 // data points, so they would only add noise.
 func toStargazers(weeks []historyWeek) []Stargazer {
-	// the API returns the most recent week first, and pages are fetched
-	// concurrently, so sort it back into chronological order.
+	// the API returns the most recent week first.
 	slices.SortFunc(weeks, func(a, b historyWeek) int {
 		return cmp.Compare(a.Week, b.Week)
 	})
@@ -209,9 +197,6 @@ func (gh *GitHub) getHistoryPage(ctx context.Context, repo Repository, page int)
 	case http.StatusOK:
 		if err := json.Unmarshal(bts, &result.Weeks); err != nil {
 			return result, err
-		}
-		if len(result.Weeks) == 0 {
-			return result, errNoMorePages
 		}
 
 		result.LastPage = max(parseLastPageFromLink(resp.Header.Get("Link")), 1)

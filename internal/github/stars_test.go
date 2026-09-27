@@ -56,11 +56,11 @@ func TestStargazers(t *testing.T) {
 	// the API returns the most recent week first.
 	mockStarHistory(1, `<https://api.github.com/repositories/1/stargazers/history?page=2>; rel="next", `+
 		`<https://api.github.com/repositories/1/stargazers/history?page=2>; rel="last"`, []historyWeek{
-		{Week: firstWeek + 2*7*24*3600, Total: 0, Days: []int{0, 0, 0, 0, 0, 0, 0}},
-		{Week: firstWeek + 7*24*3600, Total: 3, Days: []int{0, 1, 0, 0, 0, 2, 0}},
+		{Week: firstWeek + 2*7*24*3600, Days: []int{0, 0, 0, 0, 0, 0, 0}},
+		{Week: firstWeek + 7*24*3600, Days: []int{0, 1, 0, 0, 0, 2, 0}},
 	})
 	mockStarHistory(2, `<https://api.github.com/repositories/1/stargazers/history?page=1>; rel="prev"`, []historyWeek{
-		{Week: firstWeek, Total: 7, Days: []int{4, 0, 0, 0, 0, 0, 3}},
+		{Week: firstWeek, Days: []int{4, 0, 0, 0, 0, 0, 3}},
 	})
 
 	gt := newTestGitHub(t)
@@ -92,7 +92,7 @@ func TestStargazersUsesEtagCache(t *testing.T) {
 		StargazersCount: 2,
 	}
 
-	weeks := []historyWeek{{Week: firstWeek, Total: 2, Days: []int{0, 0, 2, 0, 0, 0, 0}}}
+	weeks := []historyWeek{{Week: firstWeek, Days: []int{0, 0, 2, 0, 0, 0, 0}}}
 	mockStarHistory(1, "", weeks)
 
 	gt := newTestGitHub(t)
@@ -143,15 +143,15 @@ func TestToStargazers(t *testing.T) {
 	t.Run("no stars", func(t *testing.T) {
 		is := is.New(t)
 		is.Equal(0, len(toStargazers([]historyWeek{
-			{Week: firstWeek, Total: 0, Days: []int{0, 0, 0, 0, 0, 0, 0}},
+			{Week: firstWeek, Days: []int{0, 0, 0, 0, 0, 0, 0}},
 		}))) // should have no data points
 	})
 
 	t.Run("sorts weeks chronologically", func(t *testing.T) {
 		is := is.New(t)
 		stars := toStargazers([]historyWeek{
-			{Week: firstWeek + 7*24*3600, Total: 1, Days: []int{1, 0, 0, 0, 0, 0, 0}},
-			{Week: firstWeek, Total: 1, Days: []int{0, 0, 0, 5, 0, 0, 0}},
+			{Week: firstWeek + 7*24*3600, Days: []int{1, 0, 0, 0, 0, 0, 0}},
+			{Week: firstWeek, Days: []int{0, 0, 0, 5, 0, 0, 0}},
 		})
 		is.Equal([]int{5, 6}, []int{stars[0].Count, stars[1].Count}) // should accumulate in order
 	})
