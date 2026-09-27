@@ -67,15 +67,9 @@ func GetRepoChart(gh *github.GitHub, cache *cache.Redis) http.Handler {
 			StrokeWidth: 2,
 			Color:       params.Line,
 		}
-		for i, star := range stargazers {
+		for _, star := range stargazers {
 			series.XValues = append(series.XValues, star.StarredAt)
-			// If star.Count > 0, use the actual count from sampling mode
-			// Otherwise use index+1 (non-sampling mode, continuous data)
-			if star.Count > 0 {
-				series.YValues = append(series.YValues, float64(star.Count))
-			} else {
-				series.YValues = append(series.YValues, float64(i+1))
-			}
+			series.YValues = append(series.YValues, float64(star.Count))
 		}
 		if len(series.XValues) < 2 {
 			log.Info("not enough results, adding some fake ones")

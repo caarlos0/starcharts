@@ -2,176 +2,168 @@ package github
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/alicebob/miniredis"
 	"github.com/caarlos0/starcharts/config"
 	"github.com/caarlos0/starcharts/internal/cache"
-	"github.com/caarlos0/starcharts/internal/roundrobin"
 	"github.com/go-redis/redis"
 	"github.com/matryer/is"
 	"gopkg.in/h2non/gock.v1"
 )
 
+// 2017-07-02T00:00:00Z, a Sunday.
+const firstWeek = 1498953600
+
+const week = 7 * 24 * time.Hour
+
+func newTestGitHub(t *testing.T) *GitHub {
+	t.Helper()
+
+	mr, err := miniredis.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(mr.Close)
+
+	c := cache.New(redis.NewClient(&redis.Options{Addr: mr.Addr()}))
+	t.Cleanup(func() { _ = c.Close() })
+
+	return New(config.Get(), c)
+}
+
+func mockStarHistory(page int, link string, weeks []historyWeek) {
+	gock.New("https://api.github.com").
+		Get("/repos/test/test/stargazers/history").
+		MatchParam("page", fmt.Sprintf("%d", page)).
+		Reply(200).
+		SetHeader("Link", link).
+		SetHeader("etag", fmt.Sprintf(`"etag-%d"`, page)).
+		JSON(weeks)
+}
+
 func TestStargazers(t *testing.T) {
 	defer gock.Off()
 
-	gock.New("https://api.github.com").
-		Get("/rate_limit").
-		Reply(200).
-		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
-
-	stargazers := []Stargazer{
-		{StarredAt: time.Now()},
-		{StarredAt: time.Now()},
+	repo := Repository{
+		FullName:        "test/test",
+		CreatedAt:       "2017-07-07T01:08:03Z",
+		StargazersCount: 10,
 	}
+
+	// the API returns the most recent week first.
+	mockStarHistory(1, `<https://api.github.com/repositories/1/stargazers/history?page=2>; rel="next", `+
+		`<https://api.github.com/repositories/1/stargazers/history?page=2>; rel="last"`, []historyWeek{
+		{Week: firstWeek + 2*7*24*3600, Total: 0, Days: []int{0, 0, 0, 0, 0, 0, 0}},
+		{Week: firstWeek + 7*24*3600, Total: 3, Days: []int{0, 1, 0, 0, 0, 2, 0}},
+	})
+	mockStarHistory(2, `<https://api.github.com/repositories/1/stargazers/history?page=1>; rel="prev"`, []historyWeek{
+		{Week: firstWeek, Total: 7, Days: []int{4, 0, 0, 0, 0, 0, 3}},
+	})
+
+	gt := newTestGitHub(t)
+
+	is := is.New(t)
+	stars, err := gt.Stargazers(context.TODO(), repo)
+	is.NoErr(err) // should not have errored
+
+	start := time.Unix(firstWeek, 0).UTC()
+	is.Equal([]Stargazer{
+		{StarredAt: start, Count: 4},
+		{StarredAt: start.AddDate(0, 0, 6), Count: 7},
+		{StarredAt: start.Add(week).AddDate(0, 0, 1), Count: 8},
+		{StarredAt: start.Add(week).AddDate(0, 0, 5), Count: 10},
+	}, stars[:len(stars)-1]) // all but the trailing "now" data point
+
+	last := stars[len(stars)-1]
+	is.Equal(repo.StargazersCount, last.Count)           // should end on the current star count
+	is.True(time.Since(last.StarredAt) < 10*time.Second) // should end at about now
+	is.True(gock.IsDone())                               // should have consumed all mocks
+}
+
+func TestStargazersUsesEtagCache(t *testing.T) {
+	defer gock.Off()
 
 	repo := Repository{
 		FullName:        "test/test",
-		CreatedAt:       "2008-02-28T20:40:04Z",
+		CreatedAt:       "2017-07-07T01:08:03Z",
 		StargazersCount: 2,
 	}
 
-	mr, _ := miniredis.Run()
-	rc := redis.NewClient(&redis.Options{
-		Addr: mr.Addr(),
+	weeks := []historyWeek{{Week: firstWeek, Total: 2, Days: []int{0, 0, 2, 0, 0, 0, 0}}}
+	mockStarHistory(1, "", weeks)
+
+	gt := newTestGitHub(t)
+
+	is := is.New(t)
+	first, err := gt.Stargazers(context.TODO(), repo)
+	is.NoErr(err) // should not have errored
+
+	gock.New("https://api.github.com").
+		Get("/repos/test/test/stargazers/history").
+		MatchHeader("If-None-Match", `"etag-1"`).
+		Reply(304)
+
+	second, err := gt.Stargazers(context.TODO(), repo)
+	is.NoErr(err)                                          // should not have errored
+	is.Equal(first[:len(first)-1], second[:len(second)-1]) // should serve the same data from cache
+	is.True(gock.IsDone())                                 // should have consumed all mocks
+}
+
+func TestStargazersAPIFailure(t *testing.T) {
+	for name, status := range map[string]int{
+		"not found":  404,
+		"rate limit": 403,
+	} {
+		t.Run(name, func(t *testing.T) {
+			defer gock.Off()
+
+			gock.New("https://api.github.com").
+				Get("/repos/test/test/stargazers/history").
+				Persist().
+				Reply(status).
+				JSON([]historyWeek{})
+
+			gt := newTestGitHub(t)
+
+			is := is.New(t)
+			_, err := gt.Stargazers(context.TODO(), Repository{
+				FullName:        "test/test",
+				CreatedAt:       "2017-07-07T01:08:03Z",
+				StargazersCount: 3,
+			})
+			is.True(err != nil) // should have errored
+		})
+	}
+}
+
+func TestToStargazers(t *testing.T) {
+	t.Run("no stars", func(t *testing.T) {
+		is := is.New(t)
+		is.Equal(0, len(toStargazers([]historyWeek{
+			{Week: firstWeek, Total: 0, Days: []int{0, 0, 0, 0, 0, 0, 0}},
+		}))) // should have no data points
 	})
 
-	config := config.Get()
-	cache := cache.New(rc)
-	t.Cleanup(func() { _ = cache.Close() })
-	gt := New(config, cache)
-
-	t.Run("get stargazers from api", func(t *testing.T) {
+	t.Run("sorts weeks chronologically", func(t *testing.T) {
 		is := is.New(t)
-		gock.New("https://api.github.com").
-			Get("/repos/test/test/stargazers").
-			Reply(200).
-			JSON(stargazers)
-		_, err := gt.Stargazers(context.TODO(), repo)
-		is.NoErr(err) // should not have errored
-	})
-
-	t.Run("get stargazers from api again", func(t *testing.T) {
-		is := is.New(t)
-		// The new logic always requests the first page to get Link header, so we need to mock this request
-		gock.New("https://api.github.com").
-			Get("/repos/test/test/stargazers").
-			Reply(200).
-			JSON(stargazers)
-		_, err := gt.Stargazers(context.TODO(), repo)
-		is.NoErr(err) // should not have errored
+		stars := toStargazers([]historyWeek{
+			{Week: firstWeek + 7*24*3600, Total: 1, Days: []int{1, 0, 0, 0, 0, 0, 0}},
+			{Week: firstWeek, Total: 1, Days: []int{0, 0, 0, 5, 0, 0, 0}},
+		})
+		is.Equal([]int{5, 6}, []int{stars[0].Count, stars[1].Count}) // should accumulate in order
 	})
 }
 
-func TestStargazers_EmptyResponseOnPagination(t *testing.T) {
-	defer gock.Off()
+func TestParseLastPageFromLink(t *testing.T) {
+	is := is.New(t)
 
-	gock.New("https://api.github.com").
-		Get("/rate_limit").
-		Reply(200).
-		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
-
-	gock.New("https://api.github.com").
-		Get("/rate_limit").
-		Reply(200).
-		JSON(rateLimit{rate{Limit: 5000, Remaining: 3999}})
-
-	stargazers := []Stargazer{
-		{StarredAt: time.Now()},
-		{StarredAt: time.Now()},
-	}
-
-	repo := Repository{
-		FullName:        "test/test",
-		CreatedAt:       "2008-02-28T20:40:04Z",
-		StargazersCount: 3,
-	}
-
-	gock.New("https://api.github.com").
-		Get("/repos/test/test/stargazers").
-		MatchParam("page", "1").
-		MatchParam("per_page", "2").
-		Reply(200).
-		JSON(stargazers)
-
-	gock.New("https://api.github.com").
-		Get("/repos/test/test/stargazers").
-		MatchParam("page", "2").
-		MatchParam("per_page", "2").
-		Reply(200).
-		JSON([]Stargazer{})
-
-	mr, _ := miniredis.Run()
-	rc := redis.NewClient(&redis.Options{
-		Addr: mr.Addr(),
-	})
-
-	config := config.Get()
-	cache := cache.New(rc)
-	t.Cleanup(func() { _ = cache.Close() })
-	gt := New(config, cache)
-	gt.pageSize = 2
-	gt.tokens = roundrobin.New([]string{"12345"})
-
-	t.Run("get stargazers from api", func(t *testing.T) {
-		is := is.New(t)
-		_, err := gt.Stargazers(context.TODO(), repo)
-		is.NoErr(err) // should not have errored
-	})
-}
-
-func TestStargazers_APIFailure(t *testing.T) {
-	defer gock.Off()
-
-	gock.New("https://api.github.com").
-		Get("/rate_limit").
-		Reply(200).
-		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
-
-	repo1 := Repository{
-		FullName:        "test/test",
-		CreatedAt:       "2008-02-28T20:40:04Z",
-		StargazersCount: 3,
-	}
-
-	repo2 := Repository{
-		FullName:        "private/private",
-		CreatedAt:       "2008-02-28T20:40:04Z",
-		StargazersCount: 3,
-	}
-
-	gock.New("https://api.github.com").
-		Get("/repos/test/test/stargazers").
-		Persist().
-		Reply(404).
-		JSON([]Stargazer{})
-
-	gock.New("https://api.github.com").
-		Get("/repos/private/private/stargazers").
-		Persist().
-		Reply(403).
-		JSON([]Stargazer{})
-
-	mr, _ := miniredis.Run()
-	rc := redis.NewClient(&redis.Options{
-		Addr: mr.Addr(),
-	})
-
-	config := config.Get()
-	cache := cache.New(rc)
-	t.Cleanup(func() { _ = cache.Close() })
-	gt := New(config, cache)
-
-	t.Run("set error if api return 404", func(t *testing.T) {
-		is := is.New(t)
-		_, err := gt.Stargazers(context.TODO(), repo1)
-		is.True(err != nil) // should not have errored
-	})
-	t.Run("set error if api return 403", func(t *testing.T) {
-		is := is.New(t)
-		_, err := gt.Stargazers(context.TODO(), repo2)
-		is.True(err != nil) // should not have errored
-	})
+	is.Equal(0, parseLastPageFromLink(""))
+	is.Equal(0, parseLastPageFromLink(`<https://api.github.com/x?page=2>; rel="next"`))
+	is.Equal(17, parseLastPageFromLink(
+		`<https://api.github.com/repositories/1/stargazers/history?per_page=30&page=2>; rel="next", `+
+			`<https://api.github.com/repositories/1/stargazers/history?per_page=30&page=17>; rel="last"`,
+	))
 }

@@ -1,16 +1,16 @@
 package github
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log/slog"
-	"math"
 	"net/http"
 	"regexp"
-	"sort"
+	"slices"
 	"strconv"
 	"sync"
 	"time"
@@ -20,132 +20,79 @@ import (
 
 var (
 	errNoMorePages = errors.New("no more pages to get")
-	// linkLastPageRegex is used to parse the last page number from the Link header
+	// linkLastPageRegex is used to parse the last page number from the Link header.
 	linkLastPageRegex = regexp.MustCompile(`[&?]page=(\d+)[^>]*>;\s*rel="last"`)
 )
 
-// maxConcurrentRequests is the maximum number of concurrent requests to GitHub API
-const maxConcurrentRequests = 5
+const (
+	// maxConcurrentRequests is the maximum number of concurrent requests to GitHub API.
+	maxConcurrentRequests = 5
+	// historyPageSize is the maximum per_page the star history endpoint accepts.
+	historyPageSize = 30
+)
 
-// Stargazer is a star at a given time.
+// Stargazer is the total number of stars a repository had at a given time.
 type Stargazer struct {
-	StarredAt time.Time `json:"starred_at"`
-	// Count represents the actual position/count of this star (used in sampling mode).
-	// If 0, use index+1 as count (non-sampling mode).
-	Count int `json:"-"`
+	StarredAt time.Time
+	Count     int
 }
 
-// Stargazers returns all the stargazers of a given repo.
-// If star count is too large, it uses sampling mode to fetch data points.
-func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) (stars []Stargazer, err error) {
-	// First request the first page to get the actual max page count (via Link header)
-	firstPageStars, lastPage, err := gh.getFirstPageAndLastPage(ctx, repo)
+// historyWeek is a single week of the repository star history.
+//
+// Week is the unix timestamp of the first day of the week, Days holds the
+// number of stars created on each day of that week, starting on Sunday, and
+// Total is their sum.
+type historyWeek struct {
+	Week  int64 `json:"week"`
+	Total int   `json:"total"`
+	Days  []int `json:"days"`
+}
+
+// historyPage is a page of the star history, alongside the last page number
+// advertised by the API, so it survives a cache round trip.
+type historyPage struct {
+	Weeks    []historyWeek
+	LastPage int
+}
+
+// Stargazers returns the star count over time of a given repo.
+func (gh *GitHub) Stargazers(ctx context.Context, repo Repository) ([]Stargazer, error) {
+	weeks, err := gh.starHistory(ctx, repo)
+	if err != nil {
+		return nil, err
+	}
+	return toStargazers(weeks), nil
+}
+
+// starHistory fetches every week of the repository star history.
+func (gh *GitHub) starHistory(ctx context.Context, repo Repository) ([]historyWeek, error) {
+	// the last page is only known after the first request, as it comes from
+	// the Link header.
+	first, err := gh.getHistoryPage(ctx, repo, 1)
 	if err != nil {
 		return nil, err
 	}
 
 	slog.Debug(
-		"got pagination info from API",
+		"got star history pagination info",
 		"repo", repo.FullName,
-		"lastPage", lastPage,
+		"lastPage", first.LastPage,
 		"starCount", repo.StargazersCount,
 	)
 
-	// If only one page or page count is less than max sample pages, fetch all pages
-	if lastPage <= gh.maxSamplePages {
-		return gh.getAllStargazersWithFirstPage(ctx, repo, firstPageStars, lastPage)
-	}
-
-	// Otherwise use sampling mode
-	return gh.getSampledStargazers(ctx, repo, firstPageStars, lastPage)
-}
-
-// getFirstPageAndLastPage requests the first page and parses the Link header to get the max page count.
-func (gh *GitHub) getFirstPageAndLastPage(ctx context.Context, repo Repository) ([]Stargazer, int, error) {
-	log := slog.With("repo", repo.FullName)
-
-	resp, err := gh.makeStarPageRequest(ctx, repo, 1, "")
-	if err != nil {
-		return nil, 0, err
-	}
-	defer resp.Body.Close() //nolint:errcheck
-
-	if resp.StatusCode == http.StatusForbidden {
-		rateLimits.Inc()
-		log.Warn("rate limit hit")
-		return nil, 0, ErrRateLimit
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		bts, _ := io.ReadAll(resp.Body)
-		return nil, 0, fmt.Errorf("%w: %v", ErrGitHubAPI, string(bts))
-	}
-
-	bts, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	var stars []Stargazer
-	if err := json.Unmarshal(bts, &stars); err != nil {
-		return nil, 0, err
-	}
-
-	// Parse Link header to get the max page count
-	linkHeader := resp.Header.Get("Link")
-	lastPage := gh.parseLastPageFromLink(linkHeader)
-
-	// If no Link header or parsing failed, there is only one page
-	if lastPage == 0 {
-		lastPage = 1
-	}
-
-	log.Debug("parsed last page from Link header", "lastPage", lastPage)
-
-	return stars, lastPage, nil
-}
-
-// parseLastPageFromLink parses the max page count from the Link header.
-// Link header format: <url>; rel="next", <url>; rel="last"
-func (gh *GitHub) parseLastPageFromLink(linkHeader string) int {
-	if linkHeader == "" {
-		return 0
-	}
-
-	matches := linkLastPageRegex.FindStringSubmatch(linkHeader)
-	if len(matches) < 2 {
-		return 0
-	}
-
-	lastPage, err := strconv.Atoi(matches[1])
-	if err != nil {
-		return 0
-	}
-
-	return lastPage
-}
-
-// getAllStargazersWithFirstPage fetches all stargazers (used for small repositories).
-// firstPageStars is the already fetched first page data.
-func (gh *GitHub) getAllStargazersWithFirstPage(ctx context.Context, repo Repository, firstPageStars []Stargazer, lastPage int) (stars []Stargazer, err error) {
-	stars = append(stars, firstPageStars...)
-
-	// If only one page, return directly
-	if lastPage <= 1 {
-		return stars, nil
+	weeks := first.Weeks
+	if first.LastPage <= 1 {
+		return weeks, nil
 	}
 
 	var (
-		wg   errgroup.Group
-		lock sync.Mutex
+		group errgroup.Group
+		lock  sync.Mutex
 	)
-
-	wg.SetLimit(maxConcurrentRequests)
-	// Start fetching from page 2 (page 1 is already fetched)
-	for page := 2; page <= lastPage; page++ {
-		page := page
-		wg.Go(func() error {
-			result, err := gh.getStargazersPage(ctx, repo, page)
+	group.SetLimit(maxConcurrentRequests)
+	for page := 2; page <= first.LastPage; page++ {
+		group.Go(func() error {
+			result, err := gh.getHistoryPage(ctx, repo, page)
 			if errors.Is(err, errNoMorePages) {
 				return nil
 			}
@@ -154,140 +101,53 @@ func (gh *GitHub) getAllStargazersWithFirstPage(ctx context.Context, repo Reposi
 			}
 			lock.Lock()
 			defer lock.Unlock()
-			stars = append(stars, result...)
+			weeks = append(weeks, result.Weeks...)
 			return nil
 		})
 	}
-	err = wg.Wait()
-
-	sort.Slice(stars, func(i, j int) bool {
-		return stars[i].StarredAt.Before(stars[j].StarredAt)
-	})
-	return
-}
-
-// getSampledStargazers fetches stargazers using sampling mode (used for large repositories).
-// Inspired by star-history project's sampling logic.
-// firstPageStars is the already fetched first page data, lastPage is the actual max page count parsed from Link header.
-func (gh *GitHub) getSampledStargazers(ctx context.Context, repo Repository, firstPageStars []Stargazer, lastPage int) (stars []Stargazer, err error) {
-	slog.Info(
-		"using sampling mode for large repo",
-		"repo", repo.FullName,
-		"lastPage", lastPage,
-	)
-
-	// Calculate sample page numbers, evenly distributed across all pages
-	samplePages := gh.calculateSamplePages(lastPage, gh.maxSamplePages)
-
-	type pageResult struct {
-		page      int
-		star      Stargazer
-		starCount int // the actual count position of this star
-	}
-
-	var (
-		wg      errgroup.Group
-		lock    sync.Mutex
-		results []pageResult
-	)
-
-	// First page is already fetched, add it to results directly
-	if len(firstPageStars) > 0 {
-		results = append(results, pageResult{
-			page:      1,
-			star:      firstPageStars[0],
-			starCount: 1,
-		})
-	}
-
-	wg.SetLimit(maxConcurrentRequests)
-	for _, page := range samplePages {
-		// Skip first page (already fetched)
-		if page == 1 {
-			continue
-		}
-		page := page
-		wg.Go(func() error {
-			result, err := gh.getStargazersPage(ctx, repo, page)
-			if errors.Is(err, errNoMorePages) {
-				return nil
-			}
-			if err != nil {
-				return err
-			}
-			if len(result) == 0 {
-				return nil
-			}
-
-			// Calculate the actual position of the first star on this page (based on page number and page size)
-			// The 1st star on page 1 is star #1
-			// The 1st star on page N is star #(N-1)*pageSize + 1
-			starCount := (page-1)*gh.pageSize + 1
-
-			lock.Lock()
-			defer lock.Unlock()
-			results = append(results, pageResult{
-				page:      page,
-				star:      result[0],
-				starCount: starCount,
-			})
-			return nil
-		})
-	}
-
-	if err = wg.Wait(); err != nil {
+	if err := group.Wait(); err != nil {
 		return nil, err
 	}
-
-	// Sort results by page number
-	sort.Slice(results, func(i, j int) bool {
-		return results[i].page < results[j].page
-	})
-
-	// Extract the first star from each sampled page as a data point and set Count
-	for _, r := range results {
-		star := r.star
-		star.Count = r.starCount
-		stars = append(stars, star)
-	}
-
-	// Add the last data point (current time and total star count)
-	// This ensures the chart extends to the current time point
-	stars = append(stars, Stargazer{
-		StarredAt: time.Now(),
-		Count:     repo.StargazersCount,
-	})
-
-	return stars, nil
+	return weeks, nil
 }
 
-// calculateSamplePages calculates the page numbers to sample.
-// Evenly distributed across all pages, ensuring the first page is included.
-func (gh *GitHub) calculateSamplePages(totalPages, maxSamples int) []int {
-	pages := make([]int, 0, maxSamples)
+// toStargazers turns the weekly star history into a cumulative daily series.
+//
+// Days in which no star was given are left out: the chart interpolates between
+// data points, so they would only add noise.
+func toStargazers(weeks []historyWeek) []Stargazer {
+	// the API returns the most recent week first, and pages are fetched
+	// concurrently, so sort it back into chronological order.
+	slices.SortFunc(weeks, func(a, b historyWeek) int {
+		return cmp.Compare(a.Week, b.Week)
+	})
 
-	for i := 1; i <= maxSamples; i++ {
-		// Calculate evenly distributed page numbers
-		page := min(max(int(math.Round(float64(i*totalPages)/float64(maxSamples))), 1), totalPages)
-		pages = append(pages, page)
-	}
-
-	// Ensure first page is included (important for displaying start time)
-	if len(pages) > 0 && pages[0] != 1 {
-		pages[0] = 1
-	}
-
-	// Deduplicate (may have duplicates in edge cases)
-	seen := make(map[int]bool)
-	uniquePages := make([]int, 0, len(pages))
-	for _, p := range pages {
-		if !seen[p] {
-			seen[p] = true
-			uniquePages = append(uniquePages, p)
+	var stars []Stargazer
+	count := 0
+	for _, week := range weeks {
+		start := time.Unix(week.Week, 0).UTC()
+		for day, added := range week.Days {
+			if added == 0 {
+				continue
+			}
+			count += added
+			stars = append(stars, Stargazer{
+				StarredAt: start.AddDate(0, 0, day),
+				Count:     count,
+			})
 		}
 	}
 
-	return uniquePages
+	if count == 0 {
+		return nil
+	}
+
+	// extend the chart up to now, as the last star might have been given a
+	// while ago.
+	return append(stars, Stargazer{
+		StarredAt: time.Now().UTC(),
+		Count:     count,
+	})
 }
 
 // - get last modified from cache
@@ -303,80 +163,82 @@ func (gh *GitHub) calculateSamplePages(totalPages, maxSamples int) []int {
 
 // nolint: funlen
 // TODO: refactor.
-func (gh *GitHub) getStargazersPage(ctx context.Context, repo Repository, page int) ([]Stargazer, error) {
+func (gh *GitHub) getHistoryPage(ctx context.Context, repo Repository, page int) (historyPage, error) {
 	log := slog.With("repo", repo.FullName, "page", page)
 	start := time.Now()
 	defer func() {
-		slog.Debug("get page", "duration", time.Since(start))
+		log.Debug("get page", "duration", time.Since(start))
 	}()
 
-	var stars []Stargazer
-	key := fmt.Sprintf("%s_%d", repo.FullName, page)
-	etagKey := fmt.Sprintf("%s_%d", repo.FullName, page) + "_etag"
+	var result historyPage
+	key := fmt.Sprintf("%s_history_%d", repo.FullName, page)
+	etagKey := key + "_etag"
 
 	var etag string
 	if err := gh.cache.Get(etagKey, &etag); err != nil {
-		slog.Warn("failed to get from cache", "etag", etagKey, "error", err)
+		log.Warn("failed to get from cache", "etag", etagKey, "error", err)
 	}
 
-	resp, err := gh.makeStarPageRequest(ctx, repo, page, etag)
+	resp, err := gh.makeStarHistoryRequest(ctx, repo, page, etag)
 	if err != nil {
-		return stars, err
+		return result, err
 	}
+	defer resp.Body.Close() //nolint:errcheck
 
 	bts, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return stars, err
+		return result, err
 	}
-	defer resp.Body.Close() //nolint:errcheck
 
 	switch resp.StatusCode {
 	case http.StatusNotModified:
 		effectiveEtags.Inc()
 		log.Info("not modified")
-		err := gh.cache.Get(key, &stars)
-		if err != nil {
-			slog.Warn("failed to get from cache", "key", key, "error", err)
+		if err := gh.cache.Get(key, &result); err != nil {
+			log.Warn("failed to get from cache", "key", key, "error", err)
 			if err := gh.cache.Delete(etagKey); err != nil {
-				slog.Warn("failed to delete from cache", "etag", etagKey, "error", err)
+				log.Warn("failed to delete from cache", "etag", etagKey, "error", err)
 			}
-			return gh.getStargazersPage(ctx, repo, page)
+			return gh.getHistoryPage(ctx, repo, page)
 		}
-		return stars, err
+		return result, nil
 	case http.StatusForbidden:
 		rateLimits.Inc()
 		log.Warn("rate limit hit")
-		return stars, ErrRateLimit
+		return result, ErrRateLimit
 	case http.StatusOK:
-		if err := json.Unmarshal(bts, &stars); err != nil {
-			return stars, err
+		if err := json.Unmarshal(bts, &result.Weeks); err != nil {
+			return result, err
 		}
-		if len(stars) == 0 {
-			return stars, errNoMorePages
-		}
-		if err := gh.cache.Put(key, stars); err != nil {
-			slog.Warn("failed to cache", "key", key, "error", err)
+		if len(result.Weeks) == 0 {
+			return result, errNoMorePages
 		}
 
-		etag = resp.Header.Get("etag")
-		if etag != "" {
+		result.LastPage = max(parseLastPageFromLink(resp.Header.Get("Link")), 1)
+		log.Debug("parsed last page from Link header", "lastPage", result.LastPage)
+
+		if err := gh.cache.Put(key, result); err != nil {
+			log.Warn("failed to cache", "key", key, "error", err)
+		}
+
+		if etag := resp.Header.Get("etag"); etag != "" {
 			if err := gh.cache.Put(etagKey, etag); err != nil {
-				slog.Warn("failed to cache", "etag", etagKey, "error", err)
+				log.Warn("failed to cache", "etag", etagKey, "error", err)
 			}
 		}
 
-		return stars, nil
+		return result, nil
 	default:
-		return stars, fmt.Errorf("%w: %v", ErrGitHubAPI, string(bts))
+		return result, fmt.Errorf("%w: %v", ErrGitHubAPI, string(bts))
 	}
 }
 
-func (gh *GitHub) makeStarPageRequest(ctx context.Context, repo Repository, page int, etag string) (*http.Response, error) {
+func (gh *GitHub) makeStarHistoryRequest(ctx context.Context, repo Repository, page int, etag string) (*http.Response, error) {
 	url := fmt.Sprintf(
-		"https://api.github.com/repos/%s/stargazers?page=%d&per_page=%d",
+		"https://api.github.com/repos/%s/stargazers/history?page=%d&per_page=%d",
 		repo.FullName,
 		page,
-		gh.pageSize,
+		historyPageSize,
 	)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -384,10 +246,28 @@ func (gh *GitHub) makeStarPageRequest(ctx context.Context, repo Repository, page
 		return nil, err
 	}
 
-	req.Header.Add("Accept", "application/vnd.github.v3.star+json")
+	req.Header.Add("Accept", "application/vnd.github+json")
+	req.Header.Add("X-GitHub-Api-Version", "2026-03-10")
 	if etag != "" {
 		req.Header.Add("If-None-Match", etag)
 	}
 
 	return gh.authorizedDo(req, 0)
+}
+
+// parseLastPageFromLink parses the last page number out of the Link header,
+// which looks like `<url>; rel="next", <url>; rel="last"`.
+// It returns 0 if the header is absent or has no `last` link.
+func parseLastPageFromLink(linkHeader string) int {
+	matches := linkLastPageRegex.FindStringSubmatch(linkHeader)
+	if len(matches) < 2 {
+		return 0
+	}
+
+	lastPage, err := strconv.Atoi(matches[1])
+	if err != nil {
+		return 0
+	}
+
+	return lastPage
 }
