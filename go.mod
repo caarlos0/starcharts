@@ -1,6 +1,6 @@
 module github.com/caarlos0/starcharts
 
-go 1.26
+go 1.26.0
 
 require (
 	github.com/alicebob/miniredis v2.5.0+incompatible
@@ -12,8 +12,8 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/matryer/is v1.4.1
 	github.com/prometheus/client_golang v1.24.1
-	golang.org/x/image v0.45.0
-	golang.org/x/sync v0.22.0
+	golang.org/x/image v0.46.0
+	golang.org/x/sync v0.23.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
 )
@@ -34,7 +34,7 @@ require (
 	github.com/vmihailenco/msgpack v4.0.2+incompatible // indirect
 	github.com/yuin/gopher-lua v0.0.0-20190514113301-1cd887cd7036 // indirect
 	golang.org/x/net v0.57.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 // indirect
