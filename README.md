@@ -6,21 +6,20 @@
 
 Plot your repo stars over time!
 
-## Features
+## How it works
 
-### Smart Sampling Mode (Large Repository Optimization)
+Star data comes from GitHub's [star history API][api], which returns the number
+of stars a repository got on each day, grouped by week, without exposing who
+starred it.
 
-For large repositories with massive amounts of stars, this project uses **Smart Sampling Mode** to efficiently fetch star history data and render trend charts.
+Star charts plots one data point per day in which the repository got at least
+one star, so the resulting chart is accurate regardless of how many stars the
+repository has.
 
-**How it works:**
+Responses are cached in Redis and revalidated with `ETag`s, so repeated renders
+of the same chart usually don't spend any API rate limit.
 
-1. **Auto Detection**: First requests the first page of GitHub API data and parses the `Link` Header to get total page count
-2. **Mode Switching**:
-   - When total pages ≤ `maxSamplePages` (default 15 pages, ~1500 stars), fetches all data
-   - When total pages > `maxSamplePages`, automatically switches to sampling mode
-3. **Uniform Sampling**: Evenly selects sample points across all pages to ensure coverage of the complete star growth timeline
-4. **Data Point Extraction**: Extracts the timestamp and corresponding star count from the first Stargazer of each sampled page
-5. **Trend Completion**: Adds current time and total star count as the final data point to ensure the chart extends to the latest state
+[api]: https://docs.github.com/rest/activity/starring#get-repository-star-history
 
 ## Usage
 
@@ -38,8 +37,6 @@ Configure via environment variables:
 |----------|---------|-------------|
 | `REDIS_URL` | `redis://localhost:6379` | Redis cache URL |
 | `GITHUB_TOKENS` | - | GitHub API Token (supports multiple, comma-separated) |
-| `GITHUB_PAGE_SIZE` | `100` | Number of stars per page |
-| `GITHUB_MAX_SAMPLE_PAGES` | `15` | Max sample pages (triggers sampling mode when exceeded) |
 | `GITHUB_MAX_RATE_LIMIT_USAGE` | `80` | API Rate Limit usage threshold percentage |
 | `LISTEN` | `127.0.0.1:3000` | Server listen address |
 
