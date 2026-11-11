@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/alicebob/miniredis"
@@ -13,11 +14,53 @@ import (
 	"gopkg.in/h2non/gock.v1"
 )
 
+func TestRepoDetails_Private(t *testing.T) {
+	defer gock.Off()
+	mr, err := miniredis.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(mr.Close)
+	rc := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	c := cache.New(rc)
+	t.Cleanup(func() { _ = c.Close() })
+	gt := New(config.Config{GitHubTokens: []string{"synthetic-token"}}, c)
+
+	gock.New("https://api.github.com").
+		Get("/rate_limit").
+		Reply(200).
+		JSON(rateLimit{rate{Limit: 5000, Remaining: 4000}})
+	gock.New("https://api.github.com").
+		Get("/repos/test/private").
+		MatchHeader("Authorization", "token synthetic-token").
+		Reply(200).
+		SetHeader("ETag", "private-etag").
+		JSON(map[string]any{
+			"full_name":        "test/private",
+			"private":          true,
+			"visibility":       "private",
+			"stargazers_count": 7,
+			"created_at":       "2026-01-02T03:04:05Z",
+		})
+
+	repo, err := gt.RepoDetails(context.Background(), "test/private")
+	if !errors.Is(err, ErrorNotFound) || repo != (Repository{}) {
+		t.Fatalf("private repository: got %+v, %v; want empty repository and %v", repo, err, ErrorNotFound)
+	}
+	if keys := mr.Keys(); len(keys) != 0 {
+		t.Fatalf("private repository cached under %v", keys)
+	}
+	if !gock.IsDone() {
+		t.Fatal("expected authenticated repository request")
+	}
+}
+
 func TestRepoDetails(t *testing.T) {
 	defer gock.Off()
 
 	repo := Repository{
 		FullName:        "test/test",
+		Visibility:      "public",
 		CreatedAt:       "2008-02-28T20:40:04Z",
 		StargazersCount: 3811,
 	}
@@ -49,12 +92,11 @@ func TestRepoDetails(t *testing.T) {
 
 	t.Run("get repo details from cache", func(t *testing.T) {
 		is := is.New(t)
-		is.NoErr(cache.Put("test/test_etag", "a"))
+		is.NoErr(cache.Put("public:test/test_etag", "a"))
 		gock.New("https://api.github.com").
 			Get("/repos/test/test").
 			MatchHeader("If-None-Match", "a").
-			Reply(200).
-			JSON(repo)
+			Reply(304)
 		_, err := gt.RepoDetails(context.TODO(), "test/test")
 		is.NoErr(err) // should not fail to get from cache
 	})
@@ -108,6 +150,7 @@ func TestRepoDetails_WithAuthToken(t *testing.T) {
 
 	repo := Repository{
 		FullName:        "aasm/aasm",
+		Visibility:      "public",
 		CreatedAt:       "2008-02-28T20:40:04Z",
 		StargazersCount: 3811,
 	}

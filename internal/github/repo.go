@@ -13,6 +13,7 @@ import (
 // Repository details.
 type Repository struct {
 	FullName        string `json:"full_name"`
+	Visibility      string `json:"visibility"`
 	StargazersCount int    `json:"stargazers_count"`
 	CreatedAt       string `json:"created_at"`
 }
@@ -25,7 +26,8 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 	log := slog.With("repo", name)
 
 	var etag string
-	etagKey := name + "_etag"
+	cacheKey := "public:" + name
+	etagKey := cacheKey + "_etag"
 
 	if err := gh.cache.Get(etagKey, &etag); err != nil {
 		log.Warn("failed to get from cache", "etag", etagKey, "error", err)
@@ -46,7 +48,7 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 	case http.StatusNotModified:
 		log.Info("not modified")
 		effectiveEtags.Inc()
-		err := gh.cache.Get(name, &repo)
+		err := gh.cache.Get(cacheKey, &repo)
 		if err != nil {
 			log.Warn("failed to get from cache", "name", name, "error", err)
 			if err := gh.cache.Delete(etagKey); err != nil {
@@ -63,7 +65,10 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 		if err := json.Unmarshal(bts, &repo); err != nil {
 			return repo, err
 		}
-		if err := gh.cache.Put(name, repo); err != nil {
+		if repo.Visibility != "public" {
+			return Repository{}, ErrorNotFound
+		}
+		if err := gh.cache.Put(cacheKey, repo); err != nil {
 			log.Warn("failed to cache", "name", name, "error", err)
 		}
 
