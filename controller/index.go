@@ -4,10 +4,13 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/caarlos0/httperr"
 )
+
+var repositoryExpression = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9-]*/[a-zA-Z0-9_.-]+$`)
 
 func Index(filesystem fs.FS, version string) http.Handler {
 	indexTemplate, err := template.ParseFS(filesystem, base, index)
@@ -23,6 +26,10 @@ func Index(filesystem fs.FS, version string) http.Handler {
 func HandleForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		repo := strings.TrimPrefix(r.FormValue("repository"), "https://github.com/")
-		http.Redirect(w, r, repo, http.StatusSeeOther)
+		if !repositoryExpression.MatchString(repo) {
+			http.Error(w, "invalid repository: expected owner/repository", http.StatusBadRequest)
+			return
+		}
+		http.Redirect(w, r, "/"+repo, http.StatusSeeOther)
 	}
 }
