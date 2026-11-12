@@ -13,6 +13,7 @@ import (
 // Repository details.
 type Repository struct {
 	FullName        string `json:"full_name"`
+	Visibility      string `json:"visibility"`
 	StargazersCount int    `json:"stargazers_count"`
 	CreatedAt       string `json:"created_at"`
 }
@@ -62,6 +63,9 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 	case http.StatusOK:
 		if err := json.Unmarshal(bts, &repo); err != nil {
 			return repo, err
+		}
+		if repo.Visibility != "public" {
+			return Repository{}, ErrorNotFound
 		}
 		if err := gh.cache.Put(name, repo); err != nil {
 			log.Warn("failed to cache", "name", name, "error", err)
