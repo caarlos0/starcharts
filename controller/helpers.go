@@ -77,7 +77,7 @@ func writeSvgHeaders(w http.ResponseWriter) {
 
 func chartKey(params *params) string {
 	return fmt.Sprintf(
-		"public:%s/%s/[%s][%s][%s][%s]",
+		"%s/%s/[%s][%s][%s][%s]",
 		params.Owner,
 		params.Repo,
 		params.Variant,

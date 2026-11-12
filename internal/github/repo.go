@@ -26,8 +26,7 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 	log := slog.With("repo", name)
 
 	var etag string
-	cacheKey := "public:" + name
-	etagKey := cacheKey + "_etag"
+	etagKey := name + "_etag"
 
 	if err := gh.cache.Get(etagKey, &etag); err != nil {
 		log.Warn("failed to get from cache", "etag", etagKey, "error", err)
@@ -48,7 +47,7 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 	case http.StatusNotModified:
 		log.Info("not modified")
 		effectiveEtags.Inc()
-		err := gh.cache.Get(cacheKey, &repo)
+		err := gh.cache.Get(name, &repo)
 		if err != nil {
 			log.Warn("failed to get from cache", "name", name, "error", err)
 			if err := gh.cache.Delete(etagKey); err != nil {
@@ -68,7 +67,7 @@ func (gh *GitHub) RepoDetails(ctx context.Context, name string) (Repository, err
 		if repo.Visibility != "public" {
 			return Repository{}, ErrorNotFound
 		}
-		if err := gh.cache.Put(cacheKey, repo); err != nil {
+		if err := gh.cache.Put(name, repo); err != nil {
 			log.Warn("failed to cache", "name", name, "error", err)
 		}
 

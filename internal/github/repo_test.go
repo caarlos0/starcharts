@@ -92,13 +92,14 @@ func TestRepoDetails(t *testing.T) {
 
 	t.Run("get repo details from cache", func(t *testing.T) {
 		is := is.New(t)
-		is.NoErr(cache.Put("public:test/test_etag", "a"))
+		is.NoErr(cache.Put("test/test_etag", "a"))
 		gock.New("https://api.github.com").
 			Get("/repos/test/test").
 			MatchHeader("If-None-Match", "a").
 			Reply(304)
-		_, err := gt.RepoDetails(context.TODO(), "test/test")
+		got, err := gt.RepoDetails(context.TODO(), "test/test")
 		is.NoErr(err) // should not fail to get from cache
+		is.Equal(got, repo)
 	})
 }
 
